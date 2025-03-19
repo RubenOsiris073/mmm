@@ -1,42 +1,37 @@
 import React, { useState, useEffect } from 'react';
+import { Form, Button, Row, Col } from 'react-bootstrap';
+import { addProduct } from '../services/predictionService';
 
-const ProductForm = ({ addProduct, updateProduct, editingProduct, setEditingProduct }) => {
+const ProductForm = ({ detectedObject }) => {
   const initialFormState = {
-    name: '',
-    description: '',
-    price: '',
-    category: '',
-    stock: ''
+    nombre: '',
+    cantidad: 1,
+    fechaCaducidad: '',
+    ubicacion: '',
+    precio: '',
+    categoria: '',
+    codigo: '',
+    stockMinimo: 5,
+    notas: ''
   };
-  
+
   const [formData, setFormData] = useState(initialFormState);
-  const [imageFile, setImageFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState('');
-  
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Actualizar nombre del producto cuando cambia la detección
   useEffect(() => {
-    if (editingProduct) {
-      setFormData({
-        name: editingProduct.name || '',
-        description: editingProduct.description || '',
-        price: editingProduct.price || '',
-        category: editingProduct.category || '',
-        stock: editingProduct.stock || ''
-      });
-      
-      if (editingProduct.imageUrl) {
-        setPreviewUrl(editingProduct.imageUrl);
-      }
-    } else {
-      resetForm();
+    if (detectedObject && detectedObject !== 'Desconocido') {
+      setFormData(prevData => ({
+        ...prevData,
+        nombre: detectedObject.charAt(0).toUpperCase() + detectedObject.slice(1),
+        // Asignar categoría automáticamente según el objeto detectado
+        categoria: detectedObject === 'botella' ? 'bebidas' : 
+                   detectedObject === 'barrita' ? 'alimentos' : 'otros'
+      }));
     }
-  }, [editingProduct]);
-  
-  const resetForm = () => {
-    setFormData(initialFormState);
-    setImageFile(null);
-    setPreviewUrl('');
-  };
-  
+  }, [detectedObject]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevData => ({
@@ -44,161 +39,174 @@ const ProductForm = ({ addProduct, updateProduct, editingProduct, setEditingProd
       [name]: value
     }));
   };
-  
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onload = () => {
-        setPreviewUrl(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-  
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setSaving(true);
     
-    // Form validation
-    if (!formData.name || !formData.price) {
-      alert('Por favor complete los campos obligatorios');
-      return;
+    try {
+      await addProduct({
+        ...formData,
+        fechaRegistro: new Date().toISOString(),
+        tipoObjeto: detectedObject
+      });
+      
+      // Mostrar mensaje de éxito
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+      
+      // Restablecer formulario pero mantener el objeto detectado
+      const detectedName = detectedObject ? 
+        detectedObject.charAt(0).toUpperCase() + detectedObject.slice(1) : '';
+      
+      setFormData({
+        ...initialFormState,
+        nombre: detectedName,
+        categoria: detectedObject === 'botella' ? 'bebidas' : 
+                   detectedObject === 'barrita' ? 'alimentos' : 'otros'
+      });
+    } catch (error) {
+      console.error("Error al guardar el producto:", error);
+    } finally {
+      setSaving(false);
     }
-    
-    const productData = {
-      name: formData.name,
-      description: formData.description,
-      price: parseFloat(formData.price),
-      category: formData.category,
-      stock: parseInt(formData.stock, 10) || 0
-    };
-    
-    if (editingProduct) {
-      updateProduct(editingProduct.id, productData, imageFile);
-    } else {
-      addProduct(productData, imageFile);
-    }
-    
-    resetForm();
   };
-  
-  const handleCancel = () => {
-    setEditingProduct(null);
-    resetForm();
-  };
-  
+
   return (
-    <div className="card">
-      <div className="card-header">
-        <h3>{editingProduct ? 'Editar Producto' : 'Agregar Nuevo Producto'}</h3>
-      </div>
-      <div className="card-body">
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label htmlFor="name" className="form-label">Nombre*</label>
-            <input
-              type="text"
-              className="form-control"
-              id="name"
-              name="name"
-              value={formData.name}
+    <Form onSubmit={handleSubmit}>
+      <Form.Group className="mb-3">
+        <Form.Label>Nombre</Form.Label>
+        <Form.Control
+          type="text"
+          name="nombre"
+          value={formData.nombre}
+          onChange={handleInputChange}
+          required
+        />
+      </Form.Group>
+
+      <Row>
+        <Col md={6}>
+          <Form.Group className="mb-3">
+            <Form.Label>Cantidad</Form.Label>
+            <Form.Control
+              type="number"
+              name="cantidad"
+              min="1"
+              value={formData.cantidad}
               onChange={handleInputChange}
               required
             />
-          </div>
-          
-          <div className="mb-3">
-            <label htmlFor="description" className="form-label">Descripción</label>
-            <textarea
-              className="form-control"
-              id="description"
-              name="description"
-              value={formData.description}
+          </Form.Group>
+        </Col>
+        <Col md={6}>
+          <Form.Group className="mb-3">
+            <Form.Label>Fecha de caducidad</Form.Label>
+            <Form.Control
+              type="date"
+              name="fechaCaducidad"
+              value={formData.fechaCaducidad}
               onChange={handleInputChange}
             />
-          </div>
-          
-          <div className="mb-3">
-            <label htmlFor="price" className="form-label">Precio*</label>
-            <input
+          </Form.Group>
+        </Col>
+      </Row>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Ubicación/Almacén</Form.Label>
+        <Form.Control
+          type="text"
+          name="ubicacion"
+          placeholder="Bodega principal"
+          value={formData.ubicacion}
+          onChange={handleInputChange}
+        />
+      </Form.Group>
+
+      <Row>
+        <Col md={6}>
+          <Form.Group className="mb-3">
+            <Form.Label>Precio</Form.Label>
+            <Form.Control
               type="number"
+              name="precio"
+              min="0"
               step="0.01"
-              className="form-control"
-              id="price"
-              name="price"
-              value={formData.price}
+              value={formData.precio}
               onChange={handleInputChange}
-              required
             />
-          </div>
-          
-          <div className="mb-3">
-            <label htmlFor="category" className="form-label">Categoría</label>
-            <input
+          </Form.Group>
+        </Col>
+        <Col md={6}>
+          <Form.Group className="mb-3">
+            <Form.Label>Categoría</Form.Label>
+            <Form.Select
+              name="categoria"
+              value={formData.categoria}
+              onChange={handleInputChange}
+            >
+              <option value="">Seleccionar categoría</option>
+              <option value="alimentos">Alimentos</option>
+              <option value="bebidas">Bebidas</option>
+              <option value="limpieza">Productos de limpieza</option>
+              <option value="otros">Otros</option>
+            </Form.Select>
+          </Form.Group>
+        </Col>
+      </Row>
+
+      <Row>
+        <Col md={6}>
+          <Form.Group className="mb-3">
+            <Form.Label>Código/SKU</Form.Label>
+            <Form.Control
               type="text"
-              className="form-control"
-              id="category"
-              name="category"
-              value={formData.category}
+              name="codigo"
+              value={formData.codigo}
               onChange={handleInputChange}
             />
-          </div>
-          
-          <div className="mb-3">
-            <label htmlFor="stock" className="form-label">Stock</label>
-            <input
+          </Form.Group>
+        </Col>
+        <Col md={6}>
+          <Form.Group className="mb-3">
+            <Form.Label>Stock mínimo</Form.Label>
+            <Form.Control
               type="number"
-              className="form-control"
-              id="stock"
-              name="stock"
-              value={formData.stock}
+              name="stockMinimo"
+              min="0"
+              value={formData.stockMinimo}
               onChange={handleInputChange}
             />
-          </div>
-          
-          <div className="mb-3">
-            <label htmlFor="image" className="form-label">Imagen</label>
-            <input
-              type="file"
-              className="form-control"
-              id="image"
-              accept="image/*"
-              onChange={handleImageChange}
-            />
-          </div>
-          
-          {previewUrl && (
-            <div className="mb-3">
-              <label className="form-label">Vista previa</label>
-              <div className="text-center">
-                <img 
-                  src={previewUrl} 
-                  alt="Preview" 
-                  className="img-thumbnail" 
-                  style={{ maxHeight: '200px' }} 
-                />
-              </div>
-            </div>
-          )}
-          
-          <div className="d-flex justify-content-between">
-            <button type="submit" className="btn btn-primary">
-              {editingProduct ? 'Actualizar' : 'Guardar'}
-            </button>
-            {editingProduct && (
-              <button 
-                type="button" 
-                className="btn btn-secondary" 
-                onClick={handleCancel}
-              >
-                Cancelar
-              </button>
-            )}
-          </div>
-        </form>
-      </div>
-    </div>
+          </Form.Group>
+        </Col>
+      </Row>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Observaciones</Form.Label>
+        <Form.Control
+          as="textarea"
+          name="notas"
+          rows={2}
+          value={formData.notas}
+          onChange={handleInputChange}
+        />
+      </Form.Group>
+
+      <Button 
+        variant="success" 
+        type="submit" 
+        className="w-100 py-2" 
+        disabled={saving}
+      >
+        {saving ? 'Guardando...' : 'Guardar Producto'}
+      </Button>
+      
+      {saveSuccess && (
+        <div className="alert alert-success mt-3">
+          Producto guardado correctamente
+        </div>
+      )}
+    </Form>
   );
 };
 

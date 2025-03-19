@@ -1,0 +1,13 @@
+src/
+├── components/
+│   ├── ObjectDetection.jsx    # Componente principal de detección
+│   ├── ProductForm.jsx        # Formulario para datos del producto
+│   ├── PredictionDisplay.jsx  # Muestra predicciones
+│   └── Camera.jsx             # Componente de la cámara
+├── services/
+│   ├── firebase.js            # Configuración de Firebase
+│   ├── tensorflowService.js   # Lógica de TensorFlow
+│   └── predictionService.js   # Servicio para registrar predicciones
+├── models/                    # Carpeta para guardar el modelo
+├── App.js
+└── index.js
