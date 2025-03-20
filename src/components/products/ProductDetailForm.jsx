@@ -58,9 +58,9 @@ const ProductDetailForm = ({ initialProduct = null, onSuccess }) => {
         ...formData,
         tipoDetectado: initialProduct?.label || null,
         precisionDeteccion: initialProduct?.similarity || null,
+        detectionId: initialProduct?.id || null, // Añadir el ID de la detección original
         fechaRegistro: new Date().toISOString()
       };
-      
       await saveProductDetails(productToSave);
       
       if (onSuccess) {

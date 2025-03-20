@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button, Alert } from 'react-bootstrap';
+import { Link } from 'react-router-dom'; // Añadir esta importación
 import * as tf from '@tensorflow/tfjs';
 import Camera from './Camera';
 import PredictionDisplay from './PredictionDisplay';
@@ -11,6 +12,7 @@ const CameraView = () => {
   const [prediction, setPrediction] = useState({ label: '', similarity: 0 });
   const [isDetecting, setIsDetecting] = useState(true);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [savedDetection, setSavedDetection] = useState(null);
   const videoRef = useRef(null);
   const rafRef = useRef(null);
   const isRunning = useRef(true);
@@ -110,7 +112,7 @@ const CameraView = () => {
   }, [isDetecting, model, detectFrame]);
 
   // Guardar el objeto detectado en la base de datos
-const handleSaveDetection = async () => {
+  const handleSaveDetection = async () => {
     if (prediction && prediction.label && prediction.similarity > 50) {
       try {
         const detectionId = await addDetection({
@@ -119,29 +121,25 @@ const handleSaveDetection = async () => {
           timestamp: new Date().toISOString()
         });
         
-        // Mostrar mensaje de éxito y opción para registrar detalles
+        // Incluir el ID en el state para el enlace
+        const detectionWithId = {
+          ...prediction,
+          id: detectionId
+        };
+        
+        // Mostrar mensaje de éxito
         setSaveSuccess(true);
-        setSavedDetectionId(detectionId);
+        setSavedDetection(detectionWithId);
+        
         setTimeout(() => {
           setSaveSuccess(false);
-          setSavedDetectionId(null);
+          setSavedDetection(null);
         }, 5000);
       } catch (error) {
         console.error("Error al guardar la detección:", error);
       }
     }
   };
-  
-  // Y añadir esto en el return después del Alert de éxito
-  {saveSuccess && (
-    <div className="d-flex justify-content-center mt-3">
-      <Link to="/product-form" state={{ product: prediction }}>
-        <Button variant="outline-success">
-          Registrar Detalles Completos →
-        </Button>
-      </Link>
-    </div>
-  )}
 
   return (
     <>
@@ -174,6 +172,19 @@ const handleSaveDetection = async () => {
         <Alert variant="success" className="mt-3">
           ✅ Producto guardado exitosamente en la lista
         </Alert>
+      )}
+
+      {saveSuccess && savedDetection && (
+        <div className="d-flex justify-content-center mt-3">
+          <Link 
+            to="/product-form" 
+            state={{ product: savedDetection }}
+          >
+            <Button variant="outline-success">
+              Registrar Detalles Completos →
+            </Button>
+          </Link>
+        </div>
       )}
     </>
   );
