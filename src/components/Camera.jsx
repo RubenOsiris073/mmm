@@ -5,9 +5,11 @@ const Camera = ({ videoRef }) => {
   const [error, setError] = React.useState(null);
 
   useEffect(() => {
+    let stream = null;
+    
     async function setupCamera() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
+        stream = await navigator.mediaDevices.getUserMedia({
           video: true,
           audio: false
         });
@@ -23,14 +25,14 @@ const Camera = ({ videoRef }) => {
     
     setupCamera();
     
+    // Limpieza con variable local 'stream'
     return () => {
-      // Limpieza: detener la transmisión de video cuando el componente se desmonte
-      if (videoRef.current && videoRef.current.srcObject) {
-        const tracks = videoRef.current.srcObject.getTracks();
+      if (stream) {
+        const tracks = stream.getTracks();
         tracks.forEach(track => track.stop());
       }
     };
-  }, [videoRef]);
+  }, [videoRef]); // videoRef sigue en el array de dependencias
 
   return (
     <div className="camera-container">
