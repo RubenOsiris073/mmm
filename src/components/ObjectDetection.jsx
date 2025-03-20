@@ -1,18 +1,21 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Row, Col, Card } from 'react-bootstrap';
+import React, { useState, useEffect, useRef } from 'react';
+import { Row, Col, Card, Button } from 'react-bootstrap';
 import * as tf from '@tensorflow/tfjs';
 import Camera from './Camera';
 import PredictionDisplay from './PredictionDisplay';
-import ModelDiagnostic from './ModelDiagnostic';
 import ProductForm from './ProductForm';
+import ModelDiagnostic from './ModelDiagnostic';
 import { logPrediction } from '../services/predictionService';
 
 const ObjectDetection = () => {
   const [model, setModel] = useState(null);
   const [loading, setLoading] = useState(true);
   const [prediction, setPrediction] = useState({ label: '', similarity: 0 });
+  const [isDetecting, setIsDetecting] = useState(true);
   const videoRef = useRef(null);
   const rafRef = useRef(null);
+  const isRunning = useRef(true);
+  const detectionCount = useRef(0);
 
   // Cargar el modelo TensorFlow
   useEffect(() => {
@@ -22,8 +25,9 @@ const ObjectDetection = () => {
         await tf.setBackend('cpu');
         await tf.ready();
         
-        // Cargar el modelo (ajusta la ruta según donde guardes tu modelo)
-        // Intenta ambas rutas - para desarrollo y producción
+        console.log("Cargando modelo...");
+        
+        // Intenta cargar el modelo desde la carpeta public
         let loadedModel;
         try {
           loadedModel = await tf.loadLayersModel('/models/model.json');
@@ -32,90 +36,130 @@ const ObjectDetection = () => {
           loadedModel = await tf.loadLayersModel('./models/model.json');
         }
         
-        console.log("Modelo cargado exitosamente");
+        console.log("✅ Modelo cargado exitosamente");
         setModel(loadedModel);
         setLoading(false);
       } catch (error) {
-        console.error("Error al cargar el modelo:", error);
+        console.error("❌ Error al cargar el modelo:", error);
         setLoading(false);
       }
     }
     
     loadModel();
     
-    // Cleanup
+    // Asegurarse de que el detector se detenga cuando el componente se desmonte
     return () => {
+      console.log("Desmontando componente - limpiando recursos");
+      isRunning.current = false;
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
       }
     };
   }, []);
 
-  // Detectar objetos en cada frame utilizando useCallback para memoización
-  const detectFrame = useCallback(() => {
+  // Función para detectar objetos en un frame de video
+  const detectFrame = () => {
+    // Salir si el componente se desmontó o se pausó la detección
+    if (!isRunning.current || !isDetecting) {
+      console.log("Detección pausada o componente desmontado");
+      return;
+    }
+
+    detectionCount.current++;
+    
+    // Solo para depuración - mostrar heartbeat de detección cada 30 frames
+    if (detectionCount.current % 30 === 0) {
+      console.log(`🔍 Detección en curso... (${detectionCount.current} frames procesados)`);
+    }
+    
     if (videoRef.current && videoRef.current.readyState >= 2 && model) {
       // Procesamos cada frame dentro de tf.tidy para limpiar tensores innecesarios
       tf.tidy(() => {
-        const tensor = tf.browser.fromPixels(videoRef.current)
-          .resizeNearestNeighbor([224, 224]) // Ajusta el tamaño según tu modelo
-          .expandDims()
-          .toFloat();
+        try {
+          const tensor = tf.browser.fromPixels(videoRef.current)
+            .resizeNearestNeighbor([224, 224]) // Ajusta el tamaño según tu modelo
+            .expandDims()
+            .toFloat();
+          
+          // Normalizar si es necesario (ajustar según el modelo)
+          // const normalizedTensor = tensor.div(255.0);  // Normalizar a [0,1]
+          
+          // Realizar la predicción
+          const predictions = model.predict(tensor).dataSync();
+          
+          const maxProb = Math.max(...predictions);
+          const idx = predictions.indexOf(maxProb);
 
-        // Normalizar si es necesario (depende de cómo entrenaste tu modelo)
-        // Por ejemplo, si tu modelo espera valores entre -1 y 1:
-        // .div(127.5).sub(1);
-        
-        // Depurar dimensiones del tensor
-        console.log("Dimensiones del tensor:", tensor.shape);
-
-        // Realizar la predicción
-        const predictions = model.predict(tensor).dataSync();
-        console.log("Predicciones brutas:", predictions);
-        
-        const maxProb = Math.max(...predictions);
-        const idx = predictions.indexOf(maxProb);
-
-        // Mapea el índice a la etiqueta correspondiente
-        const etiquetas = ["barrita", "botella", "chicle"];
-        const label = etiquetas[idx] || "Desconocido";
-        const similarity = (maxProb * 100).toFixed(2);
-        
-        console.log(`Detectado: ${label} con precisión ${similarity}%`);
-        setPrediction({ label, similarity: parseFloat(similarity) });
-        
-        // Registrar en Firebase
-        logPrediction(label, similarity);
+          // Mapea el índice a la etiqueta correspondiente
+          const etiquetas = ["barrita", "botella", "chicle"];
+          const label = etiquetas[idx] || "Desconocido";
+          const similarity = (maxProb * 100).toFixed(2);
+          
+          // Sólo actualizar el estado si hay un cambio significativo para evitar re-renders innecesarios
+          if (prediction.label !== label || Math.abs(prediction.similarity - parseFloat(similarity)) > 5) {
+            console.log(`📊 Detectado: ${label} con precisión ${similarity}%`);
+            setPrediction({ label, similarity: parseFloat(similarity) });
+            
+            // Registrar en Firebase (solo para cambios significativos)
+            if (parseFloat(similarity) > 60) {
+              logPrediction(label, similarity);
+            }
+          }
+        } catch (err) {
+          console.error("Error en procesamiento de frame:", err);
+        }
       });
-    } else {
-      console.log("Video no está listo o modelo no cargado");
-      if (!videoRef.current) console.log("videoRef.current es null");
-      else if (videoRef.current.readyState < 2) console.log("Video readyState:", videoRef.current.readyState);
-      if (!model) console.log("Modelo no cargado");
     }
     
-    // Continuar la detección en el siguiente frame
+    // Programar el siguiente frame usando requestAnimationFrame
     rafRef.current = requestAnimationFrame(detectFrame);
-  }, [model, videoRef]); // Incluye model y videoRef como dependencias
+  };
 
-  // Iniciar detección cuando el modelo esté cargado
+  // Iniciar/Detener detección basado en isDetecting
   useEffect(() => {
-    if (model && videoRef.current) {
-      console.log("Iniciando detección de frames");
+    if (isDetecting && model && !rafRef.current) {
+      console.log("▶️ Iniciando bucle de detección");
+      isRunning.current = true;
+      detectionCount.current = 0;
+      detectFrame();
+    } else if (!isDetecting && rafRef.current) {
+      console.log("⏸️ Pausando bucle de detección");
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+  }, [isDetecting, model]);
+
+  // Efecto para iniciar la detección cuando el modelo se carga
+  useEffect(() => {
+    if (model && isDetecting && !rafRef.current) {
+      console.log("🔄 Modelo cargado, iniciando detección");
       detectFrame();
     }
-    
-    return () => {
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
-    };
-  }, [model, detectFrame]); // Ahora incluimos detectFrame como dependencia
+  }, [model]);
+
+  // Función para alternar entre detección activa/pausada
+  const toggleDetection = () => {
+    setIsDetecting(prev => !prev);
+  };
 
   return (
     <>
       <Row className="mb-4">
         <Col md={12}>
           <ModelDiagnostic />
+        </Col>
+      </Row>
+      
+      <Row className="mb-3">
+        <Col>
+          <Button 
+            variant={isDetecting ? "danger" : "success"} 
+            onClick={toggleDetection}
+            className="w-100 mb-3"
+          >
+            {isDetecting ? "⏸️ Pausar Detección" : "▶️ Reanudar Detección"}
+          </Button>
         </Col>
       </Row>
       
@@ -144,6 +188,7 @@ const ObjectDetection = () => {
         </Col>
       </Row>
     </>
-  );};
+  );
+};
 
 export default ObjectDetection;

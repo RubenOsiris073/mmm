@@ -1,25 +1,31 @@
 import React from 'react';
-import { Container, Row, Col } from 'react-bootstrap';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Container } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
-import ObjectDetection from './components/ObjectDetection';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
+
+import Navbar from './components/layout/Navbar';
+import Footer from './components/layout/Footer';
+import CameraPage from './pages/CameraPage';
+import ProductsPage from './pages/ProductsPage';
+import ProductFormPage from './pages/ProductFormPage';
 
 function App() {
   return (
-    <div className="App">
-      <Navbar />
-      <Container className="mt-4 mb-4">
-        <Row>
-          <Col>
-            <h1 className="text-center mb-4">Detección de Objetos en Tiempo Real</h1>
-            <ObjectDetection />
-          </Col>
-        </Row>
-      </Container>
-      <Footer />
-    </div>
+    <Router>
+      <div className="App">
+        <Navbar />
+        <Container className="my-4 main-content">
+          <Routes>
+            <Route path="/" element={<CameraPage />} />
+            <Route path="/products" element={<ProductsPage />} />
+            <Route path="/product-form" element={<ProductFormPage />} />
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </Container>
+        <Footer />
+      </div>
+    </Router>
   );
 }
 

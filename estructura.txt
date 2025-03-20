@@ -1,13 +1,24 @@
 src/
 ├── components/
-│   ├── ObjectDetection.jsx    # Componente principal de detección
-│   ├── ProductForm.jsx        # Formulario para datos del producto
-│   ├── PredictionDisplay.jsx  # Muestra predicciones
-│   └── Camera.jsx             # Componente de la cámara
+│   ├── camera/
+│   │   ├── CameraView.jsx        # Componente principal con cámara y predicción
+│   │   ├── Camera.jsx            # Componente de cámara mejorado
+│   │   └── PredictionDisplay.jsx # Muestra las predicciones
+│   ├── products/
+│   │   ├── ProductList.jsx       # Lista de productos detectados
+│   │   ├── ProductForm.jsx       # Formulario para editar productos
+│   │   └── ProductDetail.jsx     # Detalles de un producto específico
+│   ├── layout/
+│   │   ├── Navbar.jsx            # Barra de navegación con enlaces
+│   │   └── Footer.jsx            # Pie de página
+│   └── shared/
+│       └── ModelDiagnostic.jsx   # Diagnóstico del modelo (opcional)
 ├── services/
-│   ├── firebase.js            # Configuración de Firebase
-│   ├── tensorflowService.js   # Lógica de TensorFlow
-│   └── predictionService.js   # Servicio para registrar predicciones
-├── models/                    # Carpeta para guardar el modelo
-├── App.js
+│   ├── detectionService.js       # Servicio de detección con TensorFlow
+│   ├── firebase.js               # Configuración de Firebase
+│   └── storageService.js         # Almacenamiento de datos de productos
+├── pages/
+│   ├── CameraPage.jsx            # Página principal con cámara
+│   └── ProductsPage.jsx          # Página de lista de productos
+├── App.js                        # Componente principal con enrutamiento
 └── index.js

@@ -25,14 +25,13 @@ const Camera = ({ videoRef }) => {
     
     setupCamera();
     
-    // Limpieza con variable local 'stream'
     return () => {
       if (stream) {
         const tracks = stream.getTracks();
         tracks.forEach(track => track.stop());
       }
     };
-  }, [videoRef]); // videoRef sigue en el array de dependencias
+  }, [videoRef]);
 
   return (
     <div className="camera-container">
@@ -44,7 +43,13 @@ const Camera = ({ videoRef }) => {
         autoPlay 
         playsInline 
         muted
-        style={{ borderRadius: '8px', marginBottom: '15px' }}
+        style={{ 
+          borderRadius: '8px', 
+          marginBottom: '15px',
+          maxHeight: '60vh',
+          objectFit: 'contain',
+          backgroundColor: '#000'
+        }}
       />
     </div>
   );
