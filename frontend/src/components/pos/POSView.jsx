@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Container, Row, Col, Card, Button, Table, Form, 
+import {
+  Container, Row, Col, Card, Button, Table, Form,
   Spinner, Alert, Badge, ListGroup, Modal
 } from 'react-bootstrap';
 import { toast } from 'react-toastify';
@@ -44,51 +44,70 @@ const POSView = () => {
     const loadData = async () => {
       try {
         setLoading(true);
-        
-        let productsData = [];
+
+        console.log("Cargando datos de productos e inventario...");
+
+        // Primero cargar el wallet/inventario
         let walletData = [];
-        
-        try {
-          const productsResponse = await apiService.getProducts();
-          productsData = productsResponse.products || [];
-          console.log(`Productos cargados: ${productsData.length}`, productsData);
-          
-          if (!productsData || productsData.length === 0) {
-            console.log("Usando productos de demostración");
-            productsData = demoProducts;
-          }
-        } catch (err) {
-          console.log("Error cargando productos, usando demo:", err);
-          productsData = demoProducts;
-        }
-        
         try {
           const walletResponse = await apiService.getWallet();
           walletData = walletResponse.wallet || [];
-          console.log(`Wallet cargado: ${walletData.length}`, walletData);
-          
+          console.log(`Wallet cargado: ${walletData.length} items`, walletData);
+
           if (!walletData || walletData.length === 0) {
-            console.log("Usando wallet de demostración");
+            console.log("Wallet vacío, usando demo como respaldo");
             walletData = demoWallet;
           }
+
+          setWallet(walletData);
         } catch (err) {
-          console.log("Error cargando wallet, usando demo:", err);
+          console.error("Error cargando wallet:", err);
+          setWallet(demoWallet);
           walletData = demoWallet;
         }
-        
-        // Cargar estado de detección
-        let detectionStatus = { active: false };
+
+        // Luego cargar los productos
         try {
-          detectionStatus = await apiService.getDetectionStatus();
+          const productsResponse = await apiService.getProducts();
+          const productsData = productsResponse.products || [];
+          console.log(`Productos cargados: ${productsData.length}`, productsData);
+
+          // Combinar la información de productos con el inventario
+          const combinedProducts = productsData.map(product => {
+            // Buscar el producto en el wallet para obtener el stock
+            const walletItem = walletData.find(item => item.id === product.id);
+            return {
+              ...product,
+              stock: walletItem ? walletItem.cantidad : 0
+            };
+          });
+
+          console.log("Productos combinados con inventario:", combinedProducts);
+          setProducts(combinedProducts);
+        } catch (err) {
+          console.error("Error cargando productos:", err);
+
+          // Si fallan los productos, usar wallet para mostrar lo que tenemos
+          const productsFromWallet = walletData.map(item => ({
+            id: item.id,
+            nombre: item.nombre,
+            precio: 0, // No tenemos esta información
+            label: item.nombre.toLowerCase(),
+            stock: item.cantidad
+          }));
+
+          setProducts(productsFromWallet.length > 0 ? productsFromWallet : demoProducts);
+        }
+
+        // Cargar estado de detección
+        try {
+          const detectionStatus = await apiService.getDetectionStatus();
+          setContinuousDetection(detectionStatus.active);
         } catch (statusError) {
           console.log("Error al cargar estado de detección:", statusError);
         }
-        
-        setProducts(productsData);
-        setWallet(walletData);
-        setContinuousDetection(detectionStatus.active);
       } catch (err) {
-        console.error("Error cargando datos:", err);
+        console.error("Error general cargando datos:", err);
         setError("Error al cargar productos y/o inventario. Usando datos locales.");
       } finally {
         setLoading(false);
@@ -101,23 +120,23 @@ const POSView = () => {
   // Verificar detecciones continuas
   useEffect(() => {
     if (!continuousDetection) return;
-    
+
     console.log("Iniciando verificación de detecciones continuas");
-    
+
     const interval = setInterval(async () => {
       try {
         console.log("Verificando nuevas detecciones...");
         const response = await apiService.getDetections();
         const detections = response?.detections || [];
-        
+
         if (detections && detections.length > 0) {
           const latestDetection = detections[0]; // La más reciente
-          
+
           // Solo procesar si es una detección nueva
           if (!lastDetection || lastDetection.id !== latestDetection.id) {
             console.log("Nueva detección encontrada:", latestDetection);
             setLastDetection(latestDetection);
-            
+
             // Si la detección es confiable, añadir al carrito
             if (latestDetection.similarity > 70) {
               addDetectedProductToCart(
@@ -132,24 +151,46 @@ const POSView = () => {
         // No mostrar error en UI para no interrumpir la experiencia
       }
     }, 2000);
-    
+
     return () => clearInterval(interval);
   }, [continuousDetection, lastDetection]);
+
+  // Añadir este useEffect después del existente para lastDetection
+  useEffect(() => {
+    // Cuando se detecta un nuevo producto, refrescamos el wallet
+    if (lastDetection) {
+      console.log("Nueva detección, recargando inventario...");
+
+      const reloadWallet = async () => {
+        try {
+          const walletResponse = await apiService.getWallet();
+          if (walletResponse && walletResponse.wallet) {
+            console.log("Wallet recargado después de detección:", walletResponse.wallet.length, "items");
+            setWallet(walletResponse.wallet);
+          }
+        } catch (err) {
+          console.error("Error recargando wallet después de detección:", err);
+        }
+      };
+
+      reloadWallet();
+    }
+  }, [lastDetection]);
 
   // Cambiar modo de detección continua
   const toggleContinuousDetection = async () => {
     try {
       setLoading(true);
       const newStatus = !continuousDetection;
-      
+
       const result = await apiService.setDetectionMode(newStatus);
       console.log(`Modo detección continua ${newStatus ? 'activado' : 'desactivado'}:`, result);
-      
+
       setContinuousDetection(newStatus);
-      
+
       toast.info(
-        newStatus 
-          ? "Modo de detección continua activado" 
+        newStatus
+          ? "Modo de detección continua activado"
           : "Modo de detección continua desactivado"
       );
     } catch (err) {
@@ -165,18 +206,18 @@ const POSView = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       console.log("Iniciando detección manual...");
       const result = await apiService.triggerDetection();
       console.log("Resultado de detección:", result);
-      
+
       if (result && result.detection) {
         setLastDetection(result.detection);
-        
+
         if (result.detection.similarity > 70) {
           // Usar la información del producto si está disponible
           addDetectedProductToCart(
-            result.detection.label, 
+            result.detection.label,
             result.detection.productInfo
           );
         } else {
@@ -194,113 +235,48 @@ const POSView = () => {
     }
   };
 
-  // Añadir producto detectado al carrito
-  const addDetectedProductToCart = (productLabel, productInfo = null) => {
-    console.log("Intentando añadir al carrito:", productLabel, "Info adicional:", productInfo);
-    
-    if (!productLabel) {
-      console.log("Etiqueta de producto vacía");
-      return;
-    }
-    
-    // Si tenemos información directa del producto, la usamos
-    if (productInfo && productInfo.id) {
-      console.log("Usando información directa del producto:", productInfo);
-      
-      // Verificar stock en wallet
-      const walletItem = wallet.find(w => w.id === productInfo.id);
-      const stockAvailable = walletItem ? walletItem.cantidad : (productInfo.stock || 0);
-      
-      console.log(`Stock disponible para ${productInfo.nombre || productInfo.label}: ${stockAvailable}`);
-      
-      if (stockAvailable <= 0) {
-        console.log("Producto sin stock disponible");
-        setError(`${productInfo.nombre || productInfo.label}: Sin stock disponible`);
-        setTimeout(() => setError(null), 3000);
-        return;
-      }
-      
-      // Añadir al carrito con la información completa
-      addToCart({
-        id: productInfo.id,
-        nombre: productInfo.nombre || productInfo.label,
-        precio: productInfo.precio || 0,
-        label: productInfo.label,
-        stock: stockAvailable
-      });
-      return;
-    }
-    
-    // Normalizar la etiqueta para comparación
-    const normalizedLabel = productLabel.toString().toLowerCase().trim();
-    
-    // Buscar el producto (primero por label exacto)
-    let product = products.find(p => 
-      p.label && p.label.toLowerCase() === normalizedLabel
-    );
-    
-    // Si no encontramos por label exacto, buscar por nombre
-    if (!product) {
-      product = products.find(p => 
-        p.nombre && p.nombre.toLowerCase() === normalizedLabel
-      );
-    }
-    
-    // Si aún no encontramos, buscar coincidencia parcial
-    if (!product) {
-      product = products.find(p => 
-        (p.label && p.label.toLowerCase().includes(normalizedLabel)) ||
-        (p.nombre && p.nombre.toLowerCase().includes(normalizedLabel))
-      );
-    }
-    
-    if (!product) {
-      console.log(`Producto no encontrado para etiqueta: ${productLabel}`);
-      setError(`Producto "${productLabel}" no encontrado en inventario`);
-      setTimeout(() => setError(null), 3000);
-      return;
-    }
-    
-    console.log("Producto encontrado:", product);
-    
-    // Verificar stock en wallet
-    const walletItem = wallet.find(w => w.id === product.id);
-    if (!walletItem || walletItem.cantidad <= 0) {
-      console.log(`Producto sin stock disponible. Wallet item:`, walletItem);
-      setError(`${product.nombre || product.label}: Sin stock disponible`);
-      setTimeout(() => setError(null), 3000);
-      return;
-    }
-    
-    console.log(`Stock disponible para ${product.nombre}: ${walletItem.cantidad}`);
-    
-    // Añadir al carrito con stock incluido
-    addToCart({
-      ...product,
-      stock: walletItem.cantidad
-    });
-  };
-  
-  // Añadir al carrito
+  // Función mejorada para añadir producto detectado al carrito
   const addToCart = (product) => {
+    console.log("Añadiendo al carrito:", product);
+    
+    // Verificar que el producto tenga stock
+    if (!product.stock || product.stock <= 0) {
+      console.log(`Error: Producto sin stock disponible: ${product.nombre}`);
+      setError(`${product.nombre}: Sin stock disponible`);
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+    
     // Verificar si ya está en el carrito
     const existingItem = cartItems.find(item => item.id === product.id);
     
     if (existingItem) {
+      // Verificar que no exceda el stock disponible
+      if (existingItem.quantity + 1 > product.stock) {
+        setError(`${product.nombre}: Stock insuficiente (${product.stock} disponibles)`);
+        setTimeout(() => setError(null), 3000);
+        return;
+      }
+      
       // Incrementar cantidad
       setCartItems(cartItems.map(item => 
         item.id === product.id 
-          ? { ...item, quantity: item.quantity + 1, total: (item.precio || 0) * (item.quantity + 1) } 
+          ? { 
+              ...item, 
+              quantity: item.quantity + 1, 
+              total: (item.precio || 0) * (item.quantity + 1) 
+            } 
           : item
       ));
     } else {
       // Añadir nuevo item
       setCartItems([...cartItems, {
         id: product.id,
-        nombre: product.nombre || product.label,
+        nombre: product.nombre,
         precio: product.precio || 0,
         quantity: 1,
-        total: (product.precio || 0)
+        total: (product.precio || 0),
+        stock: product.stock // Guardar el stock disponible
       }]);
     }
     
@@ -316,9 +292,66 @@ const POSView = () => {
       console.log("Error reproduciendo sonido");
     }
     
-    toast.success(`${product.nombre || product.label} añadido al carrito`);
+    toast.success(`${product.nombre} añadido al carrito`);
   };
-
+  
+  // Modificar la función addDetectedProductToCart
+  const addDetectedProductToCart = (productLabel, productInfo = null) => {
+    console.log("Intentando añadir al carrito por detección:", productLabel, "Info adicional:", productInfo);
+    
+    if (!productLabel) {
+      console.log("Etiqueta de producto vacía");
+      return;
+    }
+    
+    // Si tenemos información completa del producto, la usamos directamente
+    if (productInfo && productInfo.id) {
+      console.log("Usando información directa del producto detectado:", productInfo);
+      
+      // Verificar que tenga stock
+      if (productInfo.stock && productInfo.stock > 0) {
+        addToCart({
+          id: productInfo.id,
+          nombre: productInfo.nombre || productInfo.label,
+          precio: productInfo.precio || 0,
+          label: productInfo.label,
+          stock: productInfo.stock
+        });
+      } else {
+        setError(`${productInfo.nombre || productInfo.label}: Sin stock disponible`);
+        setTimeout(() => setError(null), 3000);
+      }
+      return;
+    }
+    
+    // Buscar por etiqueta
+    const normalizedLabel = productLabel.toString().toLowerCase().trim();
+    
+    // Buscar entre los productos cargados (que ya tienen stock)
+    const matchingProducts = products.filter(p => 
+      (p.label && p.label.toLowerCase() === normalizedLabel) ||
+      (p.nombre && p.nombre.toLowerCase().includes(normalizedLabel))
+    );
+    
+    if (matchingProducts.length === 0) {
+      console.log(`No se encontró producto para: ${productLabel}`);
+      setError(`No se encontró producto: ${productLabel}`);
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+    
+    // Usar el primer resultado
+    const product = matchingProducts[0];
+    console.log("Producto encontrado por etiqueta:", product);
+    
+    // Verificar stock y añadir
+    if (product.stock && product.stock > 0) {
+      addToCart(product);
+    } else {
+      setError(`${product.nombre}: Sin stock disponible`);
+      setTimeout(() => setError(null), 3000);
+    }
+  };
   // Remover del carrito
   const removeFromCart = (id) => {
     setCartItems(cartItems.filter(item => item.id !== id));
@@ -330,20 +363,20 @@ const POSView = () => {
       removeFromCart(id);
       return;
     }
-    
+
     // Verificar stock disponible
     const cartItem = cartItems.find(item => item.id === id);
     const walletItem = wallet.find(w => w.id === id);
-    
+
     if (walletItem && newQuantity > walletItem.cantidad) {
       setError(`No hay suficiente stock para ${cartItem.nombre}`);
       setTimeout(() => setError(null), 3000);
       return;
     }
-    
-    setCartItems(cartItems.map(item => 
-      item.id === id 
-        ? { ...item, quantity: newQuantity, total: item.precio * newQuantity } 
+
+    setCartItems(cartItems.map(item =>
+      item.id === id
+        ? { ...item, quantity: newQuantity, total: item.precio * newQuantity }
         : item
     ));
   };
@@ -357,15 +390,15 @@ const POSView = () => {
   const processSale = async () => {
     try {
       setLoading(true);
-      
+
       if (cartItems.length === 0) {
         setError("El carrito está vacío");
         return;
       }
-      
+
       const total = calculateTotal();
       const change = amountReceived ? parseFloat(amountReceived) - total : 0;
-      
+
       const saleData = {
         items: cartItems.map(item => ({
           id: item.id,
@@ -381,9 +414,9 @@ const POSView = () => {
         clientName: clientName || "Cliente General",
         timestamp: new Date().toISOString()
       };
-      
+
       const result = await apiService.createSale(saleData);
-      
+
       if (result && result.success) {
         toast.success("Venta realizada con éxito");
         setCartItems([]);
@@ -391,7 +424,7 @@ const POSView = () => {
         setAmountReceived('');
         setClientName('');
         setShowPaymentModal(false);
-        
+
         // Recargar el wallet para actualizar el stock
         try {
           const walletResponse = await apiService.getWallet();
@@ -436,7 +469,7 @@ const POSView = () => {
           </Col>
         </Row>
       )}
-      
+
       {/* Contenido principal */}
       <Row>
         {/* Panel izquierdo - Detección */}
@@ -453,11 +486,11 @@ const POSView = () => {
                 disabled={loading}
               />
             </Card.Header>
-            
+
             <Card.Body>
               {/* Área de detección */}
               <div className="text-center mb-4">
-                <Button 
+                <Button
                   variant="primary"
                   size="lg"
                   onClick={triggerManualDetection}
@@ -470,31 +503,30 @@ const POSView = () => {
                     <><i className="bi bi-upc-scan me-2"></i> Escanear Producto</>
                   )}
                 </Button>
-                
+
                 <div className="mt-3 text-muted small">
-                  {continuousDetection 
-                    ? "Modo continuo activado: acerca los productos a la cámara" 
+                  {continuousDetection
+                    ? "Modo continuo activado: acerca los productos a la cámara"
                     : "Presiona el botón para escanear un producto"}
                 </div>
               </div>
-              
+
               {/* Última detección */}
               {lastDetection && (
-                <Card className={`mb-4 ${
-                  lastAddedProduct && lastAddedProduct.label === lastDetection.label 
-                    ? 'last-scanned' 
-                    : ''
-                }`}>
+                <Card className={`mb-4 ${lastAddedProduct && lastAddedProduct.label === lastDetection.label
+                  ? 'last-scanned'
+                  : ''
+                  }`}>
                   <Card.Header>Última Detección</Card.Header>
                   <Card.Body>
                     <Row>
                       <Col xs={8}>
                         <h5>{lastDetection.label}</h5>
                         <p className="mb-1">
-                          Confianza: 
+                          Confianza:
                           <Badge bg={
-                            lastDetection.similarity > 85 
-                              ? "success" 
+                            lastDetection.similarity > 85
+                              ? "success"
                               : lastDetection.similarity > 70
                                 ? "warning"
                                 : "danger"
@@ -508,11 +540,11 @@ const POSView = () => {
                       </Col>
                       <Col xs={4} className="d-flex align-items-center justify-content-end">
                         {lastDetection.similarity > 70 && (
-                          <Button 
+                          <Button
                             variant="outline-primary"
                             size="sm"
                             onClick={() => addDetectedProductToCart(
-                              lastDetection.label, 
+                              lastDetection.label,
                               lastDetection.productInfo
                             )}
                           >
@@ -524,10 +556,10 @@ const POSView = () => {
                   </Card.Body>
                 </Card>
               )}
-              
+
               {/* Productos disponibles */}
               <h5 className="mb-3">Productos Disponibles</h5>
-              
+
               <Form.Control
                 type="text"
                 placeholder="Buscar productos..."
@@ -535,46 +567,47 @@ const POSView = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="mb-3"
               />
-              
-              <div className="products-grid" style={{maxHeight: '400px', overflowY: 'auto'}}>
-                {filteredProducts.length > 0 ? (
+
+              <div className="products-grid" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                {loading ? (
+                  <div className="text-center p-3">
+                    <Spinner animation="border" />
+                    <p className="mt-2">Cargando productos...</p>
+                  </div>
+                ) : filteredProducts.length > 0 ? (
                   <ListGroup>
-                    {filteredProducts.map(product => {
-                      const walletItem = wallet.find(w => w.id === product.id);
-                      const stock = walletItem ? walletItem.cantidad : 0;
-                      return (
-                        <ListGroup.Item 
-                          key={product.id}
-                          className="d-flex justify-content-between align-items-center"
-                        >
-                          <div>
-                            <strong>{product.nombre}</strong>
-                            <div className="text-muted small">
-                              {product.label} - ${product.precio}
-                            </div>
+                    {filteredProducts.map(product => (
+                      <ListGroup.Item
+                        key={product.id}
+                        className="d-flex justify-content-between align-items-center"
+                      >
+                        <div>
+                          <strong>{product.nombre}</strong>
+                          <div className="text-muted small">
+                            {product.label} - ${product.precio || 0}
                           </div>
-                          <div>
-                            <Badge bg={stock > 0 ? "success" : "danger"} className="me-2">
-                              Stock: {stock}
-                            </Badge>
-                            {stock > 0 && (
-                              <Button 
-                                variant="outline-primary" 
-                                size="sm"
-                                onClick={() => addToCart({...product, stock})}
-                              >
-                                <i className="bi bi-plus"></i>
-                              </Button>
-                            )}
-                          </div>
-                        </ListGroup.Item>
-                      );
-                    })}
+                        </div>
+                        <div>
+                          <Badge bg={product.stock > 0 ? "success" : "danger"} className="me-2">
+                            Stock: {product.stock || 0}
+                          </Badge>
+                          {product.stock > 0 && (
+                            <Button
+                              variant="outline-primary"
+                              size="sm"
+                              onClick={() => addToCart(product)}
+                            >
+                              <i className="bi bi-plus"></i>
+                            </Button>
+                          )}
+                        </div>
+                      </ListGroup.Item>
+                    ))}
                   </ListGroup>
                 ) : (
                   <p className="text-center text-muted">
-                    {products.length === 0 
-                      ? "No hay productos registrados" 
+                    {products.length === 0
+                      ? "No hay productos registrados"
                       : "No se encontraron productos con ese término"}
                   </p>
                 )}
@@ -582,7 +615,7 @@ const POSView = () => {
             </Card.Body>
           </Card>
         </Col>
-        
+
         {/* Panel derecho - Carrito */}
         <Col lg={6}>
           <Card className="h-100">
@@ -594,7 +627,7 @@ const POSView = () => {
                 </Badge>
               </h4>
             </Card.Header>
-            
+
             <Card.Body className="d-flex flex-column">
               {/* Tabla de productos en carrito */}
               <div className="flex-grow-1 overflow-auto">
@@ -612,24 +645,24 @@ const POSView = () => {
                     <tbody>
                       {cartItems.map(item => (
                         <tr key={item.id} className={
-                          lastAddedProduct && lastAddedProduct.id === item.id 
-                            ? 'last-scanned' 
+                          lastAddedProduct && lastAddedProduct.id === item.id
+                            ? 'last-scanned'
                             : ''
                         }>
                           <td>{item.nombre}</td>
                           <td>${item.precio}</td>
                           <td>
                             <div className="d-flex align-items-center">
-                              <Button 
-                                variant="outline-secondary" 
+                              <Button
+                                variant="outline-secondary"
                                 size="sm"
                                 onClick={() => updateQuantity(item.id, item.quantity - 1)}
                               >
                                 -
                               </Button>
                               <span className="mx-2">{item.quantity}</span>
-                              <Button 
-                                variant="outline-secondary" 
+                              <Button
+                                variant="outline-secondary"
                                 size="sm"
                                 onClick={() => updateQuantity(item.id, item.quantity + 1)}
                               >
@@ -639,8 +672,8 @@ const POSView = () => {
                           </td>
                           <td>${item.total}</td>
                           <td>
-                            <Button 
-                              variant="outline-danger" 
+                            <Button
+                              variant="outline-danger"
                               size="sm"
                               onClick={() => removeFromCart(item.id)}
                             >
@@ -659,7 +692,7 @@ const POSView = () => {
                   </div>
                 )}
               </div>
-              
+
               {/* Sección de total y pago */}
               <div className="mt-4 border-top pt-3">
                 <Row>
@@ -667,8 +700,8 @@ const POSView = () => {
                     <h5>Total: ${calculateTotal().toFixed(2)}</h5>
                   </Col>
                   <Col md={6} className="d-flex justify-content-end">
-                    <Button 
-                      variant="success" 
+                    <Button
+                      variant="success"
                       size="lg"
                       disabled={cartItems.length === 0 || loading}
                       onClick={() => setShowPaymentModal(true)}
@@ -683,7 +716,7 @@ const POSView = () => {
           </Card>
         </Col>
       </Row>
-      
+
       {/* Modal de pago */}
       <Modal show={showPaymentModal} onHide={() => setShowPaymentModal(false)} size="lg">
         <Modal.Header closeButton>
@@ -695,9 +728,9 @@ const POSView = () => {
               <Col md={6}>
                 <Form.Group>
                   <Form.Label>Cliente</Form.Label>
-                  <Form.Control 
-                    type="text" 
-                    placeholder="Nombre del cliente" 
+                  <Form.Control
+                    type="text"
+                    placeholder="Nombre del cliente"
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
                   />
@@ -706,8 +739,8 @@ const POSView = () => {
               <Col md={6}>
                 <Form.Group>
                   <Form.Label>Total a Pagar</Form.Label>
-                  <Form.Control 
-                    type="text" 
+                  <Form.Control
+                    type="text"
                     value={`$${calculateTotal().toFixed(2)}`}
                     readOnly
                   />
@@ -731,8 +764,8 @@ const POSView = () => {
               <Col md={6}>
                 <Form.Group>
                   <Form.Label>Monto Recibido</Form.Label>
-                  <Form.Control 
-                    type="number" 
+                  <Form.Control
+                    type="number"
                     placeholder="Ingrese el monto"
                     value={amountReceived}
                     onChange={(e) => setAmountReceived(e.target.value)}
@@ -741,13 +774,13 @@ const POSView = () => {
                 </Form.Group>
               </Col>
             </Row>
-            
+
             {paymentMethod === 'efectivo' && amountReceived && (
               <Alert variant="info">
                 <strong>Cambio a devolver:</strong> ${Math.max(0, (parseFloat(amountReceived) - calculateTotal())).toFixed(2)}
               </Alert>
             )}
-            
+
             <Table striped bordered>
               <thead>
                 <tr>
@@ -780,8 +813,8 @@ const POSView = () => {
           <Button variant="secondary" onClick={() => setShowPaymentModal(false)}>
             Cancelar
           </Button>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={processSale}
             disabled={loading || (paymentMethod === 'efectivo' && (!amountReceived || parseFloat(amountReceived) < calculateTotal()))}
           >
@@ -793,11 +826,11 @@ const POSView = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-      
+
       {/* Alerta de producto añadido */}
       {lastAddedProduct && (
-        <Alert 
-          variant="success" 
+        <Alert
+          variant="success"
           className="position-fixed bottom-0 end-0 m-3 d-flex align-items-center fade-out"
           style={{ zIndex: 1050 }}
         >
@@ -807,35 +840,35 @@ const POSView = () => {
           </span>
         </Alert>
       )}
-      
+
       {/* Componente de debug en desarrollo */}
       {process.env.NODE_ENV === 'development' && (
-        <div 
-          className="position-fixed bottom-0 start-0 m-2 p-2 bg-light rounded shadow-sm" 
+        <div
+          className="position-fixed bottom-0 start-0 m-2 p-2 bg-light rounded shadow-sm"
           style={{ zIndex: 1000, fontSize: '0.8rem' }}
         >
           <div className="d-flex justify-content-between mb-1">
             <span>Modo Debug</span>
           </div>
           <div>
-            <Button 
-              variant="outline-secondary" 
+            <Button
+              variant="outline-secondary"
               size="sm"
               className="me-1"
               onClick={() => addDetectedProductToCart('botella')}
             >
               Detectar Botella
             </Button>
-            <Button 
-              variant="outline-secondary" 
+            <Button
+              variant="outline-secondary"
               size="sm"
               className="me-1"
               onClick={() => addDetectedProductToCart('barrita')}
             >
               Detectar Barrita
             </Button>
-            <Button 
-              variant="outline-secondary" 
+            <Button
+              variant="outline-secondary"
               size="sm"
               onClick={() => addDetectedProductToCart('chicle')}
             >

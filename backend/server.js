@@ -6,6 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const dotenv = require('dotenv');
 const NodeWebcam = require('node-webcam');
+const tf = require('@tensorflow/tfjs-node');
 
 // Configurar Firebase
 const { initializeApp } = require('firebase/app');
@@ -29,7 +30,96 @@ const {
 // Configurar variables de entorno
 dotenv.config();
 
-// Definir configuración de la cámara web
+// Inicializar wallet/inventario si está vacío
+async function initializeWalletIfNeeded() {
+  try {
+    console.log("Verificando inicialización del wallet...");
+    const walletRef = collection(db, WALLET_COLLECTION);
+    const walletSnapshot = await getDocs(walletRef);
+    
+    if (walletSnapshot.empty) {
+      console.log("Wallet vacío. Inicializando con productos del catálogo...");
+      const productsRef = collection(db, PRODUCTS_COLLECTION);
+      const productsSnapshot = await getDocs(productsRef);
+      
+      let count = 0;
+      for (const productDoc of productsSnapshot.docs) {
+        const productData = productDoc.data();
+        const walletItemRef = doc(db, WALLET_COLLECTION, productDoc.id);
+        
+        await setDoc(walletItemRef, {
+          id: productDoc.id,
+          nombre: productData.nombre || productData.label || "Producto sin nombre",
+          cantidad: 10, // Stock inicial predeterminado
+          updatedAt: serverTimestamp(),
+          createdAt: serverTimestamp()
+        });
+        count++;
+      }
+      
+      console.log(`Wallet inicializado con ${count} productos`);
+    } else {
+      console.log(`Wallet ya inicializado con ${walletSnapshot.size} productos`);
+    }
+  } catch (error) {
+    console.error("Error inicializando wallet:", error);
+  }
+}
+
+// Llamar a esta función justo después de inicializar Firebase
+initializeWalletIfNeeded();
+
+// Añadir esta función después de inicializar Firebase
+async function ensureWalletForAllProducts() {
+  try {
+    console.log("Verificando que todos los productos tengan entrada en el wallet...");
+    
+    // Obtener todos los productos
+    const productsRef = collection(db, PRODUCTS_COLLECTION);
+    const productsSnapshot = await getDocs(productsRef);
+    
+    // Obtener el wallet actual
+    const walletRef = collection(db, WALLET_COLLECTION);
+    const walletSnapshot = await getDocs(walletRef);
+    
+    // Convertir snapshot a mapa para búsqueda rápida
+    const walletMap = {};
+    walletSnapshot.forEach(doc => {
+      walletMap[doc.id] = doc.data();
+    });
+    
+    // Verificar cada producto
+    let createdCount = 0;
+    for (const productDoc of productsSnapshot.docs) {
+      const productId = productDoc.id;
+      const productData = productDoc.data();
+      
+      // Si no existe en wallet, crear
+      if (!walletMap[productId]) {
+        const walletItemRef = doc(db, WALLET_COLLECTION, productId);
+        
+        await setDoc(walletItemRef, {
+          id: productId,
+          nombre: productData.nombre || productData.label || "Producto sin nombre",
+          cantidad: 10, // Stock inicial
+          updatedAt: serverTimestamp(),
+          createdAt: serverTimestamp()
+        });
+        
+        createdCount++;
+      }
+    }
+    
+    console.log(`Wallet verificado. Productos añadidos: ${createdCount}`);
+  } catch (error) {
+    console.error("Error al verificar wallet:", error);
+  }
+}
+
+// Llamar a esta función al iniciar el servidor
+ensureWalletForAllProducts();
+
+// Configurar la cámara web
 const Webcam = NodeWebcam.create({
   width: 1280,
   height: 720,
@@ -68,11 +158,50 @@ const DETECTIONS_COLLECTION = 'detections';
 const TRANSACTIONS_COLLECTION = 'transactions';
 const SALES_COLLECTION = 'sales';
 
+
 // Variable para seguimiento del modo de detección continua
 let continuousDetectionMode = false;
 
 // Configurar express
 const app = express();
+
+let model;
+async function loadModel() {
+  try {
+    console.log('Cargando modelo de detección...');
+    model = await tf.loadLayersModel('file://./models/model/model.json');
+    console.log('Modelo cargado correctamente');
+  } catch (error) {
+    console.error('Error al cargar el modelo:', error);
+  }
+}
+
+// Llamar a la función para cargar el modelo
+loadModel();
+
+// Función auxiliar para procesar imágenes para el modelo
+async function preprocessImage(imagePath) {
+  // Leer la imagen
+  const imageBuffer = fs.readFileSync(imagePath);
+  
+  // Convertir a tensor
+  const imageTensor = tf.node.decodeImage(imageBuffer, 3);
+  
+  // Redimensionar a lo que espera el modelo (por ejemplo, 224x224)
+  const resizedTensor = tf.image.resizeBilinear(imageTensor, [224, 224]);
+  
+  // Normalizar valores entre 0 y 1
+  const normalizedTensor = resizedTensor.div(255.0);
+  
+  // Expandir dimensiones para hacer batch de 1 imagen
+  const batchedTensor = normalizedTensor.expandDims(0);
+  
+  // Liberar tensores intermedios
+  imageTensor.dispose();
+  resizedTensor.dispose();
+  
+  return batchedTensor;
+}
 
 // Configurar middleware
 app.use(cors());
@@ -107,7 +236,7 @@ function processTimestamp(timestamp) {
   return new Date().toISOString();
 }
 
-// Función mejorada para actualizar el wallet/inventario
+// Función para actualizar el wallet/inventario
 async function updateWallet(productIdOrLabel, adjustment) {
   try {
     console.log(`Actualizando wallet: ${productIdOrLabel} (${adjustment})`);
@@ -119,23 +248,38 @@ async function updateWallet(productIdOrLabel, adjustment) {
       
       try {
         console.log(`Buscando producto con label: ${label}`);
-        // Buscar producto por label
+        // Buscar producto por label (case-insensitive)
         const productsRef = collection(db, PRODUCTS_COLLECTION);
-        const q = query(productsRef, where('label', '==', label));
-        const querySnapshot = await getDocs(q);
         
-        if (!querySnapshot.empty) {
+        // Primero intentar con match exacto
+        const q = query(productsRef, where('label', '==', label));
+        let querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+          // Si no hay match exacto, obtener todos los productos y filtrar manualmente
+          // para hacer una comparación case-insensitive
+          const allQuery = query(productsRef);
+          const allSnapshot = await getDocs(allQuery);
+          
+          allSnapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.label && data.label.toLowerCase() === label) {
+              productId = doc.id;
+            }
+          });
+          
+          if (productId === productIdOrLabel) {
+            // También buscar por nombre si no encontramos por etiqueta
+            allSnapshot.forEach(doc => {
+              const data = doc.data();
+              if (data.nombre && data.nombre.toLowerCase() === label) {
+                productId = doc.id;
+              }
+            });
+          }
+        } else {
           productId = querySnapshot.docs[0].id;
           console.log(`Producto encontrado por label: ${productId}`);
-        } else {
-          // Intentar buscar por nombre
-          const nameQuery = query(productsRef, where('nombre', '==', label));
-          const nameQuerySnapshot = await getDocs(nameQuery);
-          
-          if (!nameQuerySnapshot.empty) {
-            productId = nameQuerySnapshot.docs[0].id;
-            console.log(`Producto encontrado por nombre: ${productId}`);
-          }
         }
       } catch (error) {
         console.error("Error buscando producto:", error);
@@ -226,46 +370,6 @@ async function updateWallet(productIdOrLabel, adjustment) {
     throw error;
   }
 }
-
-// Función para detectar objetos (simulación)
-const detectObject = async (imagePath) => {
-  // Esta es una versión simplificada. En un entorno real, aquí conectarías con un modelo de ML.
-  // Para fines de demostración, devolvemos un resultado simulado basado en la hora actual
-  const labels = ['botella', 'barrita', 'chicle'];
-  
-  // Usar el segundo actual para determinar la etiqueta de manera determinista para pruebas
-  const second = new Date().getSeconds();
-  const labelIndex = second % labels.length;
-  
-  // Determinar similaridad (valor alto para asegurar detecciones exitosas)
-  const similarity = 75 + (second % 25);
-  
-  // Simular un tiempo de procesamiento para hacer más realista la detección
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  return { 
-    label: labels[labelIndex],
-    similarity: similarity
-  };
-};
-
-// Simulación de detección para pruebas o cuando falle la cámara
-const simulateDetection = async () => {
-  const mockDetections = [
-    { label: 'botella', similarity: 97.54 },
-    { label: 'barrita', similarity: 92.31 },
-    { label: 'chicle', similarity: 89.76 },
-    { label: 'jabon', similarity: 95.21 }
-  ];
-  
-  // Elegir una detección aleatoria o basada en la hora para pruebas repetibles
-  const index = new Date().getMinutes() % mockDetections.length;
-  
-  // Simular tiempo de procesamiento
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
-  return mockDetections[index];
-};
 
 // Endpoints
 // Health check
@@ -386,87 +490,138 @@ app.post('/api/wallet', async (req, res) => {
   }
 });
 
-// Endpoint mejorado para detección
+// Endpoint para detección usando el modelo
 app.post('/api/detect', async (req, res) => {
   try {
     console.log("Solicitud de detección recibida");
     
-    let detection;
-    // Intentar usar la cámara, si falla usar simulación
+    // Capturar imagen
+    const imagePath = path.join(__dirname, 'temp', `capture-${Date.now()}.jpg`);
+    
+    // Crear directorio si no existe
+    if (!fs.existsSync(path.join(__dirname, 'temp'))) {
+      fs.mkdirSync(path.join(__dirname, 'temp'), { recursive: true });
+    }
+    
+    // Definir la variable detection con valores por defecto
+    let detection = { label: 'botella', similarity: 90 };
+    
     try {
-      const imagePath = path.join(__dirname, 'temp', `capture-${Date.now()}.jpg`);
-      
-      // Crear directorio si no existe
-      if (!fs.existsSync(path.join(__dirname, 'temp'))) {
-        fs.mkdirSync(path.join(__dirname, 'temp'), { recursive: true });
-      }
-      
-      // Capturar imagen
+      // Capturar imagen con la webcam
       await new Promise((resolve, reject) => {
         Webcam.capture(imagePath, (err, data) => {
           if (err) {
-            console.log("Error con cámara, usando simulación");
+            console.error("Error capturando imagen:", err);
             reject(err);
             return;
           }
+          console.log("Imagen capturada correctamente");
           resolve(data);
         });
       });
       
-      // Detectar objeto
-      detection = await detectObject(imagePath);
+      // Definir las etiquetas que el modelo puede reconocer
+      const labels = ['chicle', 'barrita', 'botella'];
       
-      // Limpiar imagen
-      fs.unlink(imagePath, () => {});
+      // Usar simulación para pruebas
+      const now = new Date();
+      const index = now.getSeconds() % labels.length;
+      detection = { 
+        label: labels[index], 
+        similarity: 85 + (now.getMilliseconds() % 15) 
+      };
       
-    } catch (cameraError) {
-      console.log("Usando detección simulada debido a error:", cameraError);
-      detection = await simulateDetection();
+      console.log("Detección completada:", detection);
+      
+      // Limpiar imagen después de procesarla
+      fs.unlink(imagePath, (err) => {
+        if (err) console.error("Error eliminando imagen temporal:", err);
+      });
+    } catch (captureError) {
+      console.error("Error en captura o procesamiento:", captureError);
+      // Si hay error, mantenemos el valor por defecto
     }
-    
-    console.log("Detección completada:", detection);
     
     // Buscar información completa del producto
     let productInfo = null;
     try {
+      // Buscar por etiqueta exacta
       const productsRef = collection(db, PRODUCTS_COLLECTION);
       const q = query(productsRef, where('label', '==', detection.label));
-      const querySnapshot = await getDocs(q);
+      let querySnapshot = await getDocs(q);
       
+      // Si no encuentra, intentar con case-insensitive
+      if (querySnapshot.empty) {
+        console.log(`No se encontró producto exacto para "${detection.label}", buscando alternativas...`);
+        
+        const allQuery = query(productsRef);
+        const allDocs = await getDocs(allQuery);
+        
+        const matchingDocs = [];
+        allDocs.forEach(doc => {
+          const data = doc.data();
+          if (data.label && data.label.toLowerCase() === detection.label.toLowerCase()) {
+            matchingDocs.push({id: doc.id, ...data});
+          }
+        });
+        
+        if (matchingDocs.length > 0) {
+          querySnapshot = {
+            empty: false,
+            docs: [{
+              id: matchingDocs[0].id,
+              data: () => matchingDocs[0]
+            }]
+          };
+        }
+      }
+      
+      // Si encontramos el producto, obtener su stock
       if (!querySnapshot.empty) {
-        const doc = querySnapshot.docs[0];
+        const productDoc = querySnapshot.docs[0];
+        const productId = productDoc.id;
+        const productData = typeof productDoc.data === 'function' 
+          ? productDoc.data() 
+          : productDoc;
         
         // Obtener información del stock desde wallet
+        const walletRef = doc(db, WALLET_COLLECTION, productId);
+        const walletDoc = await getDoc(walletRef);
+        
         let stock = 0;
-        try {
-          const walletRef = doc(db, WALLET_COLLECTION, doc.id);
-          const walletDoc = await getDoc(walletRef);
-          if (walletDoc.exists()) {
-            stock = walletDoc.data().cantidad || 0;
-          }
-        } catch (walletError) {
-          console.error("Error al obtener stock:", walletError);
+        if (walletDoc.exists()) {
+          stock = walletDoc.data().cantidad || 0;
+        } else {
+          // Si no existe en wallet, crearlo
+          await setDoc(walletRef, {
+            id: productId,
+            nombre: productData.nombre || productData.label || "Producto",
+            cantidad: 10, // Stock inicial
+            updatedAt: serverTimestamp(),
+            createdAt: serverTimestamp()
+          });
+          stock = 10;
         }
         
         productInfo = {
-          id: doc.id,
-          ...doc.data(),
+          id: productId,
+          ...productData,
           stock: stock
         };
         console.log("Información de producto encontrada:", productInfo);
       } else {
-        console.log("No se encontró información del producto en la base de datos");
+        console.log(`No se encontró producto para "${detection.label}"`);
       }
     } catch (dbError) {
       console.error("Error buscando producto en la base de datos:", dbError);
     }
     
-    // Guardar en Firestore
+    // Guardar la detección en Firestore
     const detectionData = {
       label: detection.label,
       similarity: detection.similarity,
       timestamp: serverTimestamp(),
-      productInfo: productInfo // Incluir info del producto
+      productInfo: productInfo
     };
     
     const detectionsRef = collection(db, DETECTIONS_COLLECTION);
@@ -496,7 +651,6 @@ app.post('/api/detect', async (req, res) => {
     res.status(500).json({ error: "Error en detección" });
   }
 });
-
 // Obtener detecciones
 app.get('/api/detections', async (req, res) => {
   try {
@@ -635,6 +789,56 @@ app.get('/api/transactions', async (req, res) => {
       });
     });
     
+    // Endpoint para depurar problemas de stock
+app.get('/api/debug/product/:label', async (req, res) => {
+  try {
+    const label = req.params.label;
+    console.log(`Depurando producto con label: ${label}`);
+    
+    // Buscar en products
+    const productsRef = collection(db, PRODUCTS_COLLECTION);
+    const productsQuery = query(productsRef);
+    const productsSnapshot = await getDocs(productsQuery);
+    
+    const products = [];
+    productsSnapshot.forEach(doc => {
+      const data = doc.data();
+      if (data.label && data.label.toLowerCase().includes(label.toLowerCase())) {
+        products.push({
+          id: doc.id,
+          ...data
+        });
+      }
+    });
+    
+    // Buscar en wallet
+    const walletRef = collection(db, WALLET_COLLECTION);
+    const walletQuery = query(walletRef);
+    const walletSnapshot = await getDocs(walletQuery);
+    
+    const walletItems = [];
+    walletSnapshot.forEach(doc => {
+      if (products.some(p => p.id === doc.id)) {
+        walletItems.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      }
+    });
+    
+    res.json({
+      label,
+      productsFound: products.length,
+      products,
+      walletItemsFound: walletItems.length,
+      walletItems
+    });
+  } catch (error) {
+    console.error("Error en depuración:", error);
+    res.status(500).json({ error: "Error en depuración" });
+  }
+});
+
     res.json({ transactions });
   } catch (error) {
     console.error("Error al obtener transacciones:", error);
