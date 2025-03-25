@@ -388,3 +388,92 @@ footer a:hover {
 .shadow-hover:hover {
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
 }
+
+/* Añade estos estilos a tu archivo App.css */
+
+.fade-out {
+  animation: fadeOut 2s forwards;
+  z-index: 1050;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Estilo para destacar el último producto escaneado */
+.last-scanned {
+  animation: highlight 2s;
+}
+
+@keyframes highlight {
+  0% { background-color: rgba(40, 167, 69, 0.3); }
+  100% { background-color: transparent; }
+}
+
+/* Animaciones para el POS */
+.fade-out {
+  animation: fadeOut 2s forwards;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Estilo para destacar el último producto escaneado */
+.last-scanned {
+  animation: highlight 2s;
+}
+
+@keyframes highlight {
+  0% { background-color: rgba(40, 167, 69, 0.3); }
+  100% { background-color: transparent; }
+}
+
+/* Mejoras de scroll para el carrito */
+.overflow-auto {
+  max-height: 400px;
+}
+
+/* Responsividad para pantallas pequeñas */
+@media (max-width: 768px) {
+  .overflow-auto {
+    max-height: 300px;
+  }
+}
+
+/* Animaciones para el POS */
+.fade-out {
+  animation: fadeOut 2s forwards;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Estilo para destacar el último producto escaneado */
+.last-scanned {
+  animation: highlight 2s;
+}
+
+@keyframes highlight {
+  0% { background-color: rgba(40, 167, 69, 0.3); }
+  100% { background-color: transparent; }
+}
+
+/* Mejoras de scroll para el carrito */
+.overflow-auto {
+  max-height: 400px;
+}
+
+/* Responsividad para pantallas pequeñas */
+@media (max-width: 768px) {
+  .overflow-auto {
+    max-height: 300px;
+  }
+}

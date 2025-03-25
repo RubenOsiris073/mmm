@@ -22,3 +22,21 @@ src/
 │   └── ProductsPage.jsx          # Página de lista de productos
 ├── App.js                        # Componente principal con enrutamiento
 └── index.js
+
+
+
+├── backend/                # Servicio de detección y conteo
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── server.js           # Servidor principal
+│   ├── models/             # Modelos TensorFlow
+│   ├── services/           # Servicios de Firebase y detección
+│   └── routes/             # API endpoints
+│
+├── frontend/               # Aplicación React actual modificada
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── src/
+│   └── public/
+│
+└── docker-compose.yml      # Orquestación de ambos servicios

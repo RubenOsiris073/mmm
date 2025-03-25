@@ -31,4 +31,5 @@ yarn-debug.log*
 yarn-error.log*
 
 # Credenciales
-/src/services/serviceAccountKey.json
+/frontend/src/services/serviceAccountKey.json
+/backend/services/serviceAccountKey.json

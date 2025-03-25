@@ -5,7 +5,7 @@ import Camera from './Camera';
 import PredictionDisplay from './PredictionDisplay';
 import ProductForm from './ProductForm';
 import ModelDiagnostic from './ModelDiagnostic';
-import { logPrediction } from '../services/predictionService';
+import { logPrediction } from '../../backend/services/predictionService';
 
 const ObjectDetection = () => {
   const [model, setModel] = useState(null);
