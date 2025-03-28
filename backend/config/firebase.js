@@ -4,30 +4,30 @@ const dotenv = require('dotenv');
 const path = require('path');
 const fs = require('fs');
 
+dotenv.config();
 
 // Intentar cargar desde múltiples ubicaciones
 const envPaths = [
-    path.join(__dirname, '..', '.env'),
-    path.join(process.cwd(), '.env'),
-    '/.env',
-    './.env'
-  ];
-  
-  let envLoaded = false;
-  
-  for (const envPath of envPaths) {
-    if (fs.existsSync(envPath)) {
-      console.log(`Cargando variables de entorno desde: ${envPath}`);
-      dotenv.config({ path: envPath });
-      envLoaded = true;
-      break;
-    }
+  path.join(__dirname, '..', '.env'),
+  path.join(process.cwd(), '.env'),
+  '/.env',
+  './.env'
+];
+
+let envLoaded = false;
+
+for (const envPath of envPaths) {
+  if (fs.existsSync(envPath)) {
+    console.log(`Cargando variables de entorno desde: ${envPath}`);
+    dotenv.config({ path: envPath });
+    envLoaded = true;
+    break;
   }
-  
-  if (!envLoaded) {
-    console.warn("No se encontró archivo .env. Intentando cargar variables de entorno del sistema.");
-    dotenv.config();
-  }
+}
+
+if (!envLoaded) {
+  dotenv.config();
+}
 
 // Configuración Firebase
 const firebaseConfig = {

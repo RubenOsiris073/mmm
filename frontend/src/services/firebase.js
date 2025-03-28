@@ -1,31 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from 'firebase/auth';
 import { getStorage } from "firebase/storage";
-
-// Configuración de Firebase usando variables de entorno
-const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_FIREBASE_APP_ID
-};
-
-// Validar que las variables existan
-const missingVars = Object.entries(firebaseConfig)
-  .filter(([key, value]) => !value)
-  .map(([key]) => key);
-
-if (missingVars.length > 0) {
-  console.error(`Error: Variables de entorno faltantes: ${missingVars.join(', ')}`);
-  console.error('Verifica tu archivo .env y asegúrate de que estás usando el prefijo correcto (REACT_APP_ o VITE_)');
-}
-
-// Inicializar Firebase
-export const firebaseApp = initializeApp(firebaseConfig);
-export const db = getFirestore(firebaseApp);
-export const storage = getStorage(firebaseApp);
 
 // Colecciones de Firestore
 export const COLLECTIONS = {
@@ -35,10 +11,56 @@ export const COLLECTIONS = {
   TRANSACTIONS: 'transactions'
 };
 
-// Exportar todo lo necesario
+// Variables para almacenar las instancias
+let firebaseApp = null;
+let db = null;
+let auth = null;
+let storage = null;
+
+// Función para inicializar Firebase con la configuración del backend
+export const initializeFirebase = async () => {
+  // Si ya está inicializado, retornar las instancias existentes
+  if (firebaseApp) {
+    return { firebaseApp, db, auth, storage };
+  }
+  
+  try {
+    // Obtener configuración del backend usando el endpoint que ya tienes
+    const response = await fetch('http://localhost:5000/api/firebase-config');
+    if (!response.ok) {
+      throw new Error('No se pudo obtener la configuración de Firebase del backend');
+    }
+    
+    const firebaseConfig = await response.json();
+    
+    // Inicializar Firebase
+    firebaseApp = initializeApp(firebaseConfig);
+    db = getFirestore(firebaseApp);
+    auth = getAuth(firebaseApp);
+    storage = getStorage(firebaseApp);
+    
+    console.log('Firebase inicializado correctamente con configuración del backend');
+    return { firebaseApp, db, auth, storage };
+  } catch (error) {
+    console.error('Error al inicializar Firebase:', error);
+    throw error;
+  }
+};
+
+// Funciones para acceder a las instancias (para uso en otros componentes)
+export const getDb = () => db;
+export const getFirebaseAuth = () => auth;
+export const getFirebaseStorage = () => storage;
+export const getFirebaseApp = () => firebaseApp;
+
+// Exportar para mantener compatibilidad con código existente
+export { db, firebaseApp, auth, storage };
+
 export default {
-  db,
-  firebaseApp,
-  storage,
+  initializeFirebase,
+  getDb,
+  getFirebaseAuth,
+  getFirebaseStorage,
+  getFirebaseApp,
   COLLECTIONS
 };

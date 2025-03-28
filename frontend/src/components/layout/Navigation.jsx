@@ -23,6 +23,13 @@ const Navigation = () => {
             </Nav.Link>
             <Nav.Link 
               as={Link} 
+              to="/product-form" 
+              active={location.pathname === '/product-form'}
+            >
+              Nuevo Producto
+            </Nav.Link>
+            <Nav.Link 
+              as={Link} 
               to="/products" 
               active={location.pathname === '/products'}
             >
@@ -41,13 +48,6 @@ const Navigation = () => {
               active={location.pathname === '/sales'}
             >
               Ventas
-            </Nav.Link>
-            <Nav.Link 
-              as={Link} 
-              to="/product-form" 
-              active={location.pathname === '/product-form'}
-            >
-              Nuevo Producto
             </Nav.Link>
           </Nav>
         </Navbar.Collapse>

@@ -6,6 +6,8 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: productos-backend
+    env_file:
+      - ./.env
     ports:
       - "5000:5000"
     restart: unless-stopped
