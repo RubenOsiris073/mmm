@@ -1,26 +1,44 @@
-// Importa las funciones necesarias del SDK
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import { getDatabase } from "firebase/database";
 
-// Configuración de Firebase
+// Configuración de Firebase usando variables de entorno
 const firebaseConfig = {
-  apiKey: "AIzaSyALafcLIe2JfBAYpvhphPzWpvNRAE5AYDg",
-  authDomain: "fkaw2-6c776.firebaseapp.com",
-  databaseURL: "https://fkaw2-6c776-default-rtdb.firebaseio.com",
-  projectId: "fkaw2-6c776",
-  storageBucket: "fkaw2-6c776.firebasestorage.app",
-  messagingSenderId: "219203089904",
-  appId: "1:219203089904:web:51f0b8ededfad2e92d1935"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID
 };
 
-// Inicializa Firebase
-const app = initializeApp(firebaseConfig);
+// Validar que las variables existan
+const missingVars = Object.entries(firebaseConfig)
+  .filter(([key, value]) => !value)
+  .map(([key]) => key);
 
-// Inicializa servicios
-const db = getFirestore(app);
-const storage = getStorage(app);
-const rtdb = getDatabase(app);
+if (missingVars.length > 0) {
+  console.error(`Error: Variables de entorno faltantes: ${missingVars.join(', ')}`);
+  console.error('Verifica tu archivo .env y asegúrate de que estás usando el prefijo correcto (REACT_APP_ o VITE_)');
+}
 
-export { db, storage, rtdb };
+// Inicializar Firebase
+export const firebaseApp = initializeApp(firebaseConfig);
+export const db = getFirestore(firebaseApp);
+export const storage = getStorage(firebaseApp);
+
+// Colecciones de Firestore
+export const COLLECTIONS = {
+  DETECTIONS: 'detections',
+  PRODUCTS: 'products',
+  WALLET: 'wallet',
+  TRANSACTIONS: 'transactions'
+};
+
+// Exportar todo lo necesario
+export default {
+  db,
+  firebaseApp,
+  storage,
+  COLLECTIONS
+};
