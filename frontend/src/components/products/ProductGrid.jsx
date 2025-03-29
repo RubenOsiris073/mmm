@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
-import { Row, Col, Card, Badge, Button, Form, InputGroup } from 'react-bootstrap';
+import { Row, Col, Card, Badge, Button, Form, InputGroup, Modal } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { BsSearch, BsGrid3X3, BsList } from 'react-icons/bs';
+import { deleteProduct } from '../../services/storageService';
 
 const ProductGrid = ({ products = [], loading }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewMode, setViewMode] = useState('grid'); // 'grid' o 'list'
+  
+  // Agregar estados para el modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
 
   // Extraer categorías únicas de todos los productos
   const allCategories = [...new Set(products
@@ -95,51 +100,119 @@ const ProductGrid = ({ products = [], loading }) => {
     return category.charAt(0).toUpperCase() + category.slice(1);
   };
 
-  // Contenido de la tarjeta de producto
-  const renderProductCard = (product) => (
-    <Card className="h-100 product-card">
-      <Card.Body className="d-flex flex-column">
-        <div className="product-icon mb-3">
-          {getCategoryIcon(product.categoria || 'sin-categoria')}
-        </div>
-        <Card.Title className="text-capitalize">
-          {product.nombre || product.label || 'Producto sin nombre'}
-        </Card.Title>
-        <Card.Text as="div" className="small text-muted flex-grow-1">
-          {product.descripcion || product.notas || 
-            `Producto ${product.tipoDetectado || product.label || ''} detectado automáticamente`}
-        </Card.Text>
-        <div className="mt-3">
-          {product.cantidad && (
-            <Badge bg="info" className="me-2">
-              {product.cantidad} {product.unidadMedida || 'unidades'}
-            </Badge>
-          )}
-          {product.precio && (
-            <Badge bg="success" className="me-2">
-              ${parseFloat(product.precio).toFixed(2)}
-            </Badge>
-          )}
-          {(product.similarity || product.precisionDeteccion) && (
-            <Badge bg="warning">
-              Precisión: {product.similarity || product.precisionDeteccion}%
-            </Badge>
-          )}
-        </div>
-      </Card.Body>
-      <Card.Footer className="bg-white border-top-0">
-        <Link 
-          to="/product-form" 
-          state={{ product }}
-          className="w-100"
-        >
-          <Button variant="outline-primary" size="sm" className="w-100">
-            {product.nombre ? 'Editar' : 'Registrar Detalles'}
-          </Button>
-        </Link>
-      </Card.Footer>
-    </Card>
+  // Función para manejar la eliminación
+  const handleDelete = async () => {
+    try {
+      await deleteProduct(productToDelete.id);
+      setShowDeleteModal(false);
+      window.location.reload();
+    } catch (error) {
+      console.error("Error al eliminar el producto:", error);
+      alert("Error al eliminar el producto");
+    }
+  };
+
+  // Modal de confirmación de eliminación
+  const DeleteConfirmationModal = () => (
+    <Modal
+      show={showDeleteModal}
+      onHide={() => setShowDeleteModal(false)}
+      centered
+    >
+      <Modal.Header closeButton>
+        <Modal.Title>Confirmar Eliminación</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        {productToDelete && (
+          <>
+            <p>¿Estás seguro de que deseas eliminar este producto?</p>
+            <div className="d-flex align-items-center p-3 bg-light rounded">
+              <div className="product-icon me-3">
+                {getCategoryIcon(productToDelete.categoria || 'sin-categoria')}
+              </div>
+              <div>
+                <h5 className="mb-1 text-capitalize">
+                  {productToDelete.nombre || productToDelete.label || 'Producto sin nombre'}
+                </h5>
+                {productToDelete.descripcion && (
+                  <p className="text-muted mb-0 small">
+                    {productToDelete.descripcion}
+                  </p>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="outline-secondary" onClick={() => setShowDeleteModal(false)}>
+          Cancelar
+        </Button>
+        <Button variant="danger" onClick={handleDelete}>
+          Eliminar
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
+
+  // Contenido de la tarjeta de producto
+  const renderProductCard = (product) => {
+    return (
+      <Card className="h-100 product-card">
+        <Card.Body className="d-flex flex-column">
+          <div className="product-icon mb-3">
+            {getCategoryIcon(product.categoria || 'sin-categoria')}
+          </div>
+          <Card.Title className="text-capitalize">
+            {product.nombre || product.label || 'Producto sin nombre'}
+          </Card.Title>
+          <Card.Text as="div" className="small text-muted flex-grow-1">
+            {product.descripcion || product.notas || 
+              `Producto ${product.tipoDetectado || product.label || ''} detectado automáticamente`}
+          </Card.Text>
+          <div className="mt-3">
+            {product.cantidad && (
+              <Badge bg="info" className="me-2">
+                {product.cantidad} {product.unidadMedida || 'unidades'}
+              </Badge>
+            )}
+            {product.precio && (
+              <Badge bg="success" className="me-2">
+                ${parseFloat(product.precio).toFixed(2)}
+              </Badge>
+            )}
+            {(product.similarity || product.precisionDeteccion) && (
+              <Badge bg="warning">
+                Precisión: {product.similarity || product.precisionDeteccion}%
+              </Badge>
+            )}
+          </div>
+        </Card.Body>
+        <Card.Footer className="bg-white border-top-0 d-flex gap-2">
+          <Link 
+            to="/product-form" 
+            state={{ product }}
+            className="w-50"
+          >
+            <Button variant="outline-primary" size="sm" className="w-100">
+              {product.nombre ? 'Editar' : 'Registrar Detalles'}
+            </Button>
+          </Link>
+          <Button 
+            variant="outline-danger" 
+            size="sm" 
+            className="w-50"
+            onClick={() => {
+              setProductToDelete(product);
+              setShowDeleteModal(true);
+            }}
+          >
+            Eliminar
+          </Button>
+        </Card.Footer>
+      </Card>
+    );
+  };
 
   // Renderizar la vista de lista
   const renderListView = () => {
@@ -184,11 +257,23 @@ const ProductGrid = ({ products = [], loading }) => {
                   )}
                 </div>
               </div>
-              <Link to="/product-form" state={{ product }}>
-                <Button variant="outline-primary" size="sm">
-                  {product.nombre ? 'Editar' : 'Registrar'}
+              <div className="d-flex gap-2">
+                <Link to="/product-form" state={{ product }}>
+                  <Button variant="outline-primary" size="sm">
+                    {product.nombre ? 'Editar' : 'Registrar'}
+                  </Button>
+                </Link>
+                <Button 
+                  variant="outline-danger" 
+                  size="sm"
+                  onClick={() => {
+                    setProductToDelete(product);
+                    setShowDeleteModal(true);
+                  }}
+                >
+                  Eliminar
                 </Button>
-              </Link>
+              </div>
             </div>
           ))}
         </div>
@@ -293,6 +378,9 @@ const ProductGrid = ({ products = [], loading }) => {
 
       {/* Contenido principal */}
       {viewMode === 'grid' ? renderGridView() : renderListView()}
+      
+      {/* Incluir el modal */}
+      <DeleteConfirmationModal />
     </div>
   );
 };

@@ -101,11 +101,15 @@ export const deleteDetection = async (detectionId) => {
 export const saveProductDetails = async (productData) => {
   try {
     const db = getFirestore();
+    // Remover cualquier fecha existente para evitar conflictos
+    const { createdAt, updatedAt, ...cleanData } = productData;
+    
     const docRef = await addDoc(collection(db, PRODUCTS_COLLECTION), {
-      ...productData,
+      ...cleanData,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     });
+    
     console.log("Producto registrado con ID:", docRef.id);
     return docRef.id;
   } catch (error) {
@@ -114,20 +118,18 @@ export const saveProductDetails = async (productData) => {
   }
 };
 
-/**
- * Actualiza un producto existente
- * @param {string} productId ID del producto
- * @param {Object} productData Nuevos datos del producto
- * @returns {Promise<void>}
- */
 export const updateProductDetails = async (productId, productData) => {
   try {
     const db = getFirestore();
+    // Remover cualquier fecha existente para evitar conflictos
+    const { createdAt, updatedAt, ...cleanData } = productData;
+    
     const productRef = doc(db, PRODUCTS_COLLECTION, productId);
     await updateDoc(productRef, {
-      ...productData,
+      ...cleanData,
       updatedAt: serverTimestamp()
     });
+    
     console.log("Producto actualizado:", productId);
   } catch (error) {
     console.error("Error al actualizar el producto:", error);
@@ -171,8 +173,8 @@ export const getRegisteredProducts = async () => {
         ...data,
         // Asegurar que tengamos un nombre (usar label si es necesario)
         nombre: data.nombre || data.label || "Producto sin nombre",
-        // Convertir Timestamp a string ISO para serialización más sencilla
-        fechaRegistro: data.createdAt?.toDate().toISOString() || new Date().toISOString(),
+        // Manejar diferentes tipos de fechas
+        fechaRegistro: getFormattedDate(data.createdAt),
         // Categoría por defecto si no tiene una asignada
         categoria: data.categoria || 'sin-categoria'
       };
@@ -183,6 +185,35 @@ export const getRegisteredProducts = async () => {
   }
 };
 
+// Función auxiliar para manejar diferentes tipos de fechas
+const getFormattedDate = (timestamp) => {
+  if (!timestamp) {
+    return new Date().toISOString();
+  }
+  
+  // Si es un Timestamp de Firestore
+  if (timestamp && typeof timestamp.toDate === 'function') {
+    return timestamp.toDate().toISOString();
+  }
+  
+  // Si es un objeto Date
+  if (timestamp instanceof Date) {
+    return timestamp.toISOString();
+  }
+  
+  // Si es una cadena ISO
+  if (typeof timestamp === 'string') {
+    return timestamp;
+  }
+  
+  // Si es un número (timestamp en milisegundos)
+  if (typeof timestamp === 'number') {
+    return new Date(timestamp).toISOString();
+  }
+  
+  // Por defecto
+  return new Date().toISOString();
+};
 /**
  * Obtiene un producto específico por su ID
  * @param {string} productId ID del producto
