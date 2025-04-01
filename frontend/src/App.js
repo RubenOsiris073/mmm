@@ -1,19 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { initializeFirebase } from './services/firebase';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Container } from 'react-bootstrap';
 import Navigation from './components/layout/Navigation';
 import ProductsPage from './pages/ProductsPage';
 import ProductFormPage from './pages/ProductFormPage';
 import WalletPage from './pages/WalletPage';
+import BodegaView from './components/bodega/BodegaView';
 import POSPage from './pages/POSPage';
 import SalesPage from './pages/SalesPage';
 import Footer from './components/layout/Footer';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap-icons/font/bootstrap-icons.css';
 import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import './App.css';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -41,17 +38,29 @@ function App() {
   if (error) {
     return <div className="error">{error}</div>;
   }
+
   return (
     <Router>
       <div className="App d-flex flex-column min-vh-100">
         <Navigation />
         <Container fluid className="main-content py-4 flex-grow-1">
           <Routes>
+            {/* Ruta raíz */}
             <Route path="/" element={<POSPage />} />
+            
+            {/* Rutas de producto */}
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/product-form" element={<ProductFormPage />} />
+            
+            {/* Rutas de inventario */}
             <Route path="/wallet" element={<WalletPage />} />
+            <Route path="/bodega" element={<BodegaView />} />
+            
+            {/* Otras rutas */}
             <Route path="/sales" element={<SalesPage />} />
+            
+            {/* Ruta para URLs no encontradas */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Container>
         <Footer />

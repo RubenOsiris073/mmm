@@ -11,6 +11,8 @@ const inventoryRoutes = require('./routes/inventoryRoutes');
 const detectionRoutes = require('./routes/detectionRoutes');
 const salesRoutes = require('./routes/salesRoutes');
 const transactionsRoutes = require('./routes/transactionsRoutes'); 
+const walletRoutes = require('./routes/walletRoutes');
+const bodegaRoutes = require('./routes/bodega');
 
 // Configurar express
 const app = express();
@@ -52,7 +54,9 @@ app.use('/api', productRoutes);
 app.use('/api', inventoryRoutes);
 app.use('/api', detectionRoutes);
 app.use('/api', salesRoutes);
-app.use('/api', transactionsRoutes); 
+app.use('/api', transactionsRoutes);
+app.use('/api/wallet', walletRoutes); 
+app.use('/api/bodega', bodegaRoutes);
 
 // Ruta para servir archivos estáticos (si es necesario)
 if (config.env === 'production') {
