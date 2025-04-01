@@ -48,4 +48,40 @@ router.post('/detection-mode', (req, res) => {
   });
 });
 
-module.exports = router;
+// Consultar estado de detección continua
+router.get('/detection/continuous/status', async (req, res) => {
+  try {
+    const status = await detectionService.getDetectionStatus();
+    res.json(status);
+  } catch (error) {
+    console.error("Error al obtener estado de detección continua:", error);
+    res.status(500).json({ error: "Error al obtener estado de detección continua" });
+  }
+});
+
+// Configuración de detección continua
+router.post('/detection/continuous', async (req, res) => {
+  try {
+    const { active, intervalMs } = req.body;
+    const result = await detectionService.setDetectionMode(active, intervalMs);
+    res.json(result);
+  } catch (error) {
+    console.error("Error al configurar modo de detección continua:", error);
+    res.status(500).json({ error: "Error al configurar modo de detección continua" });
+  }
+});
+
+const getDetectionStatus = async () => {
+  // Aquí deberías implementar la lógica para obtener el estado de detección continua
+  return { active: true }; // Este es un ejemplo, ajusta según tu lógica
+};
+
+const setDetectionMode = async (active, intervalMs) => {
+  // Aquí deberías implementar la lógica para configurar el modo de detección continua
+  return { success: true }; // Este es un ejemplo, ajusta según tu lógica
+};
+
+module.exports = 
+getDetectionStatus,
+setDetectionMode,
+router;

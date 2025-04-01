@@ -15,7 +15,7 @@ COPY . ./
 
 # Variables de entorno
 ENV REACT_APP_API_URL=http://localhost:5000/api
-ENV REACT_APP_FIREBASE_API_KEY=AIzaSyALafcLIe2JfBAYpvhphPzWpvNRAE5AYDg
+ENV REACT_APP_FIREBASE_API_KEY=AIzaSyCRxENU6lbYDlmCHd0D-5UJN6IKnptslh8
 
 # Construir la aplicación
 RUN npm run build

@@ -3,13 +3,14 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
 const { initializeInventory } = require('./services/inventoryService');
-const config = require('./config/config'); // Ruta corregida
+const config = require('./config/config');
 
 // Importar rutas
 const productRoutes = require('./routes/productRoutes');
 const inventoryRoutes = require('./routes/inventoryRoutes');
 const detectionRoutes = require('./routes/detectionRoutes');
 const salesRoutes = require('./routes/salesRoutes');
+const transactionsRoutes = require('./routes/transactionsRoutes'); 
 
 // Configurar express
 const app = express();
@@ -51,6 +52,7 @@ app.use('/api', productRoutes);
 app.use('/api', inventoryRoutes);
 app.use('/api', detectionRoutes);
 app.use('/api', salesRoutes);
+app.use('/api', transactionsRoutes); 
 
 // Ruta para servir archivos estáticos (si es necesario)
 if (config.env === 'production') {
