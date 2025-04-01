@@ -7,6 +7,13 @@ const API_URL = process.env.NODE_ENV === 'production'
 
 const TIMEOUT = 15000; // 15 segundos
 
+console.log('📡 Configuración API:', {
+  environment: process.env.NODE_ENV,
+  apiUrl: API_URL,
+  timestamp: new Date().toISOString()
+});
+
+
 // Mensajes de error comunes
 const ERROR_MESSAGES = {
   CONNECTION: 'No se pudo conectar al servidor. Verifica que el backend esté funcionando.',
@@ -40,6 +47,35 @@ const handleError = (error, customMessage) => {
   const message = error.response?.data?.message || customMessage || ERROR_MESSAGES.SERVER;
   console.error('Error en petición:', message);
   throw new Error(message);
+};
+
+const healthCheck = async () => {
+  try {
+    const response = await api.get('/health');
+    console.log('✅ Servidor conectado:', response.data);
+    return true;
+  } catch (error) {
+    console.error('❌ Error de conexión:', {
+      message: error.message,
+      code: error.code,
+      url: API_URL
+    });
+    
+    // Mensaje de error detallado
+    let errorMessage = 'Error de conexión. ';
+    if (error.code === 'ECONNABORTED') {
+      errorMessage += 'Tiempo de espera agotado. ';
+    } else if (error.code === 'ERR_NETWORK') {
+      errorMessage += 'No se puede conectar al servidor. ';
+    }
+    
+    errorMessage += '\n\nVerifica:\n';
+    errorMessage += '1. Que el servidor backend esté corriendo en el puerto 5000\n';
+    errorMessage += '2. Que no haya problemas de CORS\n';
+    errorMessage += `3. La URL del API configurada: ${API_URL}`;
+    
+    throw new Error(errorMessage);
+  }
 };
 
 // Interceptores
@@ -79,14 +115,15 @@ api.interceptors.response.use(
 );
 
 const apiService = {
-  // Sistema y diagnóstico
-  testConnection: async () => {
+  // Método de inicialización
+  initialize: async () => {
     try {
-      const response = await api.get('/health');
-      return response.data?.status === 'ok';
+      await healthCheck();
+      console.log('✅ API inicializada correctamente');
+      return true;
     } catch (error) {
-      console.error('Error de conexión:', error);
-      return false;
+      console.error('❌ Error al inicializar API:', error);
+      throw error;
     }
   },
 
@@ -100,26 +137,26 @@ const apiService = {
     }
   },
 
-  // Inventario (Wallet)
-  getWallet: async () => {
+  getWarehouse: async () => {
     try {
-      const response = await api.get('/wallet');
+      const response = await api.get('/warehouse');
       return response.data || [];
     } catch (error) {
-      handleError(error, 'Error al cargar el inventario');
+      handleError(error, 'Error al cargar el inventario manual');
     }
   },
 
-  updateWallet: async (productId, adjustment) => {
+  // Cambiar updateWallet por updateWarehouse
+  updateWarehouse: async (productId, adjustment) => {
     try {
-      const response = await api.post('/wallet/update', {
+      const response = await api.post('/warehouse/update', {
         productId,
         adjustment,
         timestamp: new Date().toISOString()
       });
       return response.data;
     } catch (error) {
-      handleError(error, 'Error al actualizar el inventario');
+      handleError(error, 'Error al actualizar el inventario manual');
     }
   },
 

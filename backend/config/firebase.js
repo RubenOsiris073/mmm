@@ -51,7 +51,8 @@ const db = getFirestore(firebaseApp);
 // Definir colecciones
 const COLLECTIONS = {
   PRODUCTS: 'products',
-  WALLET: 'wallet',
+  INVENTORY: 'inventory',           
+  INVENTORY_MOVEMENTS: 'inventory_movements', 
   DETECTIONS: 'detections',
   TRANSACTIONS: 'transactions',
   SALES: 'sales'

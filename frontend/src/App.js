@@ -5,8 +5,7 @@ import { Container } from 'react-bootstrap';
 import Navigation from './components/layout/Navigation';
 import ProductsPage from './pages/ProductsPage';
 import ProductFormPage from './pages/ProductFormPage';
-import WalletPage from './pages/WalletPage';
-import BodegaView from './components/bodega/BodegaView';
+import InventoryView from './components/inventory/InventoryView';
 import POSPage from './pages/POSPage';
 import SalesPage from './pages/SalesPage';
 import Footer from './components/layout/Footer';
@@ -53,8 +52,7 @@ function App() {
             <Route path="/product-form" element={<ProductFormPage />} />
             
             {/* Rutas de inventario */}
-            <Route path="/wallet" element={<WalletPage />} />
-            <Route path="/bodega" element={<BodegaView />} />
+            <Route path="/inventory" element={<InventoryView />} />
             
             {/* Otras rutas */}
             <Route path="/sales" element={<SalesPage />} />

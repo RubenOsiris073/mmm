@@ -1,37 +1,75 @@
 const { db, COLLECTIONS } = require('../config/firebase');
-const { collection, doc, getDoc, getDocs, setDoc, updateDoc, query, serverTimestamp, increment, addDoc } = require('firebase/firestore');
+const { 
+  collection, 
+  doc, 
+  getDoc, 
+  getDocs, 
+  setDoc, 
+  updateDoc, 
+  query, 
+  serverTimestamp, 
+  increment, 
+  addDoc,
+  where,
+  orderBy,
+  limit 
+} = require('firebase/firestore');
 const { queryDocuments, getDocumentById, getServerTimestamp } = require('../utils/firebaseUtils');
 const { processTimestamp } = require('../utils/helpers');
 
-/**
- * Obtiene todo el inventario (wallet)
- */
-async function getInventory() {
+class InventoryService {
+  /**
+   * Obtiene todo el inventario
+   */
+  async getInventory() {
     try {
-      // Usar utilidad para simplificar la consulta
-      const wallet = await queryDocuments(COLLECTIONS.WALLET);
+      const inventory = await queryDocuments(COLLECTIONS.INVENTORY);
+      console.log(`Obtenido inventario con ${inventory.length} items`);
       
-      console.log(`Obtenido wallet con ${wallet.length} items`);
-      return wallet;
+      // Obtener información de productos relacionada
+      const productIds = [...new Set(inventory.map(item => item.id))];
+      const productsData = await Promise.all(
+        productIds.map(id => getDocumentById(COLLECTIONS.PRODUCTS, id))
+      );
+
+      // Crear mapa de productos
+      const productMap = {};
+      productsData.forEach(product => {
+        if (product) {
+          productMap[product.id] = product;
+        }
+      });
+
+      // Combinar datos
+      const enrichedInventory = inventory.map(item => ({
+        ...item,
+        productName: productMap[item.id]?.nombre || productMap[item.id]?.label || "Producto sin nombre",
+        productCode: productMap[item.id]?.codigo || "Sin código",
+        category: productMap[item.id]?.categoria || "Sin categoría"
+      }));
+
+      return enrichedInventory;
     } catch (error) {
-      console.error("Error al obtener wallet:", error);
+      console.error("Error al obtener inventario:", error);
       throw error;
     }
   }
-  
+
   /**
    * Actualiza el stock de un producto en el inventario
    */
-  async function updateStock(productId, adjustment) {
+  async updateStock(productId, adjustment, location, reason) {
     try {
-      console.log(`Actualizando stock para ID: ${productId}, ajuste: ${adjustment}`);
+      console.log(`Actualizando stock para ID: ${productId}, ajuste: ${adjustment}, ubicación: ${location}`);
       
-      const walletRef = doc(db, COLLECTIONS.WALLET, productId);
-      const walletDoc = await getDoc(walletRef);
+      const inventoryRef = doc(db, COLLECTIONS.INVENTORY, productId);
+      const inventoryDoc = await getDoc(inventoryRef);
       
-      if (walletDoc.exists()) {
-        // El producto ya existe en wallet, actualizar cantidad
-        const currentStock = walletDoc.data().cantidad || 0;
+      const timestamp = getServerTimestamp();
+      
+      if (inventoryDoc.exists()) {
+        // El producto ya existe en inventario
+        const currentStock = inventoryDoc.data().cantidad || 0;
         const newStock = currentStock + adjustment;
         
         console.log(`Stock actual: ${currentStock}, Nuevo stock: ${newStock}`);
@@ -40,44 +78,70 @@ async function getInventory() {
           throw new Error("Stock insuficiente");
         }
         
-        await updateDoc(walletRef, {
+        await updateDoc(inventoryRef, {
           cantidad: increment(adjustment),
-          updatedAt: serverTimestamp()
+          location,
+          updatedAt: serverTimestamp(),
+          lastUpdate: {
+            adjustment,
+            reason,
+            timestamp,
+            user: 'RubenOsiris073'
+          }
         });
         
-        // Registrar transacción
-        const transRef = collection(db, COLLECTIONS.TRANSACTIONS);
-        await addDoc(transRef, {
+        // Registrar movimiento
+        const movementRef = collection(db, COLLECTIONS.INVENTORY_MOVEMENTS);
+        await addDoc(movementRef, {
           productId,
           adjustment,
-          timestamp: getServerTimestamp() // Usar utilidad
+          location,
+          reason,
+          previousQuantity: currentStock,
+          newQuantity: newStock,
+          timestamp: serverTimestamp(),
+          createdAt: timestamp,
+          createdBy: 'RubenOsiris073'
         });
         
         // Obtener datos actualizados
-        const updatedItem = await getDocumentById(COLLECTIONS.WALLET, productId); // Usar utilidad
+        const updatedItem = await getDocumentById(COLLECTIONS.INVENTORY, productId);
         return updatedItem;
       } else {
-        // El producto no existe en wallet, buscarlo en products para crearlo
-        const productData = await getDocumentById(COLLECTIONS.PRODUCTS, productId); // Usar utilidad
+        // El producto no existe en inventario, buscarlo en products
+        const productData = await getDocumentById(COLLECTIONS.PRODUCTS, productId);
         
         if (productData) {
-          // Crear entrada en wallet con stock inicial
+          // Crear entrada en inventario
           const initialStock = adjustment > 0 ? adjustment : 0;
-          await setDoc(walletRef, {
+          await setDoc(inventoryRef, {
             id: productId,
             nombre: productData.nombre || productData.label || "Producto",
             cantidad: initialStock,
-            updatedAt: getServerTimestamp(), // Usar utilidad
-            createdAt: getServerTimestamp() // Usar utilidad
+            location,
+            updatedAt: serverTimestamp(),
+            createdAt: serverTimestamp(),
+            lastUpdate: {
+              adjustment,
+              reason,
+              timestamp,
+              user: 'RubenOsiris073'
+            }
           });
           
-          // Registrar transacción si el ajuste es distinto de cero
+          // Registrar movimiento inicial
           if (adjustment !== 0) {
-            const transRef = collection(db, COLLECTIONS.TRANSACTIONS);
-            await addDoc(transRef, {
+            const movementRef = collection(db, COLLECTIONS.INVENTORY_MOVEMENTS);
+            await addDoc(movementRef, {
               productId,
               adjustment,
-              timestamp: getServerTimestamp() // Usar utilidad
+              location,
+              reason: reason || 'Inicialización de inventario',
+              previousQuantity: 0,
+              newQuantity: initialStock,
+              timestamp: serverTimestamp(),
+              createdAt: timestamp,
+              createdBy: 'RubenOsiris073'
             });
           }
           
@@ -85,8 +149,9 @@ async function getInventory() {
             id: productId,
             nombre: productData.nombre || productData.label,
             cantidad: initialStock,
-            updatedAt: new Date().toISOString(),
-            createdAt: new Date().toISOString()
+            location,
+            updatedAt: timestamp,
+            createdAt: timestamp
           };
         } else {
           throw new Error(`Producto ${productId} no existe en la base de datos`);
@@ -97,71 +162,135 @@ async function getInventory() {
       throw error;
     }
   }
-  
 
-/**
- * Inicializa el inventario para todos los productos
- */
-async function initializeInventory() {
-  try {
-    console.log("Verificando inicialización del wallet...");
-    const walletRef = collection(db, COLLECTIONS.WALLET);
-    const walletSnapshot = await getDocs(walletRef);
-    
-    if (walletSnapshot.empty) {
-      console.log("Wallet vacío. Inicializando con productos del catálogo...");
-      const productsRef = collection(db, COLLECTIONS.PRODUCTS);
-      const productsSnapshot = await getDocs(productsRef);
+  /**
+   * Inicializa el inventario para todos los productos
+   */
+  async initializeInventory() {
+    try {
+      console.log("Verificando inicialización del inventario...");
+      const inventoryRef = collection(db, COLLECTIONS.INVENTORY);
+      const inventorySnapshot = await getDocs(inventoryRef);
       
-      let count = 0;
-      for (const productDoc of productsSnapshot.docs) {
-        const productData = productDoc.data();
-        const walletItemRef = doc(db, COLLECTIONS.WALLET, productDoc.id);
+      if (inventorySnapshot.empty) {
+        console.log("Inventario vacío. Inicializando con productos del catálogo...");
+        const productsRef = collection(db, COLLECTIONS.PRODUCTS);
+        const productsSnapshot = await getDocs(productsRef);
         
-        await setDoc(walletItemRef, {
-          id: productDoc.id,
-          nombre: productData.nombre || productData.label || "Producto sin nombre",
-          cantidad: 10, // Stock inicial predeterminado
-          updatedAt: serverTimestamp(),
-          createdAt: serverTimestamp()
-        });
-        count++;
+        let count = 0;
+        for (const productDoc of productsSnapshot.docs) {
+          const productData = productDoc.data();
+          const inventoryItemRef = doc(db, COLLECTIONS.INVENTORY, productDoc.id);
+          
+          const timestamp = getServerTimestamp();
+          
+          await setDoc(inventoryItemRef, {
+            id: productDoc.id,
+            nombre: productData.nombre || productData.label || "Producto sin nombre",
+            cantidad: 0,
+            location: 'warehouse', // ubicación por defecto
+            updatedAt: serverTimestamp(),
+            createdAt: serverTimestamp(),
+            lastUpdate: {
+              adjustment: 0,
+              reason: 'Inicialización de inventario',
+              timestamp,
+              user: 'RubenOsiris073'
+            }
+          });
+          count++;
+        }
+        
+        console.log(`Inventario inicializado con ${count} productos`);
+      } else {
+        console.log(`Inventario ya inicializado con ${inventorySnapshot.size} productos`);
       }
       
-      console.log(`Wallet inicializado con ${count} productos`);
-    } else {
-      console.log(`Wallet ya inicializado con ${walletSnapshot.size} productos`);
+      return true;
+    } catch (error) {
+      console.error("Error inicializando inventario:", error);
+      return false;
     }
-    
-    return true;
-  } catch (error) {
-    console.error("Error inicializando wallet:", error);
-    return false;
+  }
+
+  /**
+   * Obtiene el stock actual de un producto
+   */
+  async getProductStock(productId) {
+    try {
+      const inventoryRef = doc(db, COLLECTIONS.INVENTORY, productId);
+      const inventoryDoc = await getDoc(inventoryRef);
+      
+      if (inventoryDoc.exists()) {
+        return {
+          quantity: inventoryDoc.data().cantidad || 0,
+          location: inventoryDoc.data().location
+        };
+      }
+      
+      return { quantity: 0, location: null };
+    } catch (error) {
+      console.error(`Error obteniendo stock para ${productId}:`, error);
+      return { quantity: 0, location: null };
+    }
+  }
+
+  /**
+   * Obtiene los movimientos de inventario con filtros
+   */
+  async getMovements(filters = {}) {
+    try {
+      const movementsRef = collection(db, COLLECTIONS.INVENTORY_MOVEMENTS);
+      let q = query(movementsRef, orderBy('timestamp', 'desc'));
+
+      if (filters.location) {
+        q = query(q, where('location', '==', filters.location));
+      }
+      if (filters.startDate) {
+        q = query(q, where('createdAt', '>=', filters.startDate));
+      }
+      if (filters.endDate) {
+        q = query(q, where('createdAt', '<=', filters.endDate));
+      }
+      
+      q = query(q, limit(filters.limit || 50));
+      
+      const snapshot = await getDocs(q);
+      const movements = [];
+      
+      snapshot.forEach(doc => {
+        movements.push({
+          id: doc.id,
+          ...doc.data(),
+          timestamp: processTimestamp(doc.data().timestamp)
+        });
+      });
+
+      // Enriquecer con datos de productos
+      const productIds = [...new Set(movements.map(m => m.productId))];
+      const productsData = await Promise.all(
+        productIds.map(id => getDocumentById(COLLECTIONS.PRODUCTS, id))
+      );
+
+      const productMap = {};
+      productsData.forEach(product => {
+        if (product) {
+          productMap[product.id] = product;
+        }
+      });
+
+      return movements.map(movement => ({
+        ...movement,
+        productName: productMap[movement.productId]?.nombre || "Producto sin nombre",
+        productCode: productMap[movement.productId]?.codigo || "Sin código",
+        category: productMap[movement.productId]?.categoria || "Sin categoría"
+      }));
+
+    } catch (error) {
+      console.error("Error al obtener movimientos:", error);
+      throw error;
+    }
   }
 }
 
-/**
- * Obtiene el stock actual de un producto
- */
-async function getProductStock(productId) {
-  try {
-    const walletRef = doc(db, COLLECTIONS.WALLET, productId);
-    const walletDoc = await getDoc(walletRef);
-    
-    if (walletDoc.exists()) {
-      return walletDoc.data().cantidad || 0;
-    }
-    
-    return 0;
-  } catch (error) {
-    console.error(`Error obteniendo stock para ${productId}:`, error);
-    return 0;
-  }
-}
-
-module.exports = {
-  getInventory,
-  updateStock,
-  initializeInventory,
-  getProductStock
-};
+module.exports = new InventoryService();

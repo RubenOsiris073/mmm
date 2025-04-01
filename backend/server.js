@@ -11,34 +11,65 @@ const inventoryRoutes = require('./routes/inventoryRoutes');
 const detectionRoutes = require('./routes/detectionRoutes');
 const salesRoutes = require('./routes/salesRoutes');
 const transactionsRoutes = require('./routes/transactionsRoutes'); 
-const walletRoutes = require('./routes/walletRoutes');
-const bodegaRoutes = require('./routes/bodega');
 
 // Configurar express
 const app = express();
 
-// Configurar middleware
-app.use(cors());
+// Configuración CORS unificada
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? process.env.FRONTEND_URL 
+    : ['http://localhost', 'http://localhost:3000', 'http://localhost:80'],
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  credentials: true,
+  optionsSuccessStatus: 204
+};
+
+// Aplicar CORS una sola vez
+app.use(cors(corsOptions));
+
+// Middleware de logging
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path} - ${new Date().toISOString()}`);
+  next();
+});
+
+// Configurar middleware de parsing
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Health check
-app.get('/health', (req, res) => {
-  res.status(200).send({ status: 'OK', env: config.env });
+// Crear router principal
+const apiRouter = express.Router();
+
+// Endpoint de salud en el router principal
+apiRouter.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    version: process.env.npm_package_version || '1.0.0',
+    environment: process.env.NODE_ENV,
+    endpoints: {
+      products: '/api/products',
+      inventory: '/api/inventory', // Endpoint unificado
+      detection: '/api/detection',
+      sales: '/api/sales',
+      transactions: '/api/transactions'
+    },
+  });
 });
 
 // API Status
-app.get('/api/status', (req, res) => {
+apiRouter.get('/status', (req, res) => {
   res.json({
     isRunning: true,
     version: '1.0.0',
-    environment: config.env
+    environment: config.env,
+    timestamp: new Date().toISOString()
   });
 });
 
 // Endpoint para proporcionar las credenciales de Firebase al frontend
-app.get('/api/firebase-config', (req, res) => {
-  // Envía las credenciales al frontend desde las variables de entorno
+apiRouter.get('/firebase-config', (req, res) => {
   res.json({
     apiKey: process.env.FIREBASE_API_KEY,
     authDomain: process.env.FIREBASE_AUTH_DOMAIN,
@@ -49,22 +80,35 @@ app.get('/api/firebase-config', (req, res) => {
   });
 });
 
-// Registrar rutas API
-app.use('/api', productRoutes);
-app.use('/api', inventoryRoutes);
-app.use('/api', detectionRoutes);
-app.use('/api', salesRoutes);
-app.use('/api', transactionsRoutes);
-app.use('/api/wallet', walletRoutes); 
-app.use('/api/bodega', bodegaRoutes);
+// Registrar sub-rutas en el router principal
+apiRouter.use('/products', productRoutes);
+apiRouter.use('/inventory', inventoryRoutes); // Ruta unificada de inventario
+apiRouter.use('/detection', detectionRoutes);
+apiRouter.use('/sales', salesRoutes);
+apiRouter.use('/transactions', transactionsRoutes);
 
-// Ruta para servir archivos estáticos (si es necesario)
+// Montar el router principal en /api
+app.use('/api', apiRouter);
+
+// Ruta para servir archivos estáticos en producción
 if (config.env === 'production') {
   app.use(express.static(path.join(__dirname, 'public')));
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
   });
 }
+
+// Manejador de errores global
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(500).json({
+    error: 'Error interno del servidor',
+    message: err.message,
+    timestamp: new Date().toISOString(),
+    path: req.path,
+    method: req.method,
+  });
+});
 
 // Inicializar datos necesarios
 (async () => {
@@ -81,7 +125,15 @@ const PORT = config.port;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
   console.log(`Modo: ${config.env}`);
+  console.log('Endpoints disponibles:');
+  console.log('- GET /api/health');
+  console.log('- GET /api/status');
+  console.log('- GET /api/firebase-config');
+  console.log('- GET /api/inventory');
+  console.log('- POST /api/inventory/update');
+  console.log('- GET /api/inventory/movements');
+  console.log('- GET /api/inventory/summary');
 });
 
-// Exportar para testing (opcional)
+// Exportar para testing
 module.exports = app;
