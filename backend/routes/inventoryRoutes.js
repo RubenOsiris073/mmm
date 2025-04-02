@@ -1,80 +1,86 @@
 const express = require('express');
 const router = express.Router();
-const inventoryService = require('../services/inventoryService');
+const { db, COLLECTIONS } = require('../config/firebase');
+const { collection, getDocs, doc, getDoc, updateDoc, addDoc, increment, serverTimestamp } = require('firebase/firestore');
 
-// Obtener todo el inventario
+// GET /api/inventory
 router.get('/', async (req, res) => {
+  console.log('GET /inventory - Recibido');
   try {
-    const inventory = await inventoryService.getInventory();
+    const inventoryRef = collection(db, COLLECTIONS.INVENTORY);
+    const snapshot = await getDocs(inventoryRef);
+    const inventory = [];
+    
+    snapshot.forEach(doc => {
+      inventory.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+
+    console.log('Enviando inventario:', inventory);
     res.json(inventory);
   } catch (error) {
-    console.error('Error en ruta de inventario:', error);
+    console.error('Error al obtener inventario:', error);
     res.status(500).json({ 
       error: 'Error al obtener inventario',
-      details: error.message 
+      message: error.message 
     });
   }
 });
-
-// Actualizar inventario
+// POST /api/inventory/update
 router.post('/update', async (req, res) => {
-  const { productId, adjustment, location, reason } = req.body;
-  
   try {
-    if (!productId || !adjustment || !location || !reason) {
-      return res.status(400).json({
-        error: 'Faltan campos requeridos',
-        required: ['productId', 'adjustment', 'location', 'reason']
-      });
+    const { productId, adjustment, location, reason } = req.body;
+
+    const inventoryRef = doc(db, COLLECTIONS.INVENTORY, productId);
+    const inventoryDoc = await getDoc(inventoryRef);
+
+    if (!inventoryDoc.exists()) {
+      return res.status(404).json({ error: 'Producto no encontrado en inventario' });
     }
 
-    const result = await inventoryService.updateInventory(
-      productId, 
+    const currentStock = inventoryDoc.data().cantidad || 0;
+    const newStock = currentStock + adjustment;
+
+    if (newStock < 0) {
+      return res.status(400).json({ error: 'Stock insuficiente' });
+    }
+
+    await updateDoc(inventoryRef, {
+      cantidad: increment(adjustment),
+      location,
+      updatedAt: serverTimestamp(),
+      lastUpdate: {
+        adjustment,
+        reason,
+        timestamp: serverTimestamp()
+      }
+    });
+
+    // Registrar movimiento
+    const movementRef = collection(db, COLLECTIONS.INVENTORY_MOVEMENTS);
+    await addDoc(movementRef, {
+      productId,
       adjustment,
       location,
-      reason
-    );
-    res.json(result);
+      reason,
+      previousQuantity: currentStock,
+      newQuantity: newStock,
+      timestamp: serverTimestamp()
+    });
+
+    const updatedDoc = await getDoc(inventoryRef);
+    
+    res.json({
+      id: updatedDoc.id,
+      ...updatedDoc.data()
+    });
   } catch (error) {
-    console.error('Error en ruta de actualización:', error);
+    console.error('Error al actualizar inventario:', error);
     res.status(500).json({ 
       error: 'Error al actualizar inventario',
-      details: error.message 
-    });
-  }
-});
-
-// Obtener movimientos con filtros
-router.get('/movements', async (req, res) => {
-  try {
-    const filters = {
-      location: req.query.location,
-      startDate: req.query.startDate,
-      endDate: req.query.endDate,
-      limit: parseInt(req.query.limit) || 50
-    };
-
-    const movements = await inventoryService.getMovements(filters);
-    res.json(movements);
-  } catch (error) {
-    console.error('Error en ruta de movimientos:', error);
-    res.status(500).json({ 
-      error: 'Error al obtener movimientos',
-      details: error.message 
-    });
-  }
-});
-
-// Obtener resumen de inventario
-router.get('/summary', async (req, res) => {
-  try {
-    const summary = await inventoryService.getInventorySummary();
-    res.json(summary);
-  } catch (error) {
-    console.error('Error en ruta de resumen:', error);
-    res.status(500).json({ 
-      error: 'Error al obtener resumen',
-      details: error.message 
+      message: error.message 
     });
   }
 });

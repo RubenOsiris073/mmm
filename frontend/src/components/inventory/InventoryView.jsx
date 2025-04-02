@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Table, Button, Alert, Spinner, Badge, Tabs, Tab } from 'react-bootstrap';
-import { BiBox, BiBarcode, BiListCheck } from 'react-icons/bi';
-import { toast } from 'react-toastify';
+import { Container, Card, Alert, Badge, Tabs, Tab, Spinner } from 'react-bootstrap';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { getCurrentTimestamp } from '../../utils/helpers';
 import apiService from '../../services/apiService';
+import InventoryTable from './InventoryTable';
+import InventoryHeader from './InventoryHeader';
 import UpdateModal from './UpdateModal';
-import { formatTimestamp, getCurrentTimestamp } from '../../utils/helpers';
 
 const InventoryView = () => {
   const location = useLocation();
@@ -13,20 +13,37 @@ const InventoryView = () => {
   const queryParams = new URLSearchParams(location.search);
   const initialLocation = queryParams.get('location') || 'all';
 
-  const [inventory, setInventory] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [activeLocation, setActiveLocation] = useState(initialLocation);
   const [currentTime, setCurrentTime] = useState(getCurrentTimestamp());
 
-  // Efecto existente para cargar el inventario
+  const [inventory, setInventory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Función para cargar el inventario
+  const loadInventory = async () => {
+    try {
+      setLoading(true);
+      const data = await apiService.getInventory();
+      console.log('Datos recibidos:', data);
+      setInventory(data);
+      setError(null);
+    } catch (err) {
+      console.error('Error:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cargar inventario al montar el componente
   useEffect(() => {
     loadInventory();
   }, []);
 
-  // Nuevo efecto para actualizar el tiempo actual cada minuto
+  // Actualizar tiempo cada minuto
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(getCurrentTimestamp());
@@ -35,42 +52,36 @@ const InventoryView = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const loadInventory = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await apiService.getInventory();
-      setInventory(data);
-    } catch (err) {
-      console.error('Error al cargar inventario:', err);
-      setError(err.message);
-      toast.error('Error al cargar el inventario: ' + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUpdate = (product) => {
-    setSelectedProduct(product);
-    setShowUpdateModal(true);
-  };
-
+  // Manejar actualización de inventario
   const handleUpdateSubmit = async (productId, adjustment, location, reason) => {
     try {
       setLoading(true);
       await apiService.updateInventory(productId, adjustment, location, reason);
       await loadInventory();
       setShowUpdateModal(false);
-      toast.success('Inventario actualizado correctamente');
+      return true;
     } catch (err) {
       console.error('Error al actualizar:', err);
-      toast.error('Error al actualizar: ' + err.message);
+      setError(err.message);
+      return false;
     } finally {
       setLoading(false);
     }
   };
 
-  // Actualizar el manejador de tabs para modificar la URL
+  // Función para obtener el badge de ubicación
+  const getLocationBadge = (location) => {
+    switch (location) {
+      case 'manual':
+        return <Badge bg="primary">Manual</Badge>;
+      case 'automatic':
+        return <Badge bg="success">Automático</Badge>;
+      default:
+        return <Badge bg="secondary">Desconocido</Badge>;
+    }
+  };
+
+  // Función para cambiar de pestaña y actualizar URL
   const handleLocationChange = (location) => {
     setActiveLocation(location);
     if (location === 'all') {
@@ -80,22 +91,18 @@ const InventoryView = () => {
     }
   };
 
-  const getLocationBadge = (location) => {
-    switch (location) {
-      case 'warehouse':
-        return <Badge bg="primary">Almacén</Badge>;
-      case 'bodega':
-        return <Badge bg="success">Bodega</Badge>;
-      default:
-        return <Badge bg="secondary">Sin ubicación</Badge>;
-    }
-  };
-
+  // Filtrar inventario por ubicación
   const filteredInventory = activeLocation === 'all'
     ? inventory
     : inventory.filter(item => item.location === activeLocation);
 
-  if (loading) {
+  const locationTabs = [
+    { key: 'all', title: 'Todo el Inventario' },
+    { key: 'manual', title: 'Registro Manual' },
+    { key: 'automatic', title: 'Registro Automático' }
+  ];
+
+  if (loading && inventory.length === 0) {
     return (
       <Container className="text-center py-5">
         <Spinner animation="border" />
@@ -104,51 +111,21 @@ const InventoryView = () => {
     );
   }
 
-  if (error) {
-    return (
-      <Container className="py-4">
-        <Alert variant="danger">
-          <Alert.Heading>Error al cargar el inventario</Alert.Heading>
-          <p>{error}</p>
-        </Alert>
-      </Container>
-    );
-  }
-
   return (
     <Container fluid>
-      <Row className="mb-4">
-        <Col>
-          <h2>Gestión de Inventario</h2>
-          <p className="text-muted">
-            Administre el inventario en todas las ubicaciones
-          </p>
-        </Col>
-      </Row>
+      {error && (
+        <Alert variant="danger" className="mt-3">
+          {error}
+        </Alert>
+      )}
 
       <Card>
-        <Card.Header className="d-flex justify-content-between align-items-center">
-          <h5 className="mb-0">
-            Inventario
-            <small className="text-muted ms-2">
-              {activeLocation === 'warehouse' ? '- Almacén Manual' :
-                activeLocation === 'bodega' ? '- Bodega Automática' :
-                  '- Todo'}
-            </small>
-          </h5>
-          <div>
-            <Button
-              variant="outline-primary"
-              size="sm"
-              className="me-2"
-              onClick={() => loadInventory()}
-            >
-              Actualizar
-            </Button>
-            <small className="text-muted">
-              Última actualización: {currentTime}
-            </small>
-          </div>
+        <Card.Header>
+          <InventoryHeader
+            loading={loading}
+            onRefresh={loadInventory}
+            currentTime={currentTime}
+          />
         </Card.Header>
         <Card.Body>
           <Tabs
@@ -156,27 +133,23 @@ const InventoryView = () => {
             onSelect={(k) => handleLocationChange(k)}
             className="mb-3"
           >
-            <Tab eventKey="all" title="Todo el Inventario">
-              <InventoryTable
-                inventory={filteredInventory}
-                onUpdate={handleUpdate}
-                getLocationBadge={getLocationBadge}
-              />
-            </Tab>
-            <Tab eventKey="warehouse" title="Almacén Manual">
-              <InventoryTable
-                inventory={filteredInventory}
-                onUpdate={handleUpdate}
-                getLocationBadge={getLocationBadge}
-              />
-            </Tab>
-            <Tab eventKey="bodega" title="Bodega Automática">
-              <InventoryTable
-                inventory={filteredInventory}
-                onUpdate={handleUpdate}
-                getLocationBadge={getLocationBadge}
-              />
-            </Tab>
+            {locationTabs.map(({ key, title }) => (
+              <Tab
+                key={key}
+                eventKey={key}
+                title={title}
+              >
+                <InventoryTable
+                  inventory={filteredInventory}
+                  loading={loading}
+                  onUpdate={(product) => {
+                    setSelectedProduct(product);
+                    setShowUpdateModal(true);
+                  }}
+                  getLocationBadge={getLocationBadge}
+                />
+              </Tab>
+            ))}
           </Tabs>
         </Card.Body>
       </Card>
@@ -190,48 +163,5 @@ const InventoryView = () => {
     </Container>
   );
 };
-
-// Componente de tabla separado para mejor organización
-const InventoryTable = ({ inventory, onUpdate, getLocationBadge }) => (
-  <Table responsive hover>
-    <thead>
-      <tr>
-        <th>Código</th>
-        <th>Producto</th>
-        <th>Cantidad</th>
-        <th>Ubicación</th>
-        <th>Última Actualización</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      {inventory.map(item => (
-        <tr key={item.id}>
-          <td>{item.productCode || 'N/A'}</td>
-          <td>{item.productName}</td>
-          <td>{item.quantity || 0}</td>
-          <td>{getLocationBadge(item.location)}</td>
-          <td>{formatTimestamp(item.updatedAt)}</td>
-          <td>
-            <Button
-              variant="outline-primary"
-              size="sm"
-              onClick={() => onUpdate(item)}
-            >
-              Actualizar
-            </Button>
-          </td>
-        </tr>
-      ))}
-      {inventory.length === 0 && (
-        <tr>
-          <td colSpan="6" className="text-center">
-            No hay productos en el inventario
-          </td>
-        </tr>
-      )}
-    </tbody>
-  </Table>
-);
 
 export default InventoryView;

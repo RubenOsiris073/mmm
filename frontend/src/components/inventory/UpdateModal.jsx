@@ -32,7 +32,7 @@ const UpdateModal = ({ show, onHide, product, onSubmit, currentUser }) => {
               disabled
             />
           </Form.Group>
-          
+
           <Form.Group className="mb-3">
             <Form.Label>Cantidad Actual</Form.Label>
             <Form.Control
@@ -60,8 +60,8 @@ const UpdateModal = ({ show, onHide, product, onSubmit, currentUser }) => {
               onChange={(e) => setLocation(e.target.value)}
               required
             >
-              <option value="warehouse">Almacén</option>
-              <option value="bodega">Bodega</option>
+              <option value="manual">Registro Manual</option>
+              <option value="automatic">Registro Automático</option>
             </Form.Select>
           </Form.Group>
 
@@ -90,8 +90,8 @@ const UpdateModal = ({ show, onHide, product, onSubmit, currentUser }) => {
           <Button variant="secondary" onClick={onHide}>
             Cancelar
           </Button>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             type="submit"
             disabled={!adjustment || !reason}
           >

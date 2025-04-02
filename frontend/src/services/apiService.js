@@ -1,10 +1,7 @@
 import axios from 'axios';
 
 // Configuración de la API
-const API_URL = process.env.NODE_ENV === 'production' 
-  ? '/api'  
-  : 'http://localhost:5000/api';
-
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 const TIMEOUT = 15000; // 15 segundos
 
 console.log('📡 Configuración API:', {
@@ -13,7 +10,6 @@ console.log('📡 Configuración API:', {
   timestamp: new Date().toISOString()
 });
 
-
 // Mensajes de error comunes
 const ERROR_MESSAGES = {
   CONNECTION: 'No se pudo conectar al servidor. Verifica que el backend esté funcionando.',
@@ -21,104 +17,109 @@ const ERROR_MESSAGES = {
   NETWORK: 'Error de red. Verifica tu conexión.',
   SERVER: 'Error en el servidor.',
   NOT_FOUND: 'Recurso no encontrado.',
+  INVENTORY: 'Error al obtener inventario.',
+  INVENTORY_UPDATE: 'Error al actualizar inventario.'
 };
-
-// Crear instancia de axios configurada
-const api = axios.create({
-  baseURL: API_URL,
-  timeout: TIMEOUT,
-  headers: {
-    'Content-Type': 'application/json',
-  }
-});
-
-// Función helper para manejar errores
-const handleError = (error, customMessage) => {
-  if (error.code === 'ECONNABORTED') {
-    console.error('Timeout excedido:', API_URL);
-    throw new Error(ERROR_MESSAGES.TIMEOUT);
-  }
-  
-  if (!error.response) {
-    console.error('Error de red:', error);
-    throw new Error(ERROR_MESSAGES.NETWORK);
-  }
-
-  const message = error.response?.data?.message || customMessage || ERROR_MESSAGES.SERVER;
-  console.error('Error en petición:', message);
-  throw new Error(message);
-};
-
-const healthCheck = async () => {
-  try {
-    const response = await api.get('/health');
-    console.log('✅ Servidor conectado:', response.data);
-    return true;
-  } catch (error) {
-    console.error('❌ Error de conexión:', {
-      message: error.message,
-      code: error.code,
-      url: API_URL
-    });
-    
-    // Mensaje de error detallado
-    let errorMessage = 'Error de conexión. ';
-    if (error.code === 'ECONNABORTED') {
-      errorMessage += 'Tiempo de espera agotado. ';
-    } else if (error.code === 'ERR_NETWORK') {
-      errorMessage += 'No se puede conectar al servidor. ';
-    }
-    
-    errorMessage += '\n\nVerifica:\n';
-    errorMessage += '1. Que el servidor backend esté corriendo en el puerto 5000\n';
-    errorMessage += '2. Que no haya problemas de CORS\n';
-    errorMessage += `3. La URL del API configurada: ${API_URL}`;
-    
-    throw new Error(errorMessage);
-  }
-};
-
-// Interceptores
-api.interceptors.request.use(
-  request => {
-    console.log('🚀 Petición saliente:', {
-      url: request.url,
-      method: request.method,
-      data: request.data
-    });
-    return request;
-  },
-  error => {
-    console.error('❌ Error en petición:', error);
-    return Promise.reject(error);
-  }
-);
-
-api.interceptors.response.use(
-  response => {
-    console.log('✅ Respuesta recibida:', {
-      url: response.config.url,
-      status: response.status,
-      data: response.data
-    });
-    return response;
-  },
-  error => {
-    console.error('❌ Error en respuesta:', {
-      url: error.config?.url,
-      status: error.response?.status,
-      message: error.message,
-      data: error.response?.data
-    });
-    return Promise.reject(error);
-  }
-);
 
 const apiService = {
-  // Método de inicialización
-  initialize: async () => {
+  api: (() => {
+    console.log('Creando instancia de axios');
+    return axios.create({
+      baseURL: 'http://localhost:5000/api',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+  })(),
+  // Inicializar interceptores
+  initInterceptors() {
+    // Interceptor de solicitudes
+    this.api.interceptors.request.use(
+      (config) => {
+        console.log('📤 Petición saliente:', {
+          url: config.url,
+          method: config.method,
+          data: config.data
+        });
+        return config;
+      },
+      (error) => {
+        console.error('❌ Error en petición:', error.message);
+        return Promise.reject(error);
+      }
+    );
+
+    // Interceptor de respuestas
+    this.api.interceptors.response.use(
+      (response) => {
+        console.log('📥 Respuesta recibida:', {
+          status: response.status,
+          data: response.data
+        });
+        return response;
+      },
+      (error) => {
+        console.error('❌ Error en respuesta:', {
+          status: error.response?.status,
+          message: error.message,
+          data: error.response?.data
+        });
+        return Promise.reject(error);
+      }
+    );
+  },
+  
+  // Helper para manejar errores
+  handleError(error, customMessage) {
+    if (error.code === 'ECONNABORTED') {
+      console.error('Timeout excedido:', API_URL);
+      throw new Error(ERROR_MESSAGES.TIMEOUT);
+    }
+    
+    if (!error.response) {
+      console.error('Error de red:', error);
+      throw new Error(ERROR_MESSAGES.NETWORK);
+    }
+
+    const message = error.response?.data?.message || customMessage || ERROR_MESSAGES.SERVER;
+    console.error('Error en petición:', message);
+    throw new Error(message);
+  },
+
+  // Health Check
+  async healthCheck() {
     try {
-      await healthCheck();
+      const response = await this.api.get('/health');
+      console.log('✅ Servidor conectado:', response.data);
+      return true;
+    } catch (error) {
+      console.error('❌ Error de conexión:', {
+        message: error.message,
+        code: error.code,
+        url: API_URL
+      });
+      
+      let errorMessage = 'Error de conexión. ';
+      if (error.code === 'ECONNABORTED') {
+        errorMessage += 'Tiempo de espera agotado. ';
+      } else if (error.code === 'ERR_NETWORK') {
+        errorMessage += 'No se puede conectar al servidor. ';
+      }
+      
+      errorMessage += '\n\nVerifica:\n';
+      errorMessage += '1. Que el servidor backend esté corriendo en el puerto 5000\n';
+      errorMessage += '2. Que no haya problemas de CORS\n';
+      errorMessage += `3. La URL del API configurada: ${API_URL}`;
+      
+      throw new Error(errorMessage);
+    }
+  },
+
+  // Método de inicialización
+  async initialize() {
+    try {
+      this.initInterceptors();
+      await this.healthCheck();
       console.log('✅ API inicializada correctamente');
       return true;
     } catch (error) {
@@ -127,125 +128,174 @@ const apiService = {
     }
   },
 
-  // Productos
-  getProducts: async () => {
+  // Métodos de inventario
+  async getInventory() {
     try {
-      const response = await api.get('/products');
+      const response = await this.api.get('/inventory');
+      return response.data;
+    } catch (error) {
+      this.handleError(error, ERROR_MESSAGES.INVENTORY);
+    }
+  },
+
+  async updateInventory(productId, adjustment, location, reason) {
+    try {
+      const response = await this.api.post('/inventory/update', {
+        productId,
+        adjustment,
+        location,
+        reason,
+        timestamp: new Date().toISOString()
+      });
+      return response.data;
+    } catch (error) {
+      this.handleError(error, ERROR_MESSAGES.INVENTORY_UPDATE);
+    }
+  },
+
+  // Productos
+  async getProducts() {
+    try {
+      const response = await this.api.get('/products');
       return response.data?.products || [];
     } catch (error) {
-      handleError(error, 'Error al obtener productos');
+      this.handleError(error, 'Error al obtener productos');
     }
   },
 
-  getWarehouse: async () => {
+  async getProduct(id) {
     try {
-      const response = await api.get('/warehouse');
+      const response = await this.api.get(`/products/${id}`);
+      return response.data;
+    } catch (error) {
+      this.handleError(error, `Error al obtener producto ${id}`);
+    }
+  },
+
+  // Warehouse
+  async getWarehouse() {
+    try {
+      const response = await this.api.get('/warehouse');
       return response.data || [];
     } catch (error) {
-      handleError(error, 'Error al cargar el inventario manual');
+      this.handleError(error, 'Error al cargar el inventario manual');
     }
   },
 
-  // Cambiar updateWallet por updateWarehouse
-  updateWarehouse: async (productId, adjustment) => {
+  // Actualizar inventario manual
+  async updateWarehouse(productId, adjustment) {
     try {
-      const response = await api.post('/warehouse/update', {
+      const response = await this.api.post('/warehouse/update', {
         productId,
         adjustment,
         timestamp: new Date().toISOString()
       });
       return response.data;
     } catch (error) {
-      handleError(error, 'Error al actualizar el inventario manual');
+      this.handleError(error, 'Error al actualizar el inventario manual');
     }
   },
 
   // Bodega
-  getBodegaInventario: async () => {
+  async getBodegaInventario() {
     try {
-      const response = await api.get('/bodega/inventario');
+      const response = await this.api.get('/bodega/inventario');
       return response.data || [];
     } catch (error) {
-      handleError(error, 'Error al obtener inventario de bodega');
+      this.handleError(error, 'Error al obtener inventario de bodega');
     }
   },
 
-  registrarMovimientoBodega: async (datos) => {
+  async registrarMovimientoBodega(datos) {
     try {
-      const response = await api.post('/bodega/movimientos', datos);
+      const response = await this.api.post('/bodega/movimientos', datos);
       return response.data;
     } catch (error) {
-      handleError(error, 'Error al registrar movimiento en bodega');
+      this.handleError(error, 'Error al registrar movimiento en bodega');
     }
   },
 
-  registrarProductoBodega: async (productoData) => {
+  async registrarProductoBodega(productoData) {
     try {
-      const response = await api.post('/bodega/productos', productoData);
+      const response = await this.api.post('/bodega/productos', productoData);
       return response.data;
     } catch (error) {
-      handleError(error, 'Error al registrar producto en bodega');
+      this.handleError(error, 'Error al registrar producto en bodega');
     }
   },
 
   // Detecciones
-  getDetections: async () => {
+  async getDetections() {
     try {
-      const response = await api.get('/detections');
+      const response = await this.api.get('/detections');
       return response.data || { detections: [] };
     } catch (error) {
-      handleError(error, 'Error al obtener detecciones');
+      this.handleError(error, 'Error al obtener detecciones');
     }
   },
 
-  setDetectionMode: async (active, intervalMs = 3000) => {
+  async setDetectionMode(active, intervalMs = 3000) {
     try {
-      const response = await api.post('/detection/continuous', { 
+      const response = await this.api.post('/detection/continuous', { 
         active, 
         intervalMs 
       });
       return response.data;
     } catch (error) {
-      handleError(error, 'Error al configurar modo de detección');
+      this.handleError(error, 'Error al configurar modo de detección');
     }
   },
 
-  triggerDetection: async () => {
+  async triggerDetection() {
     try {
-      const response = await api.post('/detect');
+      const response = await this.api.post('/detect');
       return response.data || { success: false };
     } catch (error) {
-      handleError(error, 'Error al realizar detección');
+      this.handleError(error, 'Error al realizar detección');
     }
   },
 
   // Ventas
-  createSale: async (saleData) => {
+  async createSale(saleData) {
     try {
-      const response = await api.post('/sales', saleData);
+      const response = await this.api.post('/sales', saleData);
       return response.data;
     } catch (error) {
-      handleError(error, 'Error al crear venta');
+      this.handleError(error, 'Error al crear venta');
     }
   },
 
-  getSales: async (limit = 50) => {
+  async getSales(limit = 50) {
     try {
-      const response = await api.get(`/sales?limit=${limit}`);
+      const response = await this.api.get(`/sales?limit=${limit}`);
       return response.data?.sales || [];
     } catch (error) {
-      handleError(error, 'Error al obtener ventas');
+      this.handleError(error, 'Error al obtener ventas');
     }
   },
 
-  getSaleDetails: async (saleId) => {
+  async getSaleDetails(saleId) {
     try {
-      const response = await api.get(`/sales/${saleId}`);
+      const response = await this.api.get(`/sales/${saleId}`);
       return response.data?.sale;
     } catch (error) {
-      handleError(error, `Error al obtener detalles de la venta ${saleId}`);
+      this.handleError(error, `Error al obtener detalles de la venta ${saleId}`);
+    }
+  },
+
+  // Método para prueba de conexión
+  async testConnection() {
+    try {
+      await this.healthCheck();
+      return true;
+    } catch (error) {
+      console.error('Error de conexión:', error);
+      return false;
     }
   }
 };
+
+// Inicializar interceptores al importar el módulo
+apiService.initInterceptors();
 
 export default apiService;

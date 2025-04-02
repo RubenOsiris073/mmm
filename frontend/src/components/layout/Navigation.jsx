@@ -55,22 +55,34 @@ const Navigation = () => {
               title={
                 <div className="d-inline-flex align-items-center">
                   <BiBox className="me-1" size={20} />
-                  <span>Inventario</span>
+                  <span>Almacen</span>
                 </div>
               }
               id="inventario-dropdown"
               active={['/inventory'].includes(location.pathname)}
             >
-              <NavDropdown.Item as={Link} to="/inventory?location=warehouse" active={isActive('/inventory') && location.search.includes('warehouse')}>
+              <NavDropdown.Item
+                as={Link}
+                to="/inventory?location=manual"
+                active={isActive('/inventory') && location.search.includes('manual')}
+              >
                 <BiBox className="me-1" size={18} />
-                Almacén Manual
+                Registro Manual
               </NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/inventory?location=bodega" active={isActive('/inventory') && location.search.includes('bodega')}>
+              <NavDropdown.Item
+                as={Link}
+                to="/inventory?location=automatic"
+                active={isActive('/inventory') && location.search.includes('automatic')}
+              >
                 <BiBarcode className="me-1" size={18} />
-                Bodega Automática
+                Registro Automático
               </NavDropdown.Item>
               <NavDropdown.Divider />
-              <NavDropdown.Item as={Link} to="/inventory" active={isActive('/inventory') && !location.search}>
+              <NavDropdown.Item
+                as={Link}
+                to="/inventory"
+                active={isActive('/inventory') && !location.search}
+              >
                 <BiListCheck className="me-1" size={18} />
                 Ver Todo
               </NavDropdown.Item>

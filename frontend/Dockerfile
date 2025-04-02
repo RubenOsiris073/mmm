@@ -3,6 +3,10 @@ FROM node:18-alpine as build
 # Directorio de trabajo
 WORKDIR /app
 
+ENV CHOKIDAR_USEPOLLING=true
+ENV WATCHPACK_POLLING=true
+ENV NODE_ENV=development
+
 # Copiar archivos de configuración
 COPY package.json package-lock.json ./
 
