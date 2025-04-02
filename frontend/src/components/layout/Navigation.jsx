@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navbar, Nav, Container, NavDropdown } from 'react-bootstrap';
 import { Link, useLocation } from 'react-router-dom';
-import { BiStore, BiPackage, BiBarcode, BiBox, BiDollar } from 'react-icons/bi';
+import { BiStore, BiPackage, BiBarcode, BiBox, BiListCheck, BiDollar } from 'react-icons/bi';
 
 const Navigation = () => {
   const location = useLocation();

@@ -186,7 +186,6 @@ const InventoryView = () => {
         onHide={() => setShowUpdateModal(false)}
         product={selectedProduct}
         onSubmit={handleUpdateSubmit}
-        currentUser={currentUser}
       />
     </Container>
   );
