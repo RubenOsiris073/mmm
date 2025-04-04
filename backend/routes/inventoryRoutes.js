@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
       });
     });
 
-    console.log('Enviando inventario:', inventory);
+    //console.log('Enviando inventario:', inventory);
     res.json(inventory);
   } catch (error) {
     console.error('Error al obtener inventario:', error);

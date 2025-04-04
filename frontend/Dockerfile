@@ -12,7 +12,7 @@ COPY package.json package-lock.json ./
 
 # Instalar dependencias y añadir las dependencias faltantes
 RUN npm install --legacy-peer-deps
-RUN npm install bootstrap bootstrap-icons react-icons @tensorflow/tfjs react-toastify --legacy-peer-deps
+RUN npm install bootstrap bootstrap-icons react-icons @tensorflow/tfjs react-toastify  @zxing/library react-zxing --legacy-peer-deps
 
 # Copiar el código fuente
 COPY . ./

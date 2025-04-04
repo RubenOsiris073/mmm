@@ -60,7 +60,7 @@ class InventoryService {
    */
   async updateStock(productId, adjustment, location, reason) {
     try {
-      console.log(`Actualizando stock para ID: ${productId}, ajuste: ${adjustment}, ubicación: ${location}`);
+      //console.log(`Actualizando stock para ID: ${productId}, ajuste: ${adjustment}, ubicación: ${location}`);
       
       const inventoryRef = doc(db, COLLECTIONS.INVENTORY, productId);
       const inventoryDoc = await getDoc(inventoryRef);
@@ -72,7 +72,7 @@ class InventoryService {
         const currentStock = inventoryDoc.data().cantidad || 0;
         const newStock = currentStock + adjustment;
         
-        console.log(`Stock actual: ${currentStock}, Nuevo stock: ${newStock}`);
+        //console.log(`Stock actual: ${currentStock}, Nuevo stock: ${newStock}`);
         
         if (newStock < 0) {
           throw new Error("Stock insuficiente");
@@ -173,7 +173,7 @@ class InventoryService {
       const inventorySnapshot = await getDocs(inventoryRef);
       
       if (inventorySnapshot.empty) {
-        console.log("Inventario vacío. Inicializando con productos del catálogo...");
+        //console.log("Inventario vacío. Inicializando con productos del catálogo...");
         const productsRef = collection(db, COLLECTIONS.PRODUCTS);
         const productsSnapshot = await getDocs(productsRef);
         
