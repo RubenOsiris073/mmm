@@ -22,7 +22,7 @@ const DebugPanel = ({ addDetectedProductToCart }) => {
           variant="outline-secondary"
           size="sm"
           className="me-1"
-          onClick={() => addDetectedProductToCart('botella')}
+          onClick={() => addDetectedProductToCart('Botella')}
         >
           Detectar Botella
         </Button>
@@ -30,14 +30,14 @@ const DebugPanel = ({ addDetectedProductToCart }) => {
           variant="outline-secondary"
           size="sm"
           className="me-1"
-          onClick={() => addDetectedProductToCart('barrita')}
+          onClick={() => addDetectedProductToCart('Barrita')}
         >
           Detectar Barrita
         </Button>
         <Button
           variant="outline-secondary"
           size="sm"
-          onClick={() => addDetectedProductToCart('chicle')}
+          onClick={() => addDetectedProductToCart('Chicle')}
         >
           Detectar Chicle
         </Button>

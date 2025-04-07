@@ -92,7 +92,7 @@ const ObjectDetection = () => {
           const idx = predictions.indexOf(maxProb);
 
           // Mapea el índice a la etiqueta correspondiente
-          const etiquetas = ["barrita", "botella", "chicle"];
+          const etiquetas = ["Barrita", "Botella", "Chicle"];
           const label = etiquetas[idx] || "Desconocido";
           const similarity = (maxProb * 100).toFixed(2);
           

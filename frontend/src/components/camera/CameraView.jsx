@@ -75,7 +75,7 @@ const CameraView = () => {
           const maxProb = Math.max(...predictions);
           const idx = predictions.indexOf(maxProb);
 
-          const etiquetas = ["barrita", "botella", "chicle"];
+          const etiquetas = ["Barrita", "Botella", "Chicle"];
           const label = etiquetas[idx] || "Desconocido";
           const similarity = (maxProb * 100).toFixed(2);
           

@@ -34,7 +34,7 @@ const config = {
   
   // Configuración de detección
   detection: {
-    validLabels: ['chicle', 'barrita', 'botella'],
+    validLabels: ['Chicle', 'Barrita', 'Botella'],
     minConfidence: 70,
     defaultStock: 10
   },
