@@ -1,166 +1,130 @@
-const fs = require('fs');
+const tf = require('@tensorflow/tfjs-node');
 const path = require('path');
-const { db, COLLECTIONS } = require('../config/firebase');
-const { collection, addDoc, serverTimestamp, query, where, getDocs } = require('firebase/firestore');
-const { queryDocuments } = require('../utils/firebaseUtils');
-const webcamService = require('./webcamService');
-const inventoryService = require('./inventoryService');
+const { addDetection } = require('./storageService');
 
-// Variable para estado global de detecciones
-let continuousDetectionMode = false;
+class DetectionService {
+  constructor() {
+    this.model = null;
+    this.isActive = false;
+    this.detectionInterval = null;
+    this.intervalMs = 1000; // Intervalo por defecto: 1 segundo
+    this.modelPath = path.join(__dirname, '../models/model.json');
+    this.initialize();
+  }
 
-/**
- * Simula una detección (para pruebas)
- * En producción, esto usaría el modelo ML real
- */
-function simulateDetection() {
-  const labels = ['chicle', 'barrita', 'botella'];
-  const now = new Date();
-  const index = now.getSeconds() % labels.length;
-  
-  return { 
-    label: labels[index], 
-    similarity: 85 + (now.getMilliseconds() % 15) 
-  };
-}
-
-/**
- * Realiza una detección usando la webcam
- * @returns {Promise<Object>} resultado de la detección
- */
-async function performDetection() {
-  try {
-    let imagePath = null;
-    let detection = { label: 'botella', similarity: 90 }; // Valor por defecto
-    
+  async initialize() {
     try {
-      // Capturar imagen
-      imagePath = await webcamService.captureImage();
-      
-      // En un sistema real, aquí se llamaría al modelo ML
-      // Por ahora usamos la simulación
-      detection = simulateDetection();
-      
-      console.log("Detección completada:", detection);
-    } catch (captureError) {
-      console.error("Error en captura o procesamiento:", captureError);
-    } finally {
-      // Limpiar imagen si existe
-      if (imagePath) {
-        webcamService.cleanupImage(imagePath);
+      console.log("Iniciando servicio de detección...");
+      await this.loadModel();
+      console.log("Servicio de detección inicializado");
+    } catch (error) {
+      console.error("Error al inicializar servicio de detección:", error);
+    }
+  }
+
+  async loadModel() {
+    try {
+      console.log("Cargando modelo desde:", this.modelPath);
+      this.model = await tf.loadLayersModel(`file://${this.modelPath}`);
+      console.log("Modelo cargado exitosamente");
+    } catch (error) {
+      console.error("Error al cargar el modelo:", error);
+      throw error;
+    }
+  }
+
+  async performDetection(imageData) {
+    try {
+      if (!this.model) {
+        throw new Error("Modelo no inicializado");
       }
+
+      // Decodificar la imagen base64
+      const imageBuffer = Buffer.from(imageData.split(',')[1], 'base64');
+      
+      // Convertir a tensor
+      const tensor = tf.tidy(() => {
+        const decoded = tf.node.decodeImage(imageBuffer);
+        return decoded
+          .resizeNearestNeighbor([224, 224])
+          .expandDims()
+          .toFloat();
+      });
+
+      // Realizar predicción
+      const predictions = await this.model.predict(tensor).data();
+      tensor.dispose();
+
+      // Procesar resultados
+      const maxProb = Math.max(...predictions);
+      const idx = predictions.indexOf(maxProb);
+      const etiquetas = ["barrita", "botella", "chicle"];
+      const label = etiquetas[idx] || "Desconocido";
+      const similarity = parseFloat((maxProb * 100).toFixed(2));
+
+      // Crear objeto de detección
+      const detection = {
+        label,
+        similarity,
+        timestamp: new Date().toISOString()
+      };
+
+      // Guardar en base de datos si la confianza es alta
+      if (similarity > 60) {
+        await addDetection(detection);
+      }
+
+      return detection;
+    } catch (error) {
+      console.error("Error en detección:", error);
+      throw error;
     }
-    
-    // Enriquecer el resultado con información del producto
-    const productInfo = await findProductByLabel(detection.label);
-    
-    // Guardar la detección en la base de datos
-    const detectionData = {
-      label: detection.label,
-      similarity: detection.similarity,
-      timestamp: serverTimestamp(),
-      productInfo: productInfo
-    };
-    
-    const detectionsRef = collection(db, COLLECTIONS.DETECTIONS);
-    const docRef = await addDoc(detectionsRef, detectionData);
-    
+  }
+
+  async getRecentDetections(limit = 10) {
+    try {
+      // Implementa la lógica para obtener las detecciones recientes de la base de datos
+      const detections = await getDetections(limit);
+      return detections;
+    } catch (error) {
+      console.error("Error al obtener detecciones:", error);
+      throw error;
+    }
+  }
+
+  getDetectionMode() {
     return {
-      id: docRef.id,
-      ...detection,
-      productInfo,
-      timestamp: new Date().toISOString()
+      active: this.isActive,
+      intervalMs: this.intervalMs
     };
-  } catch (error) {
-    console.error("Error en el servicio de detección:", error);
-    throw error;
   }
-}
 
-/**
- * Busca un producto por su etiqueta
- */
-async function findProductByLabel(label) {
-  if (!label) return null;
-  
-  try {
-    // Usar la utilidad queryDocuments para simplificar la búsqueda
-    const products = await queryDocuments(
-      COLLECTIONS.PRODUCTS, 
-      [['label', '==', label]] // filtro exacto
-    );
-    
-    if (products.length > 0) {
-      // Obtener stock
-      const stock = await inventoryService.getProductStock(products[0].id);
-      return {
-        ...products[0],
-        stock
-      };
+  setDetectionMode(active, intervalMs = 1000) {
+    this.isActive = active;
+    this.intervalMs = intervalMs;
+
+    if (this.detectionInterval) {
+      clearInterval(this.detectionInterval);
+      this.detectionInterval = null;
     }
-    
-    // Si no encuentra, intentar con case-insensitive (aquí no podemos usar queryDocuments
-    // directamente porque necesitamos lógica custom)
-    const allProducts = await queryDocuments(COLLECTIONS.PRODUCTS);
-    
-    const matchingProduct = allProducts.find(
-      product => product.label && product.label.toLowerCase() === label.toLowerCase()
-    );
-    
-    if (matchingProduct) {
-      const stock = await inventoryService.getProductStock(matchingProduct.id);
-      return {
-        ...matchingProduct,
-        stock
-      };
-    }
-    
-    return null;
-  } catch (error) {
-    console.error("Error buscando producto por etiqueta:", error);
-    return null;
+
+    return {
+      active: this.isActive,
+      intervalMs: this.intervalMs,
+      success: true
+    };
+  }
+
+  async getDetectionStatus() {
+    return {
+      active: this.isActive,
+      modelLoaded: !!this.model,
+      intervalMs: this.intervalMs
+    };
   }
 }
 
-/**
- * Obtiene las últimas detecciones
- */
-async function getRecentDetections(limit = 10) {
-  try {
-    // Usar la utilidad para simplificar la consulta
-    const detections = await queryDocuments(
-      COLLECTIONS.DETECTIONS,
-      [], // sin filtros
-      'timestamp', // ordenar por timestamp
-      'desc', // orden descendente
-      limit // límite
-    );
-    
-    return detections;
-  } catch (error) {
-    console.error("Error obteniendo detecciones recientes:", error);
-    return [];
-  }
-}
-/**
- * Establece el modo de detección continua
- */
-function setDetectionMode(active) {
-  continuousDetectionMode = active;
-  return { active: continuousDetectionMode };
-}
+// Crear una instancia única del servicio
+const detectionService = new DetectionService();
 
-/**
- * Obtiene el estado actual del modo de detección
- */
-function getDetectionMode() {
-  return { active: continuousDetectionMode };
-}
-
-module.exports = {
-  performDetection,
-  findProductByLabel,
-  getRecentDetections,
-  setDetectionMode,
-  getDetectionMode
-};
+module.exports = detectionService;

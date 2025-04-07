@@ -5,14 +5,25 @@ const detectionService = require('../services/detectionService');
 // Realizar una detección
 router.post('/detect', async (req, res) => {
   try {
-    const detection = await detectionService.performDetection();
+    const { image } = req.body;
+    
+    if (!image) {
+      return res.status(400).json({ 
+        error: "Se requiere una imagen para la detección" 
+      });
+    }
+
+    const detection = await detectionService.performDetection(image);
     res.json({
       success: true,
       detection
     });
   } catch (error) {
     console.error("Error en detección:", error);
-    res.status(500).json({ error: "Error en detección" });
+    res.status(500).json({ 
+      error: "Error en detección",
+      details: error.message 
+    });
   }
 });
 
@@ -71,17 +82,4 @@ router.post('/detection/continuous', async (req, res) => {
   }
 });
 
-const getDetectionStatus = async () => {
-  // Aquí deberías implementar la lógica para obtener el estado de detección continua
-  return { active: true }; // Este es un ejemplo, ajusta según tu lógica
-};
-
-const setDetectionMode = async (active, intervalMs) => {
-  // Aquí deberías implementar la lógica para configurar el modo de detección continua
-  return { success: true }; // Este es un ejemplo, ajusta según tu lógica
-};
-
-module.exports = 
-getDetectionStatus,
-setDetectionMode,
-router;
+module.exports = router;

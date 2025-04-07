@@ -12,7 +12,7 @@ import {
   limit,
   serverTimestamp 
 } from "firebase/firestore";
-import { getDb, COLLECTIONS } from "./firebase";
+import { db, getDb, COLLECTIONS } from "./firebase";
 
 // Colecciones de Firestore (usando las colecciones centralizadas de firebase.js)
 // Si quieres seguir usando tus propias constantes, puedes mantenerlas o remplazarlas
@@ -159,26 +159,36 @@ export const deleteProduct = async (productId) => {
  */
 export const getRegisteredProducts = async () => {
   try {
-    const db = getFirestore();
+    console.log('Obteniendo productos registrados...');
+    
     const q = query(
       collection(db, PRODUCTS_COLLECTION),
       orderBy('createdAt', 'desc')
     );
     
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => {
+    
+    if (querySnapshot.empty) {
+      console.log('ℹ️ No se encontraron productos registrados');
+      return [];
+    }
+
+    const products = querySnapshot.docs.map(doc => {
       const data = doc.data();
       return {
         id: doc.id,
         ...data,
-        // Asegurar que tengamos un nombre (usar label si es necesario)
         nombre: data.nombre || data.label || "Producto sin nombre",
-        // Manejar diferentes tipos de fechas
-        fechaRegistro: getFormattedDate(data.createdAt),
-        // Categoría por defecto si no tiene una asignada
-        categoria: data.categoria || 'sin-categoria'
+        fechaRegistro: data.createdAt?.toDate().toISOString() || new Date().toISOString(),
+        categoria: data.categoria || 'sin-categoria',
+        // Asegurar que los campos numéricos sean números
+        precio: typeof data.precio === 'string' ? parseFloat(data.precio) : data.precio,
+        cantidad: typeof data.cantidad === 'string' ? parseInt(data.cantidad, 10) : data.cantidad
       };
     });
+
+    console.log(`${products.length} productos recuperados`);
+    return products;
   } catch (error) {
     console.error("Error al obtener productos registrados:", error);
     throw error;

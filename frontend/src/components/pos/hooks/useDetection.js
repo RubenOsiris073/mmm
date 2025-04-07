@@ -5,10 +5,27 @@ import apiService from '../../../services/apiService';
 /**
  * Custom hook to manage product detection functionality
  */
-const useDetection = ({ products, wallet, addToCart, setError }) => {
+const useDetection = ({ products, addToCart, setError }) => {
   const [lastDetection, setLastDetection] = useState(null);
   const [continuousDetection, setContinuousDetection] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Nueva función para capturar frames del video
+  const captureFrame = async () => {
+    const videoElement = document.querySelector('video');
+    if (!videoElement || videoElement.readyState < 2) {
+      return null;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = videoElement.videoWidth;
+    canvas.height = videoElement.videoHeight;
+    
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(videoElement, 0, 0);
+    
+    return canvas.toDataURL('image/jpeg', 0.8);
+  };
 
   // Define addDetectedProductToCart first to avoid 'h' reference error
   const addDetectedProductToCart = useCallback((productLabel, productInfo = null) => {
@@ -105,29 +122,6 @@ const useDetection = ({ products, wallet, addToCart, setError }) => {
 
     return () => clearInterval(interval);
   }, [continuousDetection, lastDetection, addDetectedProductToCart]);
-  
-  // Añadir este useEffect después del existente para lastDetection
-  useEffect(() => {
-    // Cuando se detecta un nuevo producto, refrescamos el wallet
-    if (lastDetection) {
-      console.log("Nueva detección, recargando inventario...");
-
-      const reloadWallet = async () => {
-        try {
-          const walletResponse = await apiService.getWallet();
-          if (walletResponse && walletResponse.wallet) {
-            console.log("Wallet recargado después de detección:", walletResponse.wallet.length, "items");
-            // Here we should have a setter function from props
-            // This is likely causing issues since we don't have a way to update the wallet
-          }
-        } catch (err) {
-          console.error("Error recargando wallet después de detección:", err);
-        }
-      };
-
-      reloadWallet();
-    }
-  }, [lastDetection]);
 
   // Cambiar modo de detección continua
   const toggleContinuousDetection = useCallback(async () => {
@@ -160,7 +154,12 @@ const useDetection = ({ products, wallet, addToCart, setError }) => {
       setError(null);
 
       console.log("Iniciando detección manual...");
-      const result = await apiService.triggerDetection();
+      const frameData = await captureFrame();
+      if (!frameData) {
+        throw new Error("No se pudo capturar el frame");
+      }
+
+      const result = await apiService.triggerDetection(frameData);
       console.log("Resultado de detección:", result);
 
       if (result && result.detection) {
@@ -185,7 +184,7 @@ const useDetection = ({ products, wallet, addToCart, setError }) => {
     } finally {
       setLoading(false);
     }
-  }, [setError, setLoading, addDetectedProductToCart]);
+  }, [setError, addDetectedProductToCart]);
 
   return {
     lastDetection,
