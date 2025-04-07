@@ -1,58 +1,63 @@
-import React, { useEffect } from 'react';
-import { Alert } from 'react-bootstrap';
+import React, { useRef, useEffect, useState } from 'react';
+import Webcam from 'react-webcam';
 
-const Camera = ({ videoRef }) => {
-  const [error, setError] = React.useState(null);
-
+const Camera = React.forwardRef(({ onReady, ...props }, ref) => {
+  const [isReady, setIsReady] = useState(false);
+  const internalRef = useRef(null);
+  
+  // Combinar refs para compatibilidad
+  const webcamRef = ref || internalRef;
+  
+  // Verificar si la cámara está lista
   useEffect(() => {
-    let stream = null;
-    
-    async function setupCamera() {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: false
-        });
-        
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      } catch (err) {
-        console.error("Error al acceder a la cámara:", err);
-        setError("No se pudo acceder a la cámara. Verifica los permisos.");
+    const checkCameraReady = () => {
+      const videoElement = webcamRef.current?.video;
+      if (
+        videoElement && 
+        videoElement.readyState === 4 &&
+        videoElement.videoWidth > 0 &&
+        videoElement.videoHeight > 0
+      ) {
+        setIsReady(true);
+        if (onReady) onReady(webcamRef.current);
+        return true;
       }
-    }
-    
-    setupCamera();
-    
-    return () => {
-      if (stream) {
-        const tracks = stream.getTracks();
-        tracks.forEach(track => track.stop());
-      }
+      return false;
     };
-  }, [videoRef]);
+    
+    if (!isReady) {
+      const intervalId = setInterval(() => {
+        if (checkCameraReady()) {
+          clearInterval(intervalId);
+        }
+      }, 500);
+      
+      return () => clearInterval(intervalId);
+    }
+  }, [webcamRef, onReady, isReady]);
 
   return (
     <div className="camera-container">
-      {error && <Alert variant="danger">{error}</Alert>}
-      <video 
-        ref={videoRef}
-        width="100%" 
-        height="auto"
-        autoPlay 
-        playsInline 
-        muted
-        style={{ 
-          borderRadius: '8px', 
-          marginBottom: '15px',
-          maxHeight: '60vh',
-          objectFit: 'contain',
-          backgroundColor: '#000'
+      <Webcam
+        ref={webcamRef}
+        audio={false}
+        screenshotFormat="image/jpeg"
+        videoConstraints={{
+          width: 640,
+          height: 480,
+          facingMode: props.facingMode || "environment",
         }}
+        {...props}
       />
+      {!isReady && (
+        <div className="camera-loading-indicator">
+          <p>Iniciando cámara...</p>
+        </div>
+      )}
     </div>
   );
-};
+});
+
+Camera.displayName = 'Camera';
 
 export default Camera;

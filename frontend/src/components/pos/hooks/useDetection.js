@@ -1,31 +1,58 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import apiService from '../../../services/apiService';
 
 /**
  * Custom hook to manage product detection functionality
  */
-const useDetection = ({ products, addToCart, setError }) => {
+const useDetection = ({ products, addToCart, setError, options = {} }) => {
+  // Opciones configurables
+  const {
+    autoStart = false,
+    detectionInterval = 3000,
+    confidenceThreshold = 0.7,
+    maxConcurrentDetections = 1
+  } = options;
+
   const [lastDetection, setLastDetection] = useState(null);
   const [continuousDetection, setContinuousDetection] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isWebcamReady, setIsWebcamReady] = useState(false);
   const webcamRef = useRef(null);
+  const activeDetections = useRef(0);
 
-  const captureFrame = async () => {
+  // Función para verificar si la webcam está lista
+  const checkWebcamReady = useCallback(() => {
+    if (!webcamRef.current) {
+      return false;
+    }
+    
+    const video = webcamRef.current.video;
+    return video && 
+           video.readyState === 4 && 
+           video.videoWidth > 0 && 
+           video.videoHeight > 0;
+  }, []);
+
+  // Inicialización de la webcam
+  useEffect(() => {
+    const checkInterval = setInterval(() => {
+      const ready = checkWebcamReady();
+      if (ready && !isWebcamReady) {
+        setIsWebcamReady(true);
+        console.log("Webcam inicializada correctamente");
+        clearInterval(checkInterval);
+      }
+    }, 500);
+
+    return () => clearInterval(checkInterval);
+  }, [checkWebcamReady, isWebcamReady]);
+
+  const captureFrame = useCallback(async () => {
     try {
       // Verificar que la referencia a webcam existe y está inicializada
-      if (!webcamRef.current) {
-        console.log("La referencia a la webcam no está disponible");
-        return null;
-      }
-      
-      // Verificar que el video está listo
-      if (!webcamRef.current.video || 
-          webcamRef.current.video.readyState !== 4) {
-        console.log("El video de la webcam no está listo", 
-                   webcamRef.current.video ? 
-                   `(readyState: ${webcamRef.current.video.readyState})` : 
-                   "(video no disponible)");
+      if (!isWebcamReady || !webcamRef.current) {
+        console.log("La webcam no está lista para capturar frames");
         return null;
       }
       
@@ -39,24 +66,51 @@ const useDetection = ({ products, addToCart, setError }) => {
       return imageSrc;
     } catch (error) {
       console.log("Error al capturar frame:", error.message);
+      setError(`Error al capturar imagen: ${error.message}`);
       return null;
     }
-  };
+  }, [isWebcamReady, setError]);
 
-  const handleManualDetection = async () => {
-    try {
-      const frame = await captureFrame();
-      if (!frame) {
-        console.log("Error en detección manual: No se pudo capturar el frame");
-        return;
-      }
-      // Resto del código que procesa el frame
-    } catch (error) {
-      console.log("Error en detección manual:", error);
+  // Función para detectar a partir de una imagen
+  const detectFromImage = useCallback(async (imageData) => {
+    if (activeDetections.current >= maxConcurrentDetections) {
+      console.log("Máximo de detecciones concurrentes alcanzado. Esperando...");
+      return;
     }
-  };
+    
+    try {
+      activeDetections.current += 1;
+      
+      const result = await apiService.triggerDetection(imageData);
+      console.log("Resultado de detección:", result);
+      
+      if (result && result.detection) {
+        setLastDetection(result.detection);
+
+        if (result.detection.similarity > confidenceThreshold * 100) {
+          // Usar la información del producto si está disponible
+          addDetectedProductToCart(
+            result.detection.label,
+            result.detection.productInfo
+          );
+        } else {
+          setError(`Detección poco confiable (${result.detection.similarity}%). Intente nuevamente.`);
+          setTimeout(() => setError(null), 3000);
+        }
+      } else {
+        throw new Error("La respuesta de detección no tiene el formato esperado");
+      }
+      
+      return result;
+    } catch (error) {
+      console.log("Error en la detección:", error.message);
+      setError(`Error en la detección: ${error.message}`);
+    } finally {
+      activeDetections.current -= 1;
+    }
+  }, [addDetectedProductToCart, confidenceThreshold, setError]);
   
-  // Define addDetectedProductToCart first to avoid 'h' reference error
+  // Define addDetectedProductToCart first to avoid reference error
   const addDetectedProductToCart = useCallback((productLabel, productInfo = null) => {
     console.log("Intentando añadir al carrito por detección:", productLabel, "Info adicional:", productInfo);
     
@@ -135,7 +189,7 @@ const useDetection = ({ products, addToCart, setError }) => {
             setLastDetection(latestDetection);
 
             // Si la detección es confiable, añadir al carrito
-            if (latestDetection.similarity > 70) {
+            if (latestDetection.similarity > confidenceThreshold * 100) {
               addDetectedProductToCart(
                 latestDetection.label,
                 latestDetection.productInfo
@@ -147,10 +201,30 @@ const useDetection = ({ products, addToCart, setError }) => {
         console.error("Error verificando detecciones:", err);
         // No mostrar error en UI para no interrumpir la experiencia
       }
-    }, 2000);
+    }, detectionInterval);
 
     return () => clearInterval(interval);
-  }, [continuousDetection, lastDetection, addDetectedProductToCart]);
+  }, [continuousDetection, lastDetection, addDetectedProductToCart, confidenceThreshold, detectionInterval]);
+
+  // Manejar detección automática
+  useEffect(() => {
+    let interval = null;
+    
+    if (continuousDetection && autoStart && isWebcamReady) {
+      interval = setInterval(async () => {
+        await triggerManualDetection();
+      }, detectionInterval);
+      
+      console.log(`Detección automática iniciada (cada ${detectionInterval}ms)`);
+    }
+    
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+        console.log("Detección automática detenida");
+      }
+    };
+  }, [continuousDetection, autoStart, isWebcamReady, detectionInterval]);
 
   // Cambiar modo de detección continua
   const toggleContinuousDetection = useCallback(async () => {
@@ -158,7 +232,7 @@ const useDetection = ({ products, addToCart, setError }) => {
       setLoading(true);
       const newStatus = !continuousDetection;
 
-      const result = await apiService.setDetectionMode(newStatus);
+      const result = await apiService.setDetectionMode(newStatus, detectionInterval);
       console.log(`Modo detección continua ${newStatus ? 'activado' : 'desactivado'}:`, result);
 
       setContinuousDetection(newStatus);
@@ -174,54 +248,49 @@ const useDetection = ({ products, addToCart, setError }) => {
     } finally {
       setLoading(false);
     }
-  }, [continuousDetection, setError]);
+  }, [continuousDetection, detectionInterval, setError]);
 
   // Realizar detección manual
   const triggerManualDetection = useCallback(async () => {
+    if (activeDetections.current >= maxConcurrentDetections) {
+      console.log("Ya hay una detección en curso. Espere un momento.");
+      return;
+    }
+    
     try {
       setLoading(true);
       setError(null);
+      activeDetections.current += 1;
 
       console.log("Iniciando detección manual...");
       const frameData = await captureFrame();
       if (!frameData) {
-        throw new Error("No se pudo capturar el frame");
+        throw new Error("No se pudo capturar imagen de la cámara");
       }
 
-      const result = await apiService.triggerDetection(frameData);
-      console.log("Resultado de detección:", result);
-
-      if (result && result.detection) {
-        setLastDetection(result.detection);
-
-        if (result.detection.similarity > 70) {
-          // Usar la información del producto si está disponible
-          addDetectedProductToCart(
-            result.detection.label,
-            result.detection.productInfo
-          );
-        } else {
-          setError(`Detección poco confiable (${result.detection.similarity}%). Intente nuevamente.`);
-          setTimeout(() => setError(null), 3000);
-        }
-      } else {
-        throw new Error("La respuesta de detección no tiene el formato esperado");
-      }
+      return await detectFromImage(frameData);
     } catch (err) {
       console.error("Error en detección manual:", err);
       setError("Error al realizar detección. Intenta nuevamente.");
+      return null;
     } finally {
+      activeDetections.current -= 1;
       setLoading(false);
     }
-  }, [setError, addDetectedProductToCart]);
+  }, [captureFrame, detectFromImage, maxConcurrentDetections, setError]);
 
   return {
+    webcamRef,
     lastDetection,
     continuousDetection,
     loading,
+    isWebcamReady,
     toggleContinuousDetection,
     triggerManualDetection,
-    addDetectedProductToCart
+    addDetectedProductToCart,
+    startDetection: () => setContinuousDetection(true),
+    stopDetection: () => setContinuousDetection(false),
+    clearError: () => setError(null)
   };
 };
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Button, Form, Spinner, Badge, ListGroup } from 'react-bootstrap';
+import { Card, Button, Form, Spinner, Badge, ListGroup, Alert } from 'react-bootstrap';
 
 const ProductDetectionPanel = ({
   loading,
@@ -12,12 +12,13 @@ const ProductDetectionPanel = ({
   filteredProducts,
   searchTerm,
   setSearchTerm,
-  addToCart
+  addToCart,
+  isWebcamReady // Nueva prop
 }) => {
   return (
-    <Card className="h-100">
+    <Card className="shadow-sm h-100">
       <Card.Header className="d-flex justify-content-between align-items-center">
-        <h4 className="mb-0">Detección de Productos</h4>
+        <h5 className="mb-0">Detección de Productos</h5>
         <Form.Check
           type="switch"
           id="continuous-detection"
@@ -29,6 +30,16 @@ const ProductDetectionPanel = ({
       </Card.Header>
 
       <Card.Body>
+        {/* Estado de la webcam */}
+        {!isWebcamReady && (
+          <Alert variant="info">
+            <p className="mb-0">Inicializando cámara...</p>
+            <div className="spinner-border spinner-border-sm text-primary mt-2" role="status">
+              <span className="visually-hidden">Cargando...</span>
+            </div>
+          </Alert>
+        )}
+
         {/* Área de detección */}
         <div className="text-center mb-4">
           <Button
