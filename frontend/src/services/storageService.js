@@ -169,7 +169,7 @@ export const getRegisteredProducts = async () => {
     const querySnapshot = await getDocs(q);
     
     if (querySnapshot.empty) {
-      console.log('ℹ️ No se encontraron productos registrados');
+      console.log('No se encontraron productos registrados');
       return [];
     }
 
@@ -179,7 +179,8 @@ export const getRegisteredProducts = async () => {
         id: doc.id,
         ...data,
         nombre: data.nombre || data.label || "Producto sin nombre",
-        fechaRegistro: data.createdAt?.toDate().toISOString() || new Date().toISOString(),
+        // Usar la función auxiliar getFormattedDate en lugar de llamar a toDate directamente
+        fechaRegistro: getFormattedDate(data.createdAt),
         categoria: data.categoria || 'sin-categoria',
         // Asegurar que los campos numéricos sean números
         precio: typeof data.precio === 'string' ? parseFloat(data.precio) : data.precio,
@@ -192,6 +193,69 @@ export const getRegisteredProducts = async () => {
   } catch (error) {
     console.error("Error al obtener productos registrados:", error);
     throw error;
+  }
+};
+
+/**
+ * Función mejorada para obtener productos con manejo seguro de fechas
+ * @returns {Promise<Array>} Lista de productos con fechas formateadas correctamente
+ */
+export const getProductsWithSafeDates = async () => {
+  try {
+    const db = getFirestore();
+    const q = query(
+      collection(db, PRODUCTS_COLLECTION),
+      orderBy('createdAt', 'desc')
+    );
+    
+    const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.empty) {
+      console.log('No se encontraron productos registrados');
+      return [];
+    }
+
+    const products = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      
+      // Manejo seguro de la fecha
+      const fechaOriginal = data.createdAt;
+      let fechaFormateada;
+      
+      try {
+        if (fechaOriginal && typeof fechaOriginal.toDate === 'function') {
+          fechaFormateada = fechaOriginal.toDate().toISOString();
+        } else if (fechaOriginal instanceof Date) {
+          fechaFormateada = fechaOriginal.toISOString();
+        } else if (typeof fechaOriginal === 'string') {
+          fechaFormateada = new Date(fechaOriginal).toISOString();
+        } else if (typeof fechaOriginal === 'number') {
+          fechaFormateada = new Date(fechaOriginal).toISOString();
+        } else {
+          fechaFormateada = new Date().toISOString();
+        }
+      } catch (err) {
+        console.log("Error al formatear fecha:", err.message);
+        fechaFormateada = new Date().toISOString();
+      }
+      
+      return {
+        id: doc.id,
+        ...data,
+        nombre: data.nombre || data.label || "Producto sin nombre",
+        fechaRegistro: fechaFormateada,
+        categoria: data.categoria || 'sin-categoria',
+        // Asegurar que los campos numéricos sean números
+        precio: typeof data.precio === 'string' ? parseFloat(data.precio) : data.precio,
+        cantidad: typeof data.cantidad === 'string' ? parseInt(data.cantidad, 10) : data.cantidad
+      };
+    });
+
+    console.log(`${products.length} productos recuperados con fechas seguras`);
+    return products;
+  } catch (error) {
+    console.error("Error al obtener productos con fechas seguras:", error);
+    return [];  // Devolver array vacío en lugar de propagar el error
   }
 };
 

@@ -1,42 +1,120 @@
-src/
-├── components/
-│   ├── camera/
-│   │   ├── CameraView.jsx        # Componente principal con cámara y predicción
-│   │   ├── Camera.jsx            # Componente de cámara mejorado
-│   │   └── PredictionDisplay.jsx # Muestra las predicciones
-│   ├── products/
-│   │   ├── ProductList.jsx       # Lista de productos detectados
-│   │   ├── ProductForm.jsx       # Formulario para editar productos
-│   │   └── ProductDetail.jsx     # Detalles de un producto específico
-│   ├── layout/
-│   │   ├── Navbar.jsx            # Barra de navegación con enlaces
-│   │   └── Footer.jsx            # Pie de página
-│   └── shared/
-│       └── ModelDiagnostic.jsx   # Diagnóstico del modelo (opcional)
-├── services/
-│   ├── detectionService.js       # Servicio de detección con TensorFlow
-│   ├── firebase.js               # Configuración de Firebase
-│   └── storageService.js         # Almacenamiento de datos de productos
-├── pages/
-│   ├── CameraPage.jsx            # Página principal con cámara
-│   └── ProductsPage.jsx          # Página de lista de productos
-├── App.js                        # Componente principal con enrutamiento
-└── index.js
+ESTRUCTURA DE LA APLICACIÓN
+==========================
 
+1. ARQUITECTURA GENERAL
+   - Aplicación dockerizada (Docker + Docker Compose)
+   - Estructura de microservicios (Backend y Frontend separados)
+   - Configuración de entorno (.env)
+   - Sistema de integración continua (reset.sh)
 
+2. BACKEND (Node.js)
+   2.1. CONFIGURACIÓN
+       - Dockerfile para contenedorización
+       - Configuración de servidor (config/config.js)
+       - Integración con Firebase (config/firebase.js)
+   
+   2.2. API REST
+       - Servidor principal (server.js)
+       - Rutas:
+           * detectionRoutes.js - Manejo de detección de objetos
+           * inventoryRoutes.js - Gestión de inventario
+           * productRoutes.js - CRUD de productos
+           * salesRoutes.js - Gestión de ventas
+           * transactionsRoutes.js - Transacciones financieras
+   
+   2.3. CONTROLADORES
+       - detectionControllers.js - Lógica de detección de objetos
+   
+   2.4. SERVICIOS
+       - detectionService.js - Servicio de detección de objetos con TensorFlow
+       - inventoryService.js - Lógica de negocio para inventario
+       - productService.js - Gestión de productos
+       - salesService.js - Procesamiento de ventas
+       - storageService.js - Almacenamiento de datos
+       - transactionsService.js - Gestión de transacciones
+       - webcamService.js - Interacción con cámara
+   
+   2.5. MODELO DE IA
+       - models/metadata.json - Metadatos del modelo tensor
+       - models/model.json - Definición del modelo
+       - models/weights.bin - Pesos del modelo entrenado
+   
+   2.6. UTILIDADES
+       - utils/firebaseUtils.js - Funciones de ayuda para Firebase
+       - utils/helpers.js - Funciones de utilidad general
 
-├── backend/                # Servicio de detección y conteo
-│   ├── Dockerfile
-│   ├── package.json
-│   ├── server.js           # Servidor principal
-│   ├── models/             # Modelos TensorFlow
-│   ├── services/           # Servicios de Firebase y detección
-│   └── routes/             # API endpoints
-│
-├── frontend/               # Aplicación React actual modificada
-│   ├── Dockerfile
-│   ├── package.json
-│   ├── src/
-│   └── public/
-│
-└── docker-compose.yml      # Orquestación de ambos servicios
+3. FRONTEND (React.js)
+   3.1. CONFIGURACIÓN
+       - Dockerfile para contenedorización
+       - nginx.conf - Configuración del servidor web
+       - Punto de entrada (src/index.js, App.js)
+   
+   3.2. PÁGINAS PRINCIPALES
+       - CameraPage.jsx - Página de captura y detección
+       - POSPage.jsx - Punto de venta (POS)
+       - ProductFormPage.jsx - Formulario de productos
+       - ProductsPage.jsx - Listado de productos
+       - SalesPage.jsx - Historial de ventas
+       - WalletPage.jsx - Gestión de pagos
+   
+   3.3. COMPONENTES
+       3.3.1. DETECCIÓN DE OBJETOS
+           - ObjectDetection.jsx - Componente principal de detección
+           - camera/Camera.jsx - Control de cámara
+           - camera/CameraView.jsx - Vista de cámara
+           - camera/PredictionDisplay.jsx - Visualización de predicciones
+       
+       3.3.2. INVENTARIO
+           - inventory/AutomaticRegistration.jsx - Registro automático
+           - inventory/BarcodeScanner.jsx - Escaneo de códigos de barras
+           - inventory/BatchProductForm.jsx - Formulario de productos por lote
+           - inventory/BatchProductList.jsx - Lista de productos por lote
+           - inventory/CamaraDetector.jsx - Detector con cámara
+           - inventory/InventoryView.jsx - Vista de inventario
+           - inventory/RegisteredProducts.jsx - Productos registrados
+           - inventory/UpdateModal.jsx - Modal de actualización
+       
+       3.3.3. PUNTO DE VENTA (POS)
+           - pos/DebugPanel.jsx - Panel de depuración
+           - pos/LastAddedProductAlert.jsx - Alerta de últimos productos
+           - pos/ObjectDetection.jsx - Detección de objetos en POS
+           - pos/POSView.jsx - Vista principal del POS
+           - pos/PaymentModal.jsx - Modal de pago
+           - pos/ProductDetectionPanel.jsx - Panel de detección
+           - pos/ProductList.jsx - Lista de productos
+           - pos/ShoppingCart.jsx - Carrito de compras
+       
+       3.3.4. GESTIÓN DE PRODUCTOS
+           - products/ProductDetailForm.jsx - Formulario de detalles
+           - products/ProductGrid.jsx - Cuadrícula de productos
+           - products/ProductItem.jsx - Elemento de producto
+           - products/ProductList.jsx - Lista de productos
+       
+       3.3.5. VENTAS
+           - sales/SalesHistory.jsx - Historial de ventas
+       
+       3.3.6. LAYOUT
+           - layout/Navigation.jsx - Navegación
+           - layout/Footer.jsx - Pie de página
+   
+   3.4. HOOKS PERSONALIZADOS
+       - hooks/useInventory.js - Lógica de inventario
+       - pos/hooks/useCart.js - Lógica de carrito
+       - pos/hooks/useDetection.js - Lógica de detección
+       - pos/hooks/usePayment.js - Lógica de pagos
+       - pos/hooks/useProductData.js - Datos de productos
+   
+   3.5. SERVICIOS
+       - services/apiService.js - Cliente API para backend
+       - services/bodegaService.js - Servicio de bodega
+       - services/detectionService.js - Servicio de detección
+       - services/firebase.js - Configuración de Firebase
+       - services/storageService.js - Almacenamiento
+   
+   3.6. UTILIDADES
+       - utils/helpers.js - Funciones de utilidad
+
+4. INTEGRACIÓN Y DESPLIEGUE
+   - docker-compose.yml - Orquestación de servicios
+   - .dockerignore - Exclusiones para Docker
+   - estructura.txt - Documentación de estructura

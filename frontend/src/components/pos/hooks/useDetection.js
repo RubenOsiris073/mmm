@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'react-toastify';
 import apiService from '../../../services/apiService';
 
@@ -9,24 +9,53 @@ const useDetection = ({ products, addToCart, setError }) => {
   const [lastDetection, setLastDetection] = useState(null);
   const [continuousDetection, setContinuousDetection] = useState(false);
   const [loading, setLoading] = useState(false);
+  const webcamRef = useRef(null);
 
-  // Nueva función para capturar frames del video
   const captureFrame = async () => {
-    const videoElement = document.querySelector('video');
-    if (!videoElement || videoElement.readyState < 2) {
+    try {
+      // Verificar que la referencia a webcam existe y está inicializada
+      if (!webcamRef.current) {
+        console.log("La referencia a la webcam no está disponible");
+        return null;
+      }
+      
+      // Verificar que el video está listo
+      if (!webcamRef.current.video || 
+          webcamRef.current.video.readyState !== 4) {
+        console.log("El video de la webcam no está listo", 
+                   webcamRef.current.video ? 
+                   `(readyState: ${webcamRef.current.video.readyState})` : 
+                   "(video no disponible)");
+        return null;
+      }
+      
+      // Intentar obtener screenshot
+      const imageSrc = webcamRef.current.getScreenshot();
+      if (!imageSrc) {
+        console.log("No se pudo obtener la imagen de la cámara");
+        return null;
+      }
+      
+      return imageSrc;
+    } catch (error) {
+      console.log("Error al capturar frame:", error.message);
       return null;
     }
-
-    const canvas = document.createElement('canvas');
-    canvas.width = videoElement.videoWidth;
-    canvas.height = videoElement.videoHeight;
-    
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(videoElement, 0, 0);
-    
-    return canvas.toDataURL('image/jpeg', 0.8);
   };
 
+  const handleManualDetection = async () => {
+    try {
+      const frame = await captureFrame();
+      if (!frame) {
+        console.log("Error en detección manual: No se pudo capturar el frame");
+        return;
+      }
+      // Resto del código que procesa el frame
+    } catch (error) {
+      console.log("Error en detección manual:", error);
+    }
+  };
+  
   // Define addDetectedProductToCart first to avoid 'h' reference error
   const addDetectedProductToCart = useCallback((productLabel, productInfo = null) => {
     console.log("Intentando añadir al carrito por detección:", productLabel, "Info adicional:", productInfo);

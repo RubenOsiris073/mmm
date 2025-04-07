@@ -3,13 +3,14 @@ import { Row, Col, Card, Button, Alert, Tabs, Tab } from 'react-bootstrap';
 import { Link, useLocation } from 'react-router-dom';
 import ProductList from '../components/products/ProductList';
 import ProductGrid from '../components/products/ProductGrid';
-import { getDetections, getRegisteredProducts } from '../services/storageService';
+import { getDetections, getProductsWithSafeDates } from '../services/storageService';
 
 const ProductsPage = () => {
   const [detections, setDetections] = useState([]);
   const [registeredProducts, setRegisteredProducts] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [activeTab, setActiveTab] = useState('grid');
   const location = useLocation();
@@ -24,29 +25,36 @@ const ProductsPage = () => {
   }, [location.state]);
 
   useEffect(() => {
-    async function fetchData() {
+    const fetchData = async () => {
       setLoading(true);
+      setError(null);
+      
       try {
-        // Cargar ambos tipos de datos
+        // Usar getProductsWithSafeDates en lugar de getRegisteredProducts
+        // para un mejor manejo de las fechas
         const [detectionsData, productsData] = await Promise.all([
           getDetections(),
-          getRegisteredProducts()
+          getProductsWithSafeDates() // Usa la función mejorada que maneja fechas de manera segura
         ]);
         
-        setDetections(detectionsData);
-        setRegisteredProducts(productsData);
+        // Validar que los datos sean arrays
+        const safeDetections = Array.isArray(detectionsData) ? detectionsData : [];
+        const safeProducts = Array.isArray(productsData) ? productsData : [];
+        
+        setDetections(safeDetections);
+        setRegisteredProducts(safeProducts);
         
         // Combinar todos los productos para la vista de cuadrícula
         // Evitar duplicados usando Map con ID como clave
         const productMap = new Map();
         
         // Primero agregar productos registrados (completos)
-        productsData.forEach(product => {
+        safeProducts.forEach(product => {
           productMap.set(product.id, product);
         });
         
         // Luego agregar detecciones que no tengan contraparte registrada
-        detectionsData.forEach(detection => {
+        safeDetections.forEach(detection => {
           if (!productMap.has(detection.id)) {
             productMap.set(detection.id, detection);
           }
@@ -55,10 +63,11 @@ const ProductsPage = () => {
         setAllProducts(Array.from(productMap.values()));
       } catch (error) {
         console.error("Error al cargar productos:", error);
+        setError("No se pudieron cargar los productos. Por favor, intente nuevamente más tarde.");
       } finally {
         setLoading(false);
       }
-    }
+    };
 
     fetchData();
   }, []);
@@ -88,6 +97,16 @@ const ProductsPage = () => {
           <Col>
             <Alert variant="success" onClose={() => setSuccessMessage(null)} dismissible>
               {successMessage}
+            </Alert>
+          </Col>
+        </Row>
+      )}
+      
+      {error && (
+        <Row className="mb-4">
+          <Col>
+            <Alert variant="danger" onClose={() => setError(null)} dismissible>
+              {error}
             </Alert>
           </Col>
         </Row>
