@@ -207,7 +207,9 @@ const apiService = {
   // Ventas
   async createSale(saleData) {
     try {
+      console.log('Enviando venta:', saleData);
       const response = await this.api.post('/sales', saleData);
+      console.log('Respuesta de venta:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error creando venta:', error);

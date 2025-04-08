@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import apiService from '../../../services/apiService';
 import { toast } from 'react-toastify';
+import apiService from '../../../services/apiService';
 
 const usePayment = ({ cartItems, calculateTotal, setError }) => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -9,98 +9,83 @@ const usePayment = ({ cartItems, calculateTotal, setError }) => {
   const [clientName, setClientName] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Procesar venta con validaciones
+  // Función para procesar la venta
   const processSale = useCallback(async () => {
+    if (cartItems.length === 0) {
+      setError('No hay productos en el carrito');
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
+    const total = calculateTotal();
+    
+    if (paymentMethod === 'efectivo' && 
+        (isNaN(parseFloat(amountReceived)) || parseFloat(amountReceived) < total)) {
+      setError('El monto recibido debe ser igual o mayor al total');
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
     try {
-      // Validar que hay productos
-      if (!cartItems || cartItems.length === 0) {
-        toast.error('No hay productos en el carrito');
-        return;
-      }
-
-      // Validar nombre de cliente
-      if (!clientName.trim()) {
-        toast.error('Ingrese el nombre del cliente');
-        return;
-      }
-
-      // Validar monto recibido para pagos en efectivo
-      if (paymentMethod === 'efectivo') {
-        const receivedAmount = parseFloat(amountReceived) || 0;
-        const total = calculateTotal();
-        
-        if (receivedAmount < total) {
-          toast.error('El monto recibido no puede ser menor al total');
-          return;
-        }
-      }
-
-      // Iniciar proceso de venta
       setLoading(true);
-
-      // Formato de venta para la API
+      
+      // Preparar los datos de la venta
       const saleData = {
-        clientName: clientName.trim(),
+        client: clientName.trim() || 'Cliente general',
+        paymentMethod: paymentMethod,
+        total: total,
+        amountReceived: paymentMethod === 'efectivo' ? parseFloat(amountReceived) : total,
+        change: paymentMethod === 'efectivo' ? parseFloat(amountReceived) - total : 0,
         items: cartItems.map(item => ({
           productId: item.id,
-          name: item.nombre,
-          price: item.precio,
-          quantity: item.quantity,
-          subtotal: item.precio * item.quantity
-        })),
-        total: calculateTotal(),
-        paymentMethod,
-        amountReceived: paymentMethod === 'efectivo' ? parseFloat(amountReceived) : calculateTotal(),
-        change: paymentMethod === 'efectivo' ? parseFloat(amountReceived) - calculateTotal() : 0,
-        date: new Date().toISOString()
+          cantidad: item.quantity,
+          precioUnitario: item.precio,
+          total: item.total,
+          nombre: item.nombre
+        }))
       };
-
-      console.log('Enviando datos de venta:', saleData);
       
-      // Llamada a la API
-      const result = await apiService.processSale(saleData);
+      console.log("Enviando datos de venta:", saleData);
       
-      if (result && result.success) {
+      // Enviar la venta al servidor
+      const response = await apiService.createSale(saleData);
+      
+      if (response && response.success) {
         toast.success('Venta procesada correctamente');
         setShowPaymentModal(false);
         
-        // Limpiar el formulario
-        setClientName('');
-        setAmountReceived('');
-        setPaymentMethod('efectivo');
-        
-        // Aquí deberíamos limpiar el carrito, pero como no tenemos acceso
-        // a setCartItems en este hook, emitiremos un evento personalizado
-        const event = new CustomEvent('sale-completed', { detail: result });
+        // Limpiar el carrito, emitiendo un evento personalizado
+        const event = new CustomEvent('sale-completed');
         window.dispatchEvent(event);
-
-        return result;
+        
+        // Restablecer estados
+        setAmountReceived('');
+        setClientName('');
+        
+        return true;
       } else {
-        throw new Error(result?.message || 'Error procesando la venta');
+        throw new Error(response?.message || 'Error al procesar la venta');
       }
     } catch (error) {
-      console.error('Error al procesar la venta:', error);
-      if (typeof setError === 'function') {
-        setError(`Error al procesar la venta: ${error.message}`);
-        setTimeout(() => setError(null), 3000);
-      }
-      toast.error(`Error al procesar la venta: ${error.message}`);
-      return null;
+      console.log("Error al procesar la venta:", error);
+      setError(`Error al procesar el pago: ${error.message}`);
+      setTimeout(() => setError(null), 3000);
+      return false;
     } finally {
       setLoading(false);
     }
-  }, [cartItems, clientName, paymentMethod, amountReceived, calculateTotal, setError]);
+  }, [cartItems, calculateTotal, paymentMethod, amountReceived, clientName, setError]);
 
   return {
     showPaymentModal,
-    setShowPaymentModal,
     paymentMethod,
-    setPaymentMethod,
     amountReceived,
-    setAmountReceived,
     clientName,
-    setClientName,
     loading,
+    setShowPaymentModal,
+    setPaymentMethod,
+    setAmountReceived,
+    setClientName,
     processSale
   };
 };

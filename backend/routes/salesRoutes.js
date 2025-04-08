@@ -3,7 +3,7 @@ const router = express.Router();
 const salesService = require('../services/salesService');
 
 // Obtener todas las ventas
-router.get('/sales', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const sales = await salesService.getAllSales();
     res.json({ sales });
@@ -14,7 +14,7 @@ router.get('/sales', async (req, res) => {
 });
 
 // Crear nueva venta
-router.post('/sales', async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const result = await salesService.createSale(req.body);
     res.json(result);
