@@ -12,7 +12,7 @@ COPY package.json package-lock.json ./
 
 # Instalar dependencias y añadir las dependencias faltantes
 RUN npm install --legacy-peer-deps
-RUN npm install bootstrap bootstrap-icons react-icons @tensorflow/tfjs react-toastify  @zxing/library react-zxing react-webcam framer-motion jspdf jspdf-autotable date-fns react-to-pdf --legacy-peer-deps
+RUN npm install bootstrap bootstrap-icons react-icons @tensorflow/tfjs react-toastify @zxing/library react-zxing react-webcam framer-motion jspdf jspdf-autotable date-fns react-to-pdf html2canvas --legacy-peer-deps
 
 # Copiar el código fuente
 COPY . ./

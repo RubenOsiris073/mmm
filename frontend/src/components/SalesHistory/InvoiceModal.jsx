@@ -1,22 +1,64 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Modal, Button, Spinner } from 'react-bootstrap';
 import { FaDownload, FaPrint } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import { usePDF } from 'react-to-pdf';
 
 const InvoiceModal = ({ show, onHide, sale }) => {
-  const { toPDF, targetRef } = usePDF({ filename: `Factura-${sale?.id || 'N/A'}.pdf` });
+  const [downloading, setDownloading] = useState(false);
+  const contentRef = useRef(null);
 
   // Si no hay venta seleccionada, no mostramos el modal
   if (!sale) return null;
+  
+  const saleId = sale.id || sale._id || 'NoID';
 
   const handleDownloadInvoice = async () => {
+    if (!contentRef.current) {
+      toast.error('No se puede generar la factura');
+      return;
+    }
+
     try {
-      toPDF();
+      setDownloading(true);
+      
+      // Cargar las bibliotecas necesarias dinámicamente
+      const html2canvas = (await import('html2canvas')).default;
+      const { jsPDF } = await import('jspdf');
+      
+      // Capturar el contenido HTML como una imagen canvas
+      const canvas = await html2canvas(contentRef.current, {
+        scale: 2, // Mayor calidad
+        useCORS: true, // Permitir imágenes de otros dominios
+        logging: false, // Desactivar logs
+      });
+      
+      // Convertir el canvas a imagen
+      const imgData = canvas.toDataURL('image/png');
+      
+      // Crear el documento PDF
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      // Calcular dimensiones para mantener la proporción y que quepa en A4
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      
+      // Añadir la imagen al PDF
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      
+      // Guardar el PDF con un nombre basado en el ID de la venta
+      pdf.save(`Factura-${saleId}.pdf`);
+      
       toast.success('Factura descargada correctamente');
     } catch (error) {
       console.error('Error al generar la factura:', error);
       toast.error('Error al generar la factura');
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -41,16 +83,17 @@ const InvoiceModal = ({ show, onHide, sale }) => {
     >
       <Modal.Header closeButton>
         <Modal.Title id="invoice-modal-title">
-          Factura #{sale.id || sale._id || 'N/A'}
+          Factura #{saleId}
         </Modal.Title>
       </Modal.Header>
       
       <Modal.Body>
-        <div id="invoice-content" ref={targetRef} className="p-3">
+        <div id="invoice-content" ref={contentRef} className="p-3">
+          {/* El contenido de la factura permanece igual */}
           <div className="d-flex justify-content-between align-items-start mb-4">
             <div>
               <h2 className="mb-1">FACTURA</h2>
-              <p className="text-muted mb-0">#{sale.id || sale._id || 'N/A'}</p>
+              <p className="text-muted mb-0">#{saleId}</p>
               <p className="text-muted mb-0">
                 Fecha: {formatDate(sale.date || sale.fecha || sale.timestamp)}
               </p>
@@ -155,8 +198,17 @@ const InvoiceModal = ({ show, onHide, sale }) => {
         <Button 
           variant="success" 
           onClick={handleDownloadInvoice}
+          disabled={downloading}
         >
-          <FaDownload className="me-1" /> Descargar PDF
+          {downloading ? (
+            <>
+              <Spinner animation="border" size="sm" className="me-1" /> Generando...
+            </>
+          ) : (
+            <>
+              <FaDownload className="me-1" /> Descargar PDF
+            </>
+          )}
         </Button>
       </Modal.Footer>
     </Modal>
