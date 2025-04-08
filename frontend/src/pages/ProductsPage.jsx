@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import ProductList from '../components/products/ProductList';
 import ProductGrid from '../components/products/ProductGrid';
 import { getDetections, getProductsWithSafeDates } from '../services/storageService';
+import '../App.css';
 
 const ProductsPage = () => {
   const [detections, setDetections] = useState([]);
@@ -74,23 +75,70 @@ const ProductsPage = () => {
 
   return (
     <>
-      <Row className="mb-4">
-        <Col className="d-flex justify-content-between align-items-center">
-          <h1>Inventario de Productos</h1>
-          <div>
-            <Link to="/" className="me-2">
-              <Button variant="outline-secondary">
-                Volver a la Cámara
-              </Button>
-            </Link>
-            <Link to="/product-form">
-              <Button variant="primary">
-                + Agregar Producto
-              </Button>
-            </Link>
-          </div>
-        </Col>
-      </Row>
+      {/* Banner de productos - Versión simplificada */}
+      <Card className="mb-4">
+        <Card.Body>
+          <Row className="align-items-center">
+            <Col md={8}>
+              <h2>Inventario de Productos</h2>
+              <p className="text-muted mb-0">
+                Gestione su catálogo de productos, visualice las detecciones automáticas y mantenga su inventario actualizado.
+                Este módulo le permite ver, editar y añadir productos para optimizar su gestión de inventario.
+              </p>
+            </Col>
+            <Col md={4} className="text-md-end mt-3 mt-md-0">
+              <Link to="/product-form">
+                <Button variant="primary" className="me-2">
+                  <i className="bi bi-plus-circle me-2"></i>
+                  Añadir Producto
+                </Button>
+              </Link>
+              <Link to="/">
+                <Button variant="outline-secondary">
+                  <i className="bi bi-camera me-2"></i>
+                  Volver a Cámara
+                </Button>
+              </Link>
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
+
+      {/* Instrucciones para gestión de productos */}
+      <Card className="mb-4">
+        <Card.Header className="bg-light">
+          <h5 className="mb-0">
+            <i className="bi bi-info-circle me-2"></i>
+            Instrucciones para el Inventario de Productos
+          </h5>
+        </Card.Header>
+        <Card.Body>
+          <Row>
+            <Col md={8}>
+              <ol>
+                <li className="mb-2">Use "Vista por Categorías" para visualizar todos los productos agrupados por categoría.</li>
+                <li className="mb-2">Cambie a "Lista de Detecciones" para ver los productos detectados automáticamente.</li>
+                <li className="mb-2">Haga clic en un producto para ver más detalles o editarlo.</li>
+                <li className="mb-2">Use el botón "Añadir Producto" para registrar manualmente un nuevo producto.</li>
+                <li className="mb-2">Los productos detectados automáticamente se muestran con un indicador especial.</li>
+                <li>Mantenga su catálogo actualizado para facilitar las operaciones de venta e inventario.</li>
+              </ol>
+            </Col>
+            <Col md={4}>
+              <Alert variant="info" className="h-100 mb-0 d-flex align-items-center">
+                <div>
+                  <i className="bi bi-lightbulb-fill me-2 fs-4"></i>
+                  <strong>Consejos:</strong>
+                  <p className="mb-0 mt-2">
+                    Para una mejor organización, asigne categorías claras a todos sus productos. 
+                    Las imágenes de calidad mejoran la identificación visual. Revise regularmente las detecciones automáticas para validar su precisión.
+                  </p>
+                </div>
+              </Alert>
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
 
       {successMessage && (
         <Row className="mb-4">
