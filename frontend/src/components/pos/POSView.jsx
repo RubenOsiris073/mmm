@@ -156,9 +156,9 @@ const POSView = () => {
     
     // Registrar el resultado
     if (product) {
-      console.log("✅ Producto encontrado:", product);
+      console.log("Producto encontrado:", product);
     } else {
-      console.log("❌ No se encontró el producto con label:", label);
+      console.log("No se encontró el producto con label:", label);
     }
     
     return product;
