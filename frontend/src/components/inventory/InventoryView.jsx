@@ -5,6 +5,7 @@ import BatchProductForm from './BatchProductForm';
 import BatchProductList from './BatchProductList';
 import RegisteredProducts from './RegisteredProducts';
 import AutomaticRegistration from './AutomaticRegistration';
+import AIDetectionRegistration from './AIDetectionRegistration'; // Nuevo componente
 
 const InventoryView = () => {
   const [products, setProducts] = useState([]);
@@ -52,6 +53,9 @@ const InventoryView = () => {
         </Tab>
         <Tab eventKey="automatic" title="Registro Automático">
           <AutomaticRegistration onProductRegistered={loadProducts} />
+        </Tab>
+        <Tab eventKey="ai" title="Registro con IA">
+          <AIDetectionRegistration onProductRegistered={loadProducts} />
         </Tab>
       </Tabs>
 

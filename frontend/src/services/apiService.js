@@ -236,6 +236,37 @@ const apiService = {
       console.error('Error obteniendo ventas:', error);
       throw error;
     }
+  },
+
+  // Método para buscar un producto por clase detectada por IA
+  async findProductByDetection(detectedClass) {
+    try {
+      const classData = {
+        detectedClass: detectedClass.toString()
+      };
+      
+      // En este caso, para integrar con la estructura existente, podríamos hacer:
+      // 1. Una llamada a API si existe ese endpoint
+      const response = await this.api.post('/detection', classData);
+      return response.data;
+      
+      // 2. O una simulación local si no hay endpoint (ejemplo)
+      /*
+      // Simulación de detección - reemplazar por llamada real
+      const mockProducts = await this.getProducts();
+      const matchedProduct = mockProducts.find(p => 
+        p.categoria?.toLowerCase().includes(detectedClass.toString().toLowerCase())
+      );
+      
+      return { 
+        product: matchedProduct || null,
+        success: !!matchedProduct
+      };
+      */
+    } catch (error) {
+      console.error('Error buscando producto por clase detectada:', error);
+      throw error;
+    }
   }
 };
 

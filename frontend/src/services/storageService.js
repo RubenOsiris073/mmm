@@ -447,3 +447,30 @@ export const getInventoryStats = async () => {
     throw error;
   }
 };
+
+/**
+ * Registra un producto en el inventario
+ * @param {Object} product Producto a registrar
+ * @returns {Promise<boolean>} Indica si el registro fue exitoso
+ */
+export const registerProduct = async (product) => {
+  try {
+    // Aquí puedes implementar tu lógica de registro local si es necesaria
+    // Por ejemplo, almacenar en localStorage
+    
+    // También puedes utilizar apiService para guardar en el servidor
+    const apiService = require('./apiService').default;
+    
+    await apiService.updateInventory(
+      product.id,
+      product.quantity,
+      product.location,
+      'Registro desde storageService'
+    );
+    
+    return true;
+  } catch (error) {
+    console.error('Error al registrar producto:', error);
+    throw error;
+  }
+};
