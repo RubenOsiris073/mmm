@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Container, Row, Col, Alert, Button, Form } from 'react-bootstrap';
+import { Container, Row, Col, Alert, Button, Form, Card } from 'react-bootstrap';
 import Webcam from 'react-webcam';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
@@ -413,6 +413,42 @@ const POSView = () => {
 
   return (
     <Container fluid className="pos-container">
+      
+      {/* Instrucciones añadidas en la parte superior */}
+      <Card className="mb-4">
+        <Card.Header className="bg-light">
+          <h5 className="mb-0">
+            <i className="bi bi-info-circle me-2"></i>
+            Instrucciones para el Punto de Venta
+          </h5>
+        </Card.Header>
+        <Card.Body>
+          <Row>
+            <Col md={8}>
+              <ol>
+                <li className="mb-2">Busque productos por nombre o código de barras en la barra de búsqueda.</li>
+                <li className="mb-2">Escanee códigos de barras o seleccione productos de la lista para agregarlos al carrito.</li>
+                <li className="mb-2">Ajuste las cantidades según sea necesario utilizando los botones + y -.</li>
+                <li className="mb-2">Revise el resumen de la venta y el total a pagar.</li>
+                <li className="mb-2">Seleccione el método de pago (efectivo, tarjeta, etc.).</li>
+                <li>Finalice la venta haciendo clic en "Completar Venta" e imprima el recibo si es necesario.</li>
+              </ol>
+            </Col>
+            <Col md={4}>
+              <Alert variant="info" className="h-100 mb-0 d-flex align-items-center">
+                <div>
+                  <i className="bi bi-lightbulb-fill me-2 fs-4"></i>
+                  <strong>Consejos:</strong>
+                  <p className="mb-0 mt-2">
+                    Para transacciones rápidas, utilice un lector de códigos de barras y mantenga la lista de productos frecuentes visible. Presione F1 para acceder a accesos directos del teclado.
+                  </p>
+                </div>
+              </Alert>
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
+
       {error && (
         <Alert variant="danger" className="mb-3" onClose={() => setError(null)} dismissible>
           {error}
