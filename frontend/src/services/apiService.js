@@ -220,7 +220,18 @@ const apiService = {
   async getSales(limit = 50) {
     try {
       const response = await this.api.get(`/sales?limit=${limit}`);
-      return response.data;
+      
+      // Asegurémonos de entender qué estamos recibiendo
+      console.log('Respuesta completa de getSales:', response);
+      
+      // La API devuelve { sales: [] } según salesRoutes.js
+      // Extraemos el array de sales correctamente
+      if (response.data && response.data.sales) {
+        return response.data.sales; // Devolvemos directamente el array
+      } else {
+        console.warn('Formato de respuesta inesperado en getSales:', response.data);
+        return []; // Devolvemos array vacío si no hay datos en formato esperado
+      }
     } catch (error) {
       console.error('Error obteniendo ventas:', error);
       throw error;

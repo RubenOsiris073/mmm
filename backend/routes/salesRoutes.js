@@ -6,7 +6,8 @@ const salesService = require('../services/salesService');
 router.get('/', async (req, res) => {
   try {
     const sales = await salesService.getAllSales();
-    res.json({ sales });
+    // Asegúrate de devolver un objeto con una propiedad sales que contenga el array
+    res.json({ sales }); 
   } catch (error) {
     console.error("Error al obtener ventas:", error);
     res.status(500).json({ error: "Error al obtener ventas", sales: [] });
