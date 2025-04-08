@@ -1,169 +1,154 @@
-import React from 'react';
-import { Card, Button, Form, Spinner, Badge, ListGroup, Alert } from 'react-bootstrap';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Card, Button, Spinner, Row, Col } from 'react-bootstrap';
+import Webcam from 'react-webcam';
 
 const ProductDetectionPanel = ({
-  loading,
+  webcamRef,
+  isWebcamReady,
   continuousDetection,
-  toggleContinuousDetection,
-  triggerManualDetection,
+  setContinuousDetection,
   lastDetection,
-  addDetectedProductToCart,
-  lastAddedProduct,
-  filteredProducts,
-  searchTerm,
-  setSearchTerm,
-  addToCart,
-  isWebcamReady // Nueva prop
+  detectionLoading,
+  captureFrame,
+  detectFromImage,
+  addDetectedProductToCart
 }) => {
+  const [timer, setTimer] = useState(null);
+  
+  // Manejar detección continua
+  useEffect(() => {
+    if (continuousDetection && isWebcamReady) {
+      const interval = setInterval(async () => {
+        const frame = await captureFrame();
+        if (frame) {
+          const detection = await detectFromImage(frame);
+          
+          if (detection && detection.productInfo) {
+            addDetectedProductToCart(detection.label, detection.productInfo);
+          }
+        }
+      }, 2000); // Cada 2 segundos
+      
+      setTimer(interval);
+    } else if (timer) {
+      clearInterval(timer);
+      setTimer(null);
+    }
+    
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [continuousDetection, isWebcamReady, captureFrame, detectFromImage, addDetectedProductToCart, timer]);
+  
+  // Manejar detección manual
+  const handleDetect = useCallback(async () => {
+    try {
+      const frame = await captureFrame();
+      if (frame) {
+        const detection = await detectFromImage(frame);
+        
+        if (detection && detection.productInfo) {
+          addDetectedProductToCart(detection.label, detection.productInfo);
+        }
+      }
+    } catch (error) {
+      console.error("Error en detección manual:", error);
+    }
+  }, [captureFrame, detectFromImage, addDetectedProductToCart]);
+  
   return (
-    <Card className="shadow-sm h-100">
-      <Card.Header className="d-flex justify-content-between align-items-center">
+    <Card className="mb-4">
+      <Card.Header className="bg-primary text-white">
         <h5 className="mb-0">Detección de Productos</h5>
-        <Form.Check
-          type="switch"
-          id="continuous-detection"
-          label="Detección continua"
-          checked={continuousDetection}
-          onChange={toggleContinuousDetection}
-          disabled={loading}
-        />
       </Card.Header>
-
       <Card.Body>
-        {/* Estado de la webcam */}
-        {!isWebcamReady && (
-          <Alert variant="info">
-            <p className="mb-0">Inicializando cámara...</p>
-            <div className="spinner-border spinner-border-sm text-primary mt-2" role="status">
-              <span className="visually-hidden">Cargando...</span>
+        <div className="webcam-container mb-3">
+          <Webcam
+            audio={false}
+            ref={webcamRef}
+            screenshotFormat="image/jpeg"
+            videoConstraints={{
+              facingMode: "environment",
+              width: 640,
+              height: 480
+            }}
+            className="webcam"
+            style={{ width: '100%', borderRadius: '4px' }}
+            onUserMedia={() => console.log("Webcam conectada")}
+            onUserMediaError={(err) => console.error("Error de webcam:", err)}
+          />
+          
+          {!isWebcamReady && (
+            <div className="webcam-overlay">
+              <Spinner animation="border" />
+              <p>Inicializando cámara...</p>
             </div>
-          </Alert>
-        )}
-
-        {/* Área de detección */}
-        <div className="text-center mb-4">
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={triggerManualDetection} // Ensure this is a direct function reference
-            disabled={loading || continuousDetection}
-            className="d-flex align-items-center mx-auto"
-          >
-            {loading ? (
-              <><Spinner size="sm" animation="border" className="me-2" /> Escaneando...</>
-            ) : (
-              <><i className="bi bi-upc-scan me-2"></i> Escanear Producto</>
-            )}
-          </Button>
-
-          <div className="mt-3 text-muted small">
-            {continuousDetection
-              ? "Modo continuo activado: acerca los productos a la cámara"
-              : "Presiona el botón para escanear un producto"}
-          </div>
+          )}
         </div>
-
-        {/* Última detección */}
+        
+        <Row>
+          <Col>
+            <Button
+              variant="primary"
+              className="w-100 mb-3"
+              onClick={handleDetect}
+              disabled={!isWebcamReady || detectionLoading}
+            >
+              {detectionLoading ? (
+                <>
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    className="me-2"
+                  />
+                  Detectando...
+                </>
+              ) : (
+                'Detectar Producto'
+              )}
+            </Button>
+          </Col>
+          <Col>
+            <Button
+              variant={continuousDetection ? "danger" : "outline-primary"}
+              className="w-100 mb-3"
+              onClick={() => setContinuousDetection(!continuousDetection)}
+              disabled={!isWebcamReady || detectionLoading}
+            >
+              {continuousDetection ? 'Detener Detección' : 'Detección Continua'}
+            </Button>
+          </Col>
+        </Row>
+        
         {lastDetection && (
-          <Card className={`mb-4 ${lastAddedProduct && lastAddedProduct.label === lastDetection.label
-            ? 'last-scanned'
-            : ''
-            }`}>
+          <Card className="mt-3 border-primary">
             <Card.Header>Última Detección</Card.Header>
             <Card.Body>
-              <div className="d-flex justify-content-between">
-                <div>
-                  <h5>{lastDetection.label}</h5>
-                  <p className="mb-1">
-                    Confianza:
-                    <Badge bg={
-                      lastDetection.similarity > 85
-                        ? "success"
-                        : lastDetection.similarity > 70
-                          ? "warning"
-                          : "danger"
-                    } className="ms-2">
-                      {lastDetection.similarity}%
-                    </Badge>
-                  </p>
-                  <p className="text-muted small">
-                    {new Date(lastDetection.timestamp).toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  {lastDetection.similarity > 70 && (
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      onClick={() => addDetectedProductToCart(
-                        lastDetection.label,
-                        lastDetection.productInfo
-                      )}
-                    >
-                      Añadir al Carrito
-                    </Button>
-                  )}
-                </div>
-              </div>
+              <p><strong>Producto:</strong> {lastDetection.label}</p>
+              <p><strong>Confianza:</strong> {lastDetection.similarity.toFixed(1)}%</p>
+              
+              {lastDetection.productInfo ? (
+                <>
+                  <p className="text-success">✅ Producto encontrado en inventario</p>
+                  <Button
+                    variant="success"
+                    size="sm"
+                    className="mt-2"
+                    onClick={() => addDetectedProductToCart(
+                      lastDetection.label,
+                      lastDetection.productInfo
+                    )}
+                  >
+                    Añadir al Carrito
+                  </Button>
+                </>
+              ) : (
+                <p className="text-danger">❌ Producto no encontrado en inventario</p>
+              )}
             </Card.Body>
           </Card>
         )}
-
-        {/* Productos disponibles */}
-        <h5 className="mb-3">Productos Disponibles</h5>
-
-        <Form.Control
-          type="text"
-          placeholder="Buscar productos..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="mb-3"
-        />
-
-        <div className="products-grid" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-          {loading ? (
-            <div className="text-center p-3">
-              <Spinner animation="border" />
-              <p className="mt-2">Cargando productos...</p>
-            </div>
-          ) : filteredProducts.length > 0 ? (
-            <ListGroup>
-              {filteredProducts.map(product => (
-                <ListGroup.Item
-                  key={product.id}
-                  className="d-flex justify-content-between align-items-center"
-                >
-                  <div>
-                    <strong>{product.nombre}</strong>
-                    <div className="text-muted small">
-                      {product.label} - ${product.precio || 0}
-                    </div>
-                  </div>
-                  <div>
-                    <Badge bg={product.stock > 0 ? "success" : "danger"} className="me-2">
-                      Stock: {product.stock || 0}
-                    </Badge>
-                    {product.stock > 0 && (
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        onClick={() => addToCart(product)}
-                      >
-                        <i className="bi bi-plus"></i>
-                      </Button>
-                    )}
-                  </div>
-                </ListGroup.Item>
-              ))}
-            </ListGroup>
-          ) : (
-            <p className="text-center text-muted">
-              {filteredProducts.length === 0
-                ? "No hay productos registrados"
-                : "No se encontraron productos con ese término"}
-            </p>
-          )}
-        </div>
       </Card.Body>
     </Card>
   );

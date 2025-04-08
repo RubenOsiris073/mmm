@@ -1,12 +1,17 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Container, Row, Col, Alert } from 'react-bootstrap';
-import { toast } from 'react-toastify';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Container, Row, Col, Alert, Button, Form } from 'react-bootstrap';
 import Webcam from 'react-webcam';
-import ProductDetectionPanel from './ProductDetectionPanel';
+import { toast } from 'react-toastify';
+import { motion } from 'framer-motion';
+import { FaBarcode, FaBox } from 'react-icons/fa';
+import './styles.css';
+
+// Importar componentes
 import ShoppingCart from './ShoppingCart';
+import ProductList from './ProductList';
 import PaymentModal from './PaymentModal';
-import LastAddedProductAlert from './LastAddedProductAlert';
-import DebugPanel from './DebugPanel';
+
+// Importar hooks
 import useProductData from './hooks/useProductData';
 import useCart from './hooks/useCart';
 import usePayment from './hooks/usePayment';
@@ -20,6 +25,7 @@ const POSView = () => {
   const [continuousDetection, setContinuousDetection] = useState(false);
   const [lastDetection, setLastDetection] = useState(null);
   const [detectionLoading, setDetectionLoading] = useState(false);
+  const [showWebcam, setShowWebcam] = useState(false);
 
   // Custom hooks para datos y lógica
   const { 
@@ -39,6 +45,7 @@ const POSView = () => {
     calculateTotal,
     lastAddedProduct,
     setLastAddedProduct,
+    setCartItems
   } = useCart({ wallet, products, setError });
 
   const {
@@ -59,9 +66,7 @@ const POSView = () => {
 
   // Verificar si la webcam está lista
   const checkWebcamReady = useCallback(() => {
-    if (!webcamRef.current) {
-      return false;
-    }
+    if (!webcamRef.current) return false;
     
     const video = webcamRef.current.video;
     return video && 
@@ -72,6 +77,8 @@ const POSView = () => {
 
   // Inicialización de la webcam
   useEffect(() => {
+    if (!showWebcam) return;
+    
     const checkInterval = setInterval(() => {
       const ready = checkWebcamReady();
       if (ready && !isWebcamReady) {
@@ -82,18 +89,26 @@ const POSView = () => {
     }, 500);
 
     return () => clearInterval(checkInterval);
-  }, [checkWebcamReady, isWebcamReady]);
+  }, [checkWebcamReady, isWebcamReady, showWebcam]);
+  
+  // Escuchar el evento personalizado para limpiar el carrito después de una venta exitosa
+  useEffect(() => {
+    const handleSaleCompleted = () => {
+      setCartItems([]);
+    };
+    
+    window.addEventListener('sale-completed', handleSaleCompleted);
+    return () => window.removeEventListener('sale-completed', handleSaleCompleted);
+  }, [setCartItems]);
 
   // Capturar frame de la webcam
   const captureFrame = useCallback(async () => {
     try {
-      // Verificar que la referencia a webcam existe y está inicializada
       if (!isWebcamReady || !webcamRef.current) {
         console.log("La webcam no está lista para capturar frames");
         return null;
       }
       
-      // Intentar obtener screenshot
       const imageSrc = webcamRef.current.getScreenshot();
       if (!imageSrc) {
         console.log("No se pudo obtener la imagen de la cámara");
@@ -108,27 +123,48 @@ const POSView = () => {
     }
   }, [isWebcamReady]);
 
-  // Buscar producto por etiqueta con método simplificado y más depuración
+  // Función findProductByLabel y otras funciones importantes
   const findProductByLabel = useCallback((label) => {
     if (!label) return null;
     
-    // Depuración - ver qué estamos buscando
     console.log(`Buscando producto con label: "${label}"`);
     
-    // Depuración - verificar los productos disponibles
-    console.log("Productos disponibles:", products.map(p => ({
-      nombre: p.nombre,
-      id: p.id,
-      fields: Object.keys(p)
-    })));
+    // Normalizar el texto para búsqueda más efectiva
+    const normalizedLabel = label.toString().toLowerCase().trim();
     
-    // Búsqueda más flexible
-    const product = products.find(p => {
-      // Si el producto no tiene nombre, lo ignoramos
-    });
+    // Primero intentar búsqueda exacta
+    let product = products.find(p => 
+      (p.label && p.label.toLowerCase() === normalizedLabel) || 
+      (p.nombre && p.nombre.toLowerCase() === normalizedLabel)
+    );
+    
+    // Si no encuentra coincidencia exacta, buscar coincidencia parcial
+    if (!product) {
+      product = products.find(p => 
+        (p.label && p.label.toLowerCase().includes(normalizedLabel)) || 
+        (p.nombre && p.nombre.toLowerCase().includes(normalizedLabel))
+      );
+    }
+    
+    // Si aún no hay coincidencia, intentar con el normalizedLabel como subcadena
+    if (!product && normalizedLabel.length > 3) {
+      product = products.find(p => 
+        (p.label && normalizedLabel.includes(p.label.toLowerCase())) || 
+        (p.nombre && normalizedLabel.includes(p.nombre.toLowerCase()))
+      );
+    }
+    
+    // Registrar el resultado
+    if (product) {
+      console.log("✅ Producto encontrado:", product);
+    } else {
+      console.log("❌ No se encontró el producto con label:", label);
+    }
+    
+    return product;
   }, [products]);
 
-  // Añadir producto detectado al carrito - versión final mejorada
+  // Añadir producto detectado al carrito
   const addDetectedProductToCart = useCallback((label, productInfo = null) => {
     // Validar entradas
     if (!label && !productInfo) {
@@ -141,183 +177,53 @@ const POSView = () => {
     const labelToUse = label || productInfo?.nombre || productInfo?.label || "Producto desconocido";
     console.log(`Intentando añadir al carrito: "${labelToUse}"`);
     
-    // CASO 1: Si tenemos información completa del producto validada, usarla directamente
+    // CASO 1: Si tenemos información completa del producto validada
     if (productInfo && productInfo.id) {
       try {
         console.log("Usando información directa del producto:", productInfo);
         
-        // Verificar stock
-        if (productInfo.stock !== undefined && productInfo.stock <= 0) {
-          console.log("Producto sin stock disponible:", productInfo);
+        // Verificar stock disponible
+        const stockDisponible = productInfo.cantidad !== undefined 
+          ? productInfo.cantidad 
+          : (productInfo.stock || 0);
+          
+        if (stockDisponible <= 0) {
+          console.log(`Producto sin stock disponible (${stockDisponible}):`, productInfo);
           setError(`${labelToUse}: Sin stock disponible`);
           setTimeout(() => setError(null), 3000);
           return;
         }
         
-        // Asegurar que el producto tenga todos los campos necesarios
-        const normalizedProduct = {
-          id: productInfo.id,
-          nombre: productInfo.nombre || productInfo.label || "Producto sin nombre",
-          precio: typeof productInfo.precio === 'number' ? productInfo.precio : parseFloat(productInfo.precio || 0),
-          imagen: productInfo.imagen || null,
-          stock: productInfo.stock,
-          categoria: productInfo.categoria || 'general'
-        };
+        // Añadir al carrito
+        addToCart(productInfo);
+        toast.success(`${productInfo.nombre || labelToUse} añadido al carrito`);
         
-        addToCart(normalizedProduct);
-        toast.success(`${normalizedProduct.nombre} añadido al carrito`);
-        setLastAddedProduct(normalizedProduct);
-        
-        // Restablecimiento automático
-        setTimeout(() => setLastAddedProduct(null), 3000);
+        // Guardar referencia del último producto añadido
+        if (typeof setLastAddedProduct === 'function') {
+          setLastAddedProduct(productInfo);
+          setTimeout(() => setLastAddedProduct(null), 2000);
+        }
         return;
       } catch (err) {
         console.error("Error al procesar información del producto:", err);
-        // Continuar con el siguiente método si falla este
       }
     }
     
-    // CASO 2: Buscar el producto utilizando la función especializada
+    // CASO 2: Buscar el producto por etiqueta
     if (label) {
-      try {
-        console.log("Buscando producto por label:", label);
-        const product = findProductByLabel(label);
-        
-        if (product) {
-          // Verificar stock
-          if (product.stock !== undefined && product.stock <= 0) {
-            console.log("Producto sin stock disponible:", product);
-            setError(`${product.nombre}: Sin stock disponible`);
-            setTimeout(() => setError(null), 3000);
-            return;
-          }
-          
-          console.log("Producto encontrado, añadiendo al carrito:", product);
-          addToCart(product);
-          toast.success(`${product.nombre || label} añadido al carrito`);
-          setLastAddedProduct(product);
-          setTimeout(() => setLastAddedProduct(null), 3000);
-          return;
-        }
-      } catch (err) {
-        console.error("Error en búsqueda exacta:", err);
-        // Continuar con método de recuperación
+      const product = findProductByLabel(label);
+      if (product) {
+        addDetectedProductToCart(null, product);
+        return;
       }
     }
     
-    // CASO 3: Método de recuperación avanzado - búsqueda por partes de palabras
-    console.log("⚠️ Iniciando recuperación avanzada para:", label || labelToUse);
-    
-    try {
-      // Normalizar y dividir en palabras
-      const normalizeText = text => {
-        if (!text) return '';
-        return String(text).toLowerCase()
-          .trim()
-          .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Quita acentos
-      };
-      
-      const textToSearch = normalizeText(label || labelToUse);
-      const wordParts = textToSearch.split(/[\s\-_.,]+/).filter(part => part.length >= 3);
-      
-      console.log("Buscando por partes de palabras:", wordParts);
-      
-      // Primera pasada: buscar coincidencias completas de palabras
-      for (const part of wordParts) {
-        // Ignorar palabras muy comunes o cortas
-        if (['con', 'los', 'las', 'por', 'para', 'del', 'una', 'uno'].includes(part)) continue;
-        
-        const matchingProducts = products.filter(p => {
-          const productName = normalizeText(p.nombre || '');
-          const productLabel = normalizeText(p.label || '');
-          
-          // Buscar la palabra como token completo
-          const nameTokens = productName.split(/[\s\-_.,]+/);
-          const labelTokens = productLabel.split(/[\s\-_.,]+/);
-          
-          return nameTokens.includes(part) || labelTokens.includes(part);
-        });
-        
-        if (matchingProducts.length > 0) {
-          // Ordenar por relevancia (longitud similar al original)
-          matchingProducts.sort((a, b) => {
-            const aName = normalizeText(a.nombre || a.label || '');
-            const bName = normalizeText(b.nombre || b.label || '');
-            return Math.abs(aName.length - textToSearch.length) - Math.abs(bName.length - textToSearch.length);
-          });
-          
-          const bestMatch = matchingProducts[0];
-          
-          // Verificar stock
-          if (bestMatch.stock !== undefined && bestMatch.stock <= 0) {
-            continue; // Probar con otra palabra
-          }
-          
-          console.log(`Recuperación exitosa usando palabra "${part}":`, bestMatch);
-          
-          // Confirmar con el usuario si el producto es muy diferente
-          const similarity = normalizeText(bestMatch.nombre || bestMatch.label || '').includes(textToSearch) ? 'alta' : 'posible';
-          
-          if (similarity === 'posible' && !window.confirm(`¿Desea añadir "${bestMatch.nombre}" al carrito?`)) {
-            console.log("Usuario rechazó la coincidencia");
-            continue;
-          }
-          
-          addToCart(bestMatch);
-          toast.success(`${bestMatch.nombre} añadido al carrito`);
-          setLastAddedProduct(bestMatch);
-          setTimeout(() => setLastAddedProduct(null), 3000);
-          return;
-        }
-      }
-      
-      // Segunda pasada: buscar coincidencias parciales de palabras
-      for (const part of wordParts) {
-        if (part.length < 4) continue; // Para parciales exigimos mínimo 4 caracteres
-        
-        const matchingProducts = products.filter(p => {
-          const productName = normalizeText(p.nombre || '');
-          const productLabel = normalizeText(p.label || '');
-          
-          return productName.includes(part) || productLabel.includes(part);
-        });
-        
-        if (matchingProducts.length > 0) {
-          // Ordenar por relevancia 
-          const bestMatch = matchingProducts[0];
-          
-          if (bestMatch.stock !== undefined && bestMatch.stock <= 0) {
-            continue;
-          }
-          
-          console.log(`Recuperación parcial usando fragmento "${part}":`, bestMatch);
-          
-          // Siempre confirmar para coincidencias parciales
-          if (window.confirm(`¿Desea añadir "${bestMatch.nombre}" al carrito?`)) {
-            addToCart(bestMatch);
-            toast.success(`${bestMatch.nombre} añadido al carrito`);
-            setLastAddedProduct(bestMatch);
-            setTimeout(() => setLastAddedProduct(null), 3000);
-            return;
-          } else {
-            console.log("Usuario rechazó la coincidencia parcial");
-          }
-        }
-      }
-      
-      // No se encontró ninguna coincidencia
-      console.log("No se encontró ningún producto similar");
-      setError(`No se encontró ningún producto para: "${labelToUse}"`);
-      setTimeout(() => setError(null), 3000);
-      
-    } catch (err) {
-      console.error("Error en recuperación avanzada:", err);
-      setError("Error al buscar producto similar");
-      setTimeout(() => setError(null), 3000);
-    }
-  }, [products, findProductByLabel, addToCart, setLastAddedProduct, setError, toast]);
+    // Si llegamos aquí, no se pudo añadir el producto
+    setError(`No se encontró el producto: ${labelToUse}`);
+    setTimeout(() => setError(null), 3000);
+  }, [findProductByLabel, addToCart, setLastAddedProduct, setError]);
 
-  // Detector de imagen mejorado
+  // Detector de imagen
   const detectFromImage = useCallback(async (imageData) => {
     if (!imageData) {
       console.log("Error: No hay datos de imagen para procesar");
@@ -342,27 +248,19 @@ const POSView = () => {
       let detection = null;
       let detectionSource = "";
       
-      // Caso 1: el backend devuelve {success: true, detection: {...}}
       if (response.success && response.detection) {
         detection = response.detection;
         detectionSource = "formato-success";
-      }
-      // Caso 2: el backend devuelve {detections: [...]}
-      else if (response.detections && response.detections.length > 0) {
-        // Ordenar por confianza y tomar la mejor detección
+      } else if (response.detections && response.detections.length > 0) {
         const sortedDetections = [...response.detections].sort(
           (a, b) => (b.confidence || b.score || 0) - (a.confidence || a.score || 0)
         );
         detection = sortedDetections[0];
         detectionSource = "formato-array";
-      }
-      // Caso 3: el backend devuelve directamente {detection: {...}} (formato antiguo)
-      else if (response.detection) {
+      } else if (response.detection) {
         detection = response.detection;
         detectionSource = "formato-legacy";
-      }
-      // Caso 4: No se pudo extraer una detección válida
-      else {
+      } else {
         console.log("No se encontró una estructura de detección válida en la respuesta:", response);
         setError("No se pudo interpretar la respuesta del servidor");
         setTimeout(() => setError(null), 3000);
@@ -371,17 +269,14 @@ const POSView = () => {
       
       // Si tenemos una detección válida
       if (detection) {
-        // Extraer y normalizar datos importantes
         const detectionLabel = detection.label || detection.class || detection.name || "Desconocido";
         const confidenceValue = detection.confidence || detection.score || detection.similarity / 100 || 0.5;
         const similarityPercent = detection.similarity || Math.round(confidenceValue * 100);
         
         console.log(`Objeto detectado: "${detectionLabel}" (confianza: ${similarityPercent}%) [fuente: ${detectionSource}]`);
         
-        // Buscar información del producto correspondiente
-        const productInfo = findProductByLabel(detectionLabel);
+        let productInfo = findProductByLabel(detectionLabel);
         
-        // Formatear la detección para mostrar en la UI y retornar al componente
         const formattedDetection = {
           ...detection,
           label: detectionLabel,
@@ -392,12 +287,10 @@ const POSView = () => {
           source: detectionSource
         };
         
-        // Actualizar el estado con la última detección
         setLastDetection(formattedDetection);
         console.log("Detección procesada:", formattedDetection);
         
-        // Verificar si la confianza es suficiente
-        if (similarityPercent >= 70) { // Umbral configurable
+        if (similarityPercent >= 70) {
           return formattedDetection;
         } else {
           console.log(`Confianza insuficiente: ${similarityPercent}%`);
@@ -405,12 +298,8 @@ const POSView = () => {
           setTimeout(() => setError(null), 3000);
           return null;
         }
-      } else {
-        console.log("No se encontró ninguna detección en la respuesta");
-        setError("No se detectaron productos en la imagen");
-        setTimeout(() => setError(null), 3000);
-        return null;
       }
+      return null;
     } catch (error) {
       console.error("Error en la detección:", error);
       setError(`Error en el proceso de detección: ${error.message || "Error desconocido"}`);
@@ -421,152 +310,253 @@ const POSView = () => {
     }
   }, [findProductByLabel, setError]);
 
-  // Realizar detección manual
-  const triggerManualDetection = useCallback(async () => {
-    try {
-      setDetectionLoading(true);
-      setError(null);
+  // Renderizar la animación del escáner
+  const renderScannerAnimation = () => (
+    <motion.div 
+      className="text-center p-4 bg-light rounded scanner-animation"
+      animate={{
+        boxShadow: ["0 0 0 rgba(0,123,255,0)", "0 0 20px rgba(0,123,255,0.7)", "0 0 0 rgba(0,123,255,0)"]
+      }}
+      transition={{
+        duration: 2,
+        ease: "easeInOut",
+        repeat: Infinity
+      }}
+    >
+      <div className="scanner-icon-container mb-3">
+        <motion.div
+          className="scanner-line"
+          animate={{
+            top: ["0%", "90%", "0%"]
+          }}
+          transition={{
+            duration: 2.5,
+            ease: "easeInOut",
+            repeat: Infinity
+          }}
+        />
+        <FaBarcode className="scanner-barcode-icon" />
+        <motion.div 
+          animate={{
+            scale: [1, 1.05, 1],
+            opacity: [0.9, 1, 0.9]
+          }}
+          transition={{
+            duration: 1.5,
+            ease: "easeInOut",
+            repeat: Infinity
+          }}
+        >
+          <FaBox className="scanner-product-icon" />
+        </motion.div>
+      </div>
+      <h3 className="text-primary">Escanear Producto</h3>
+      <p className="text-muted mb-0">Coloque el producto frente a la cámara</p>
+    </motion.div>
+  );
 
-      console.log("Iniciando detección manual...");
-      const frameData = await captureFrame();
-      if (!frameData) {
-        throw new Error("No se pudo capturar imagen de la cámara");
+  // Activar detección manual
+  const handleScanProduct = useCallback(async () => {
+    setShowWebcam(true);
+    
+    setTimeout(async () => {
+      if (webcamRef.current) {
+        const frame = await captureFrame();
+        if (frame) {
+          const detection = await detectFromImage(frame);
+          
+          if (detection && detection.productInfo) {
+            addDetectedProductToCart(detection.label, detection.productInfo);
+          }
+          
+          // Ocultar la webcam después de la detección
+          setTimeout(() => setShowWebcam(false), 500);
+        } else {
+          setError("No se pudo capturar la imagen");
+          setTimeout(() => setError(null), 3000);
+          setShowWebcam(false);
+        }
       }
-
-      const detection = await detectFromImage(frameData);
-      if (detection) {
-        // Añadir automáticamente al carrito si la confianza es alta
-        addDetectedProductToCart(
-          detection.label,
-          detection.productInfo
-        );
-      }
-    } catch (err) {
-      console.error("Error en detección manual:", err);
-      setError("Error al realizar detección. Intenta nuevamente.");
-    } finally {
-      setDetectionLoading(false);
-    }
+    }, 1000);
   }, [captureFrame, detectFromImage, addDetectedProductToCart]);
 
-  // Alternar detección continua
-  const toggleContinuousDetection = useCallback(() => {
-    const newStatus = !continuousDetection;
-    setContinuousDetection(newStatus);
-    
-    if (newStatus) {
-      toast.info("Detección continua activada");
-    } else {
-      toast.info("Detección continua desactivada");
-    }
-  }, [continuousDetection]);
-
-  // Gestionar la detección continua
+  // Efecto para detección continua
   useEffect(() => {
-    let interval = null;
+    let detectionInterval;
     
-    if (continuousDetection && isWebcamReady) {
-      interval = setInterval(async () => {
-        await triggerManualDetection();
-      }, 3000); // Cada 3 segundos
-      
-      console.log("Detección automática iniciada");
+    if (continuousDetection) {
+      detectionInterval = setInterval(async () => {
+        if (!detectionLoading) {
+          setShowWebcam(true);
+          
+          setTimeout(async () => {
+            const frame = await captureFrame();
+            if (frame) {
+              const detection = await detectFromImage(frame);
+              
+              if (detection && detection.productInfo) {
+                addDetectedProductToCart(detection.label, detection.productInfo);
+              }
+              
+              // Ocultar la webcam después de la detección
+              setTimeout(() => setShowWebcam(false), 500);
+            }
+          }, 1000);
+        }
+      }, 3000); // Intentar detección cada 3 segundos
     }
     
     return () => {
-      if (interval) {
-        clearInterval(interval);
-        console.log("Detección automática detenida");
-      }
+      if (detectionInterval) clearInterval(detectionInterval);
     };
-  }, [continuousDetection, isWebcamReady, triggerManualDetection]);
+  }, [continuousDetection, detectionLoading, captureFrame, detectFromImage, addDetectedProductToCart]);
 
   return (
-    <Container fluid className="mt-3">
-      {/* Error display */}
+    <Container fluid className="pos-container">
       {error && (
-        <Row>
-          <Col>
-            <Alert variant="danger" onClose={() => setError(null)} dismissible>
-              {error}
-            </Alert>
-          </Col>
-        </Row>
+        <Alert variant="danger" className="mb-3" onClose={() => setError(null)} dismissible>
+          {error}
+        </Alert>
       )}
 
-      {/* Webcam oculta para la detección */}
-      <div style={{ position: 'absolute', top: '-9999px', left: '-9999px' }}>
-        <Webcam
-          audio={false}
-          ref={webcamRef}
-          screenshotFormat="image/jpeg"
-          videoConstraints={{
-            width: 640,
-            height: 480,
-            facingMode: "environment"
-          }}
-        />
-      </div>
+      <Row className="mb-4">
+        <Col md={5}>
+          <div className="detection-panel p-4 bg-white shadow-sm rounded">
+            {/* Animación del escáner */}
+            {renderScannerAnimation()}
 
-      {/* Main content */}
+            {/* Botón de escaneo */}
+            <div className="d-grid gap-2">
+              <Button
+                variant="primary"
+                size="lg"
+                className="mb-3 mt-3"
+                onClick={handleScanProduct}
+                disabled={detectionLoading}
+              >
+                {detectionLoading ? 'Escaneando...' : 'Escanear Producto'}
+              </Button>
+
+              {/* Control de escaneo continuo como slider */}
+              <div className="mb-3">
+                <Form.Label className="d-flex justify-content-between">
+                  <span>Detección continua</span>
+                  <span className={continuousDetection ? "text-primary fw-bold" : "text-muted"}>
+                    {continuousDetection ? "Activado" : "Desactivado"}
+                  </span>
+                </Form.Label>
+                <Form.Range 
+                  min={0}
+                  max={1}
+                  step={1}
+                  value={continuousDetection ? 1 : 0}
+                  onChange={e => setContinuousDetection(e.target.value === '1')}
+                />
+              </div>
+            </div>
+
+            {/* Mostrar última detección */}
+            {lastDetection && (
+              <div className="last-detection p-3 border rounded bg-light mt-3">
+                <h5>Última detección: <span className="text-primary">{lastDetection.label}</span></h5>
+                <p className="mb-2">
+                  Confianza: <span className="badge bg-info">{lastDetection.similarity.toFixed(1)}%</span>
+                </p>
+                
+                {lastDetection.productInfo ? (
+                  <Button
+                    variant="outline-primary"
+                    size="sm"
+                    className="mt-2"
+                    onClick={() => addDetectedProductToCart(lastDetection.label, lastDetection.productInfo)}
+                  >
+                    Añadir al Carrito
+                  </Button>
+                ) : (
+                  <p className="text-danger small mb-0">Producto no encontrado en inventario</p>
+                )}
+              </div>
+            )}
+          </div>
+        </Col>
+        
+        <Col md={7}>
+          <div className="cart-panel h-100 p-4 bg-white shadow-sm rounded">
+            <h3 className="mb-3 text-primary">Carrito de Compras</h3>
+            
+            <div className="cart-container" style={{maxHeight: '300px', overflowY: 'auto'}}>
+              <ShoppingCart
+                items={cartItems}
+                onRemove={removeFromCart}
+                onUpdateQuantity={updateQuantity}
+              />
+            </div>
+            
+            <div className="checkout-section border-top pt-3 mt-3">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h4 className="mb-0">Total:</h4>
+                <h3 className="mb-0 text-primary">${calculateTotal().toFixed(2)}</h3>
+              </div>
+              
+              <Button 
+                variant="primary" 
+                size="lg" 
+                className="w-100"
+                onClick={() => {
+                  console.log("Abriendo modal de pago...");
+                  setShowPaymentModal(true);
+                }}
+                disabled={cartItems.length === 0 || loading}
+              >
+                Procesar Pago
+              </Button>
+            </div>
+          </div>
+        </Col>
+      </Row>
+      
       <Row>
-        {/* Left panel - Product Detection */}
-        <Col lg={6} className="mb-4">
-          <ProductDetectionPanel
-            loading={loading}
-            continuousDetection={continuousDetection}
-            toggleContinuousDetection={toggleContinuousDetection}
-            triggerManualDetection={triggerManualDetection}
-            lastDetection={lastDetection}
-            addDetectedProductToCart={addDetectedProductToCart}
-            lastAddedProduct={lastAddedProduct}
-            filteredProducts={filteredProducts}
+        <Col md={12}>
+          <ProductList
+            products={filteredProducts}
+            loading={productsLoading}
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
             addToCart={addToCart}
-            isWebcamReady={isWebcamReady}
-          />
-        </Col>
-
-        {/* Right panel - Shopping Cart */}
-        <Col lg={6}>
-          <ShoppingCart 
-            cartItems={cartItems}
-            lastAddedProduct={lastAddedProduct}
-            updateQuantity={updateQuantity}
-            removeFromCart={removeFromCart}
-            calculateTotal={calculateTotal}
-            loading={loading}
-            setShowPaymentModal={setShowPaymentModal}
           />
         </Col>
       </Row>
 
-      {/* Payment Modal */}
+      {/* Webcam oculta (para capturar imágenes) */}
+      {showWebcam && (
+        <div style={{ position: 'absolute', top: '-9999px', left: '-9999px' }}>
+          <Webcam
+            audio={false}
+            ref={webcamRef}
+            screenshotFormat="image/jpeg"
+            videoConstraints={{
+              facingMode: "environment",
+              width: 640,
+              height: 480
+            }}
+          />
+        </div>
+      )}
+
+      {/* Modal de pago */}
       <PaymentModal
-        showPaymentModal={showPaymentModal}
-        setShowPaymentModal={setShowPaymentModal}
-        clientName={clientName}
-        setClientName={setClientName}
-        calculateTotal={calculateTotal}
+        show={showPaymentModal}
+        onHide={() => setShowPaymentModal(false)}
         paymentMethod={paymentMethod}
         setPaymentMethod={setPaymentMethod}
         amountReceived={amountReceived}
         setAmountReceived={setAmountReceived}
-        cartItems={cartItems}
-        processSale={processSale}
-        loading={loading}
+        clientName={clientName}
+        setClientName={setClientName}
+        total={calculateTotal()}
+        handleProcessSale={processSale}
+        loading={paymentLoading}
       />
-
-      {/* Last added product alert */}
-      {lastAddedProduct && (
-        <LastAddedProductAlert product={lastAddedProduct} />
-      )}
-
-      {/* Debug panel in development mode */}
-      {process.env.NODE_ENV === 'development' && (
-        <DebugPanel addDetectedProductToCart={addDetectedProductToCart} />
-      )}
     </Container>
   );
 };

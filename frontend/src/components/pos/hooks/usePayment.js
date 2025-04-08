@@ -1,87 +1,107 @@
-import { useState } from 'react';
-import { toast } from 'react-toastify';
+import { useState, useCallback } from 'react';
 import apiService from '../../../services/apiService';
+import { toast } from 'react-toastify';
 
-const usePayment = ({ cartItems, calculateTotal, setError, loading: parentLoading }) => {
-  // Payment states
+const usePayment = ({ cartItems, calculateTotal, setError }) => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('efectivo');
   const [amountReceived, setAmountReceived] = useState('');
   const [clientName, setClientName] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Process the sale
-  const processSale = async () => {
+  // Procesar venta con validaciones
+  const processSale = useCallback(async () => {
     try {
-      setLoading(true);
-
-      if (cartItems.length === 0) {
-        setError("El carrito está vacío");
+      // Validar que hay productos
+      if (!cartItems || cartItems.length === 0) {
+        toast.error('No hay productos en el carrito');
         return;
       }
 
-      const total = calculateTotal();
-      const change = amountReceived ? parseFloat(amountReceived) - total : 0;
+      // Validar nombre de cliente
+      if (!clientName.trim()) {
+        toast.error('Ingrese el nombre del cliente');
+        return;
+      }
 
+      // Validar monto recibido para pagos en efectivo
+      if (paymentMethod === 'efectivo') {
+        const receivedAmount = parseFloat(amountReceived) || 0;
+        const total = calculateTotal();
+        
+        if (receivedAmount < total) {
+          toast.error('El monto recibido no puede ser menor al total');
+          return;
+        }
+      }
+
+      // Iniciar proceso de venta
+      setLoading(true);
+
+      // Formato de venta para la API
       const saleData = {
+        clientName: clientName.trim(),
         items: cartItems.map(item => ({
-          id: item.id,
-          nombre: item.nombre,
-          precio: item.precio,
+          productId: item.id,
+          name: item.nombre,
+          price: item.precio,
           quantity: item.quantity,
-          total: item.total
+          subtotal: item.precio * item.quantity
         })),
-        total: total,
-        paymentMethod: paymentMethod,
-        amountReceived: parseFloat(amountReceived) || total,
-        change: change,
-        clientName: clientName || "Cliente General",
-        timestamp: new Date().toISOString()
+        total: calculateTotal(),
+        paymentMethod,
+        amountReceived: paymentMethod === 'efectivo' ? parseFloat(amountReceived) : calculateTotal(),
+        change: paymentMethod === 'efectivo' ? parseFloat(amountReceived) - calculateTotal() : 0,
+        date: new Date().toISOString()
       };
 
-      const result = await apiService.createSale(saleData);
-
+      console.log('Enviando datos de venta:', saleData);
+      
+      // Llamada a la API
+      const result = await apiService.processSale(saleData);
+      
       if (result && result.success) {
-        toast.success("Venta realizada con éxito");
-        resetPaymentForm();
+        toast.success('Venta procesada correctamente');
+        setShowPaymentModal(false);
         
-        // Reload wallet to update stock - this would normally be handled in the parent component
-        try {
-          await apiService.getWallet();
-        } catch (err) {
-          console.error("Error recargando wallet después de la venta:", err);
-        }
+        // Limpiar el formulario
+        setClientName('');
+        setAmountReceived('');
+        setPaymentMethod('efectivo');
+        
+        // Aquí deberíamos limpiar el carrito, pero como no tenemos acceso
+        // a setCartItems en este hook, emitiremos un evento personalizado
+        const event = new CustomEvent('sale-completed', { detail: result });
+        window.dispatchEvent(event);
+
+        return result;
       } else {
-        throw new Error(result?.error || "Error al procesar venta");
+        throw new Error(result?.message || 'Error procesando la venta');
       }
-    } catch (err) {
-      console.error("Error procesando venta:", err);
-      setError("Error al procesar la venta. Intente nuevamente.");
+    } catch (error) {
+      console.error('Error al procesar la venta:', error);
+      if (typeof setError === 'function') {
+        setError(`Error al procesar la venta: ${error.message}`);
+        setTimeout(() => setError(null), 3000);
+      }
+      toast.error(`Error al procesar la venta: ${error.message}`);
+      return null;
     } finally {
       setLoading(false);
     }
-  };
-
-  // Reset the payment form
-  const resetPaymentForm = () => {
-    // This would trigger a reset of the cart in the parent component
-    setPaymentMethod('efectivo');
-    setAmountReceived('');
-    setClientName('');
-    setShowPaymentModal(false);
-  };
+  }, [cartItems, clientName, paymentMethod, amountReceived, calculateTotal, setError]);
 
   return {
     showPaymentModal,
-    paymentMethod,
-    amountReceived,
-    clientName,
     setShowPaymentModal,
+    paymentMethod,
     setPaymentMethod,
+    amountReceived,
     setAmountReceived,
+    clientName,
     setClientName,
-    processSale,
-    loading: loading || parentLoading
+    loading,
+    processSale
   };
 };
 

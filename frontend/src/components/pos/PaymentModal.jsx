@@ -1,126 +1,144 @@
-import React from 'react';
-import { Modal, Form, Row, Col, Alert, Table, Button, Spinner } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Modal, Button, Form, InputGroup } from 'react-bootstrap';
 
-const PaymentModal = ({ 
-  show, 
+const PaymentModal = ({
+  show,
   onHide,
-  cartItems, 
-  calculateTotal, 
-  clientName, 
-  setClientName, 
-  paymentMethod, 
-  setPaymentMethod, 
-  amountReceived, 
-  setAmountReceived, 
-  loading, 
-  processSale 
+  paymentMethod,
+  setPaymentMethod,
+  amountReceived,
+  setAmountReceived,
+  clientName,
+  setClientName,
+  total,
+  handleProcessSale,
+  loading
 }) => {
+  const [change, setChange] = useState(0);
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  // Verificamos que todas las funciones sean realmente funciones
+  const safeSetPaymentMethod = typeof setPaymentMethod === 'function' 
+    ? setPaymentMethod 
+    : () => console.error('setPaymentMethod no es una función');
+    
+  const safeSetAmountReceived = typeof setAmountReceived === 'function'
+    ? setAmountReceived
+    : () => console.error('setAmountReceived no es una función');
+    
+  const safeSetClientName = typeof setClientName === 'function'
+    ? setClientName
+    : () => console.error('setClientName no es una función');
+    
+  const safeHandleProcessSale = typeof handleProcessSale === 'function'
+    ? handleProcessSale
+    : () => console.error('handleProcessSale no es una función');
+  
+  const safeOnHide = typeof onHide === 'function'
+    ? onHide
+    : () => console.error('onHide no es una función');
+
+  // Calcular cambio cuando cambia el monto recibido
+  useEffect(() => {
+    if (paymentMethod === 'efectivo') {
+      const receivedAmount = parseFloat(amountReceived) || 0;
+      setChange(Math.max(0, receivedAmount - total));
+    } else {
+      setChange(0);
+    }
+  }, [amountReceived, total, paymentMethod]);
+
+  // Validación del formulario
+  useEffect(() => {
+    let valid = !!clientName;
+    
+    if (paymentMethod === 'efectivo') {
+      valid = valid && parseFloat(amountReceived) >= total;
+    }
+    
+    setIsFormValid(valid);
+  }, [clientName, amountReceived, total, paymentMethod]);
+
   return (
-    <Modal show={show} onHide={onHide} size="lg">
+    <Modal show={show} onHide={safeOnHide} centered backdrop="static">
       <Modal.Header closeButton>
         <Modal.Title>Procesar Pago</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form>
-          <Row className="mb-3">
-            <Col md={6}>
-              <Form.Group>
-                <Form.Label>Cliente</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Nombre del cliente"
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group>
-                <Form.Label>Total a Pagar</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={`$${calculateTotal().toFixed(2)}`}
-                  readOnly
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row className="mb-3">
-            <Col md={6}>
-              <Form.Group>
-                <Form.Label>Método de Pago</Form.Label>
-                <Form.Select
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                >
-                  <option value="efectivo">Efectivo</option>
-                  <option value="tarjeta">Tarjeta de Crédito/Débito</option>
-                  <option value="transferencia">Transferencia</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Nombre del Cliente</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Ingrese nombre del cliente"
+              value={clientName}
+              onChange={(e) => safeSetClientName(e.target.value)}
+              disabled={loading}
+              required
+            />
+          </Form.Group>
+          
+          <Form.Group className="mb-3">
+            <Form.Label>Método de Pago</Form.Label>
+            <Form.Select
+              value={paymentMethod}
+              onChange={(e) => safeSetPaymentMethod(e.target.value)}
+              disabled={loading}
+            >
+              <option value="efectivo">Efectivo</option>
+              <option value="tarjeta">Tarjeta</option>
+              <option value="transferencia">Transferencia</option>
+            </Form.Select>
+          </Form.Group>
+          
+          {paymentMethod === 'efectivo' && (
+            <>
+              <Form.Group className="mb-3">
                 <Form.Label>Monto Recibido</Form.Label>
-                <Form.Control
-                  type="number"
-                  placeholder="Ingrese el monto"
-                  value={amountReceived}
-                  onChange={(e) => setAmountReceived(e.target.value)}
-                  disabled={paymentMethod !== 'efectivo'}
-                />
+                <InputGroup>
+                  <InputGroup.Text>$</InputGroup.Text>
+                  <Form.Control
+                    type="number"
+                    step="0.01"
+                    min={total}
+                    placeholder="0.00"
+                    value={amountReceived}
+                    onChange={(e) => safeSetAmountReceived(e.target.value)}
+                    disabled={loading}
+                    required
+                  />
+                </InputGroup>
               </Form.Group>
-            </Col>
-          </Row>
-
-          {paymentMethod === 'efectivo' && amountReceived && (
-            <Alert variant="info">
-              <strong>Cambio a devolver:</strong> ${Math.max(0, (parseFloat(amountReceived) - calculateTotal())).toFixed(2)}
-            </Alert>
+              
+              <Form.Group className="mb-3">
+                <Form.Label>Cambio</Form.Label>
+                <InputGroup>
+                  <InputGroup.Text>$</InputGroup.Text>
+                  <Form.Control
+                    type="text"
+                    value={change.toFixed(2)}
+                    readOnly
+                  />
+                </InputGroup>
+              </Form.Group>
+            </>
           )}
-
-          <Table striped bordered>
-            <thead>
-              <tr>
-                <th>Producto</th>
-                <th>Precio</th>
-                <th>Cantidad</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {cartItems.map(item => (
-                <tr key={item.id}>
-                  <td>{item.nombre}</td>
-                  <td>${item.precio}</td>
-                  <td>{item.quantity}</td>
-                  <td>${item.total}</td>
-                </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr>
-                <th colSpan={3} className="text-end">Total:</th>
-                <th>${calculateTotal().toFixed(2)}</th>
-              </tr>
-            </tfoot>
-          </Table>
+          
+          <div className="d-flex justify-content-between align-items-center mt-4">
+            <h5>Total a Pagar: ${total.toFixed(2)}</h5>
+          </div>
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
+        <Button variant="secondary" onClick={safeOnHide} disabled={loading}>
           Cancelar
         </Button>
-        <Button
-          variant="primary"
-          onClick={processSale}
-          disabled={loading || (paymentMethod === 'efectivo' && (!amountReceived || parseFloat(amountReceived) < calculateTotal()))}
+        <Button 
+          variant="primary" 
+          onClick={safeHandleProcessSale}
+          disabled={!isFormValid || loading}
         >
-          {loading ? (
-            <><Spinner size="sm" animation="border" className="me-2" /> Procesando...</>
-          ) : (
-            'Completar Venta'
-          )}
+          {loading ? 'Procesando...' : 'Confirmar Pago'}
         </Button>
       </Modal.Footer>
     </Modal>

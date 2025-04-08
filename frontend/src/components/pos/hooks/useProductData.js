@@ -68,9 +68,23 @@ const useProductData = (externalSetError = null) => {
         stock: typeof product.stock === 'string' ? parseInt(product.stock, 10) : (product.stock || 0),
         categoria: product.categoria || 'general'
       }));
-      
-      setProducts(formattedProducts);
-      console.log(`Productos cargados: ${formattedProducts.length}`, formattedProducts);
+
+      // Añadir normalización de productos al cargarlos
+      const normalizedProducts = formattedProducts.map(product => {
+        // Normalizar la estructura del producto
+        const stockDisponible = product.cantidad !== undefined ? product.cantidad : (product.stock || 0);
+        
+        return {
+          ...product,
+          nombre: product.nombre || product.label || "Producto sin nombre",
+          stock: stockDisponible,
+          cantidad: stockDisponible, // Mantener ambos para compatibilidad
+          precio: typeof product.precio === 'number' ? product.precio : parseFloat(product.precio || 0),
+        };
+      });
+
+      setProducts(normalizedProducts);
+      console.log(`Productos cargados: ${normalizedProducts.length}`, normalizedProducts);
     } catch (err) {
       console.error("Error cargando productos:", err);
       handleError(`Error al cargar productos: ${err.message}`);
