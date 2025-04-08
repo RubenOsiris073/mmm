@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Table, Spinner, Card, Alert } from 'react-bootstrap';
+import { Container, Table, Spinner, Card, Alert, Button } from 'react-bootstrap';
+import { FaFileInvoice, FaDownload } from 'react-icons/fa';
 import apiService from '../../services/apiService';
 import { toast } from 'react-toastify';
 
-const SalesHistory = () => {
+const SalesHistory = ({ onGenerateInvoice, onDownloadReport }) => {
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,6 +22,11 @@ const SalesHistory = () => {
         if (Array.isArray(salesData)) {
           console.log('Ventas cargadas correctamente:', salesData.length);
           setSales(salesData);
+          
+          // Pasar las ventas al componente padre para disponibilidad inmediata
+          if (typeof onDownloadReport === 'function') {
+            onDownloadReport(salesData);
+          }
         } else {
           console.error('getSales no devolvió un array:', salesData);
           setSales([]);
@@ -37,7 +43,7 @@ const SalesHistory = () => {
     };
 
     loadSales();
-  }, []);
+  }, [onDownloadReport]);
 
   // Función para formatear fecha
   const formatDate = (dateString) => {
@@ -117,6 +123,7 @@ const SalesHistory = () => {
                   <th>Método</th>
                   <th className="text-end">Total</th>
                   <th>Productos</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -142,6 +149,16 @@ const SalesHistory = () => {
                       ) : (
                         <span className="text-muted">Sin detalles</span>
                       )}
+                    </td>
+                    <td>
+                      <Button 
+                        variant="outline-primary" 
+                        size="sm"
+                        className="me-2"
+                        onClick={() => onGenerateInvoice && onGenerateInvoice(sale)}
+                      >
+                        <FaFileInvoice className="me-1" /> Factura
+                      </Button>
                     </td>
                   </tr>
                 ))}
