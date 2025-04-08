@@ -51,7 +51,7 @@ const InventoryView = () => {
             onBatchSaved={onBatchSaved}
           />
         </Tab>
-        <Tab eventKey="automatic" title="Registro Automático">
+        <Tab eventKey="automatic" title="Registro con Codigo de Barras">
           <AutomaticRegistration onProductRegistered={loadProducts} />
         </Tab>
         <Tab eventKey="ai" title="Registro con IA">

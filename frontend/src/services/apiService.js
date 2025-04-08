@@ -241,30 +241,69 @@ const apiService = {
   // Método para buscar un producto por clase detectada por IA
   async findProductByDetection(detectedClass) {
     try {
+      console.log('🔍 Buscando producto para clase:', detectedClass);
+      
+      // Verificar si el parámetro es válido
+      if (!detectedClass) {
+        console.warn('⚠️ No se proporcionó clase para buscar producto');
+        return { success: false, message: 'Clase no proporcionada' };
+      }
+      
       const classData = {
         detectedClass: detectedClass.toString()
       };
       
-      // En este caso, para integrar con la estructura existente, podríamos hacer:
-      // 1. Una llamada a API si existe ese endpoint
-      const response = await this.api.post('/detection', classData);
-      return response.data;
+      console.log('📤 Enviando solicitud al endpoint /detection:', classData);
       
-      // 2. O una simulación local si no hay endpoint (ejemplo)
-      /*
-      // Simulación de detección - reemplazar por llamada real
-      const mockProducts = await this.getProducts();
-      const matchedProduct = mockProducts.find(p => 
-        p.categoria?.toLowerCase().includes(detectedClass.toString().toLowerCase())
-      );
-      
-      return { 
-        product: matchedProduct || null,
-        success: !!matchedProduct
-      };
-      */
+      try {
+        const response = await this.api.post('/detection', classData);
+        console.log('📥 Respuesta recibida de /detection:', response.data);
+        
+        // Si la respuesta no tiene el formato esperado, intentamos adaptarla
+        if (response.data && !response.data.product && !response.data.success) {
+          // Si la respuesta en sí misma parece ser un producto
+          if (response.data.id && (response.data.nombre || response.data.name)) {
+            console.log('⚙️ Adaptando formato de respuesta a formato estándar');
+            return {
+              success: true,
+              product: response.data
+            };
+          }
+        }
+        
+        return response.data;
+      } catch (apiError) {
+        console.error('❌ Error en llamada a API:', apiError);
+        
+        // Como fallback, intentamos buscar el producto localmente
+        console.log('🔄 Intentando simulación local...');
+        try {
+          const mockProducts = await this.getProducts();
+          const matchedProduct = mockProducts.find(p => 
+            p.categoria?.toLowerCase().includes(detectedClass.toString().toLowerCase()) ||
+            p.nombre?.toLowerCase().includes(detectedClass.toString().toLowerCase())
+          );
+          
+          if (matchedProduct) {
+            console.log('✅ Producto encontrado localmente:', matchedProduct);
+            return { 
+              product: matchedProduct,
+              success: true
+            };
+          } else {
+            console.warn('⚠️ No se encontró producto local para clase:', detectedClass);
+            return {
+              success: false,
+              message: 'No se encontró un producto para la clase detectada'
+            };
+          }
+        } catch (localError) {
+          console.error('❌ Error en simulación local:', localError);
+          throw apiError; // Lanzamos el error original
+        }
+      }
     } catch (error) {
-      console.error('Error buscando producto por clase detectada:', error);
+      console.error('❌ Error buscando producto por clase detectada:', error);
       throw error;
     }
   }

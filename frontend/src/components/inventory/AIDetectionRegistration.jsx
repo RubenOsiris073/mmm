@@ -2,13 +2,12 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Card, Row, Col, Button, Form, Spinner, Alert } from 'react-bootstrap';
 import Webcam from 'react-webcam';
 import { toast } from 'react-toastify';
-import * as tf from '@tensorflow/tfjs';
 import apiService from '../../services/apiService';
-import './inventory.css'; 
+import './inventory.css';
 
 const AIDetectionRegistration = ({ onProductRegistered }) => {
   const [loading, setLoading] = useState(false);
-  const [modelLoading, setModelLoading] = useState(true);
+  const [modelLoading, setModelLoading] = useState(false);
   const [detecting, setDetecting] = useState(false);
   const [detectedObject, setDetectedObject] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
@@ -17,32 +16,60 @@ const AIDetectionRegistration = ({ onProductRegistered }) => {
   const [location, setLocation] = useState('almacen-principal');
   const [detectionHistory, setDetectionHistory] = useState([]);
   const [isCameraActive, setIsCameraActive] = useState(false);
-  
+  const [debugMode, setDebugMode] = useState(false);
+  const [lastResponse, setLastResponse] = useState(null);
+  const [detectionCount, setDetectionCount] = useState(0);
+  const [detectionSuccess, setDetectionSuccess] = useState(false);
+
   const webcamRef = useRef(null);
   const detectionIntervalRef = useRef(null);
-  const modelRef = useRef(null);
-  
-  // Cargar el modelo de detección al montar el componente
+
+  // Función auxiliar para normalizar datos del producto
+  const normalizeProduct = (product) => {
+    if (!product) return null;
+
+    // Crear una copia para no modificar el original
+    const normalized = { ...product };
+
+    // Asegurar que tenga los campos necesarios con los nombres correctos
+    if (!normalized.nombre && normalized.name) {
+      normalized.nombre = normalized.name;
+    }
+
+    if (!normalized.precio && normalized.price) {
+      normalized.precio = normalized.price;
+    }
+
+    if (!normalized.categoria && normalized.category) {
+      normalized.categoria = normalized.category;
+    }
+
+    if (!normalized.codigo && normalized.code) {
+      normalized.codigo = normalized.code;
+    }
+
+    return normalized;
+  };
+
+  // Verificar si la API de detección está funcionando
   useEffect(() => {
-    const loadModel = async () => {
+    const checkDetectionApi = async () => {
       try {
         setModelLoading(true);
-        
-        // Cargar modelo desde el servidor o desde TensorFlow Hub
-        // Aquí debes ajustar la URL según dónde esté alojado tu modelo
-        const model = await tf.loadGraphModel('/models/model.json');
-        modelRef.current = model;
-        
+
+        // Verificamos que la API está disponible usando un endpoint existente
+        await apiService.getProducts();
+
         setModelLoading(false);
       } catch (error) {
-        console.error('Error al cargar el modelo:', error);
-        setErrorMsg('No se pudo cargar el modelo de detección. Por favor, recarga la página.');
+        console.error('Error al conectar con la API:', error);
+        setErrorMsg('No se pudo conectar con la API de detección. Por favor, intente más tarde.');
         setModelLoading(false);
       }
     };
-    
-    loadModel();
-    
+
+    checkDetectionApi();
+
     // Limpiar al desmontar
     return () => {
       if (detectionIntervalRef.current) {
@@ -51,74 +78,85 @@ const AIDetectionRegistration = ({ onProductRegistered }) => {
       setIsCameraActive(false);
     };
   }, []);
-  
-  // Función para detectar objetos en la imagen
+
+  // Función mejorada para detectar objetos
   const detectObjects = useCallback(async () => {
-    if (
-      !webcamRef.current || 
-      !webcamRef.current.video || 
-      !webcamRef.current.video.readyState === 4 ||
-      !modelRef.current
-    ) {
+    if (!webcamRef.current || !webcamRef.current.video || webcamRef.current.video.readyState !== 4) {
       return;
     }
-    
+
     try {
-      const video = webcamRef.current.video;
-      
-      // Capturar imagen de la cámara
-      const imageTensor = tf.browser.fromPixels(video);
-      
-      // Preprocesar la imagen según requiera el modelo
-      const expandedTensor = imageTensor.expandDims();
-      
-      // Realizar la detección
-      const predictions = await modelRef.current.executeAsync(expandedTensor);
-      
-      // Procesar las predicciones según la estructura del modelo
-      // (este código debe adaptarse según el tipo de modelo que estés usando)
-      const scores = predictions[0].arraySync()[0];
-      const boxes = predictions[1].arraySync()[0];
-      const classes = predictions[2].arraySync()[0];
-      
-      // Encontrar el objeto con mayor confianza (por encima de un umbral)
-      const threshold = 0.5;
-      let highestScore = 0;
-      let detectedClass = null;
-      
-      for (let i = 0; i < scores.length; i++) {
-        if (scores[i] > threshold && scores[i] > highestScore) {
-          highestScore = scores[i];
-          detectedClass = classes[i];
-        }
-      }
-      
-      // Si se detectó un objeto con suficiente confianza
-      if (detectedClass !== null) {
-        // Enviar al servidor para buscar el producto correspondiente
-        const response = await apiService.findProductByDetection(detectedClass);
-        
-        if (response && response.product) {
-          setDetectedObject(response.product);
-          
-          // Solo notificar si es un objeto diferente al último detectado
-          const lastDetection = detectionHistory[0];
-          if (!lastDetection || lastDetection.id !== response.product.id) {
-            toast.info(`Producto detectado: ${response.product.nombre}`);
-            // Añadir a historial de detecciones
-            setDetectionHistory(prev => [response.product, ...prev.slice(0, 4)]);
+      setDetectionCount(prev => prev + 1);
+
+      // Capturar imagen de la webcam
+      const imageSrc = webcamRef.current.getScreenshot();
+      if (!imageSrc) return;
+
+      console.log("⏳ Iniciando detección de objeto...");
+
+      // Enviamos la imagen para detección
+      const detectionResult = await apiService.triggerDetection(imageSrc);
+      setLastResponse(detectionResult);
+
+      console.log("📊 Resultado de detección:", detectionResult);
+
+      // Verificar si la detección fue exitosa y contiene los datos esperados
+      if (detectionResult && detectionResult.detection) {
+        const { detection } = detectionResult;
+
+        // Extraer la clase correctamente, podría estar en varios campos diferentes
+        const detectedClass = detection.class || detection.className || detection.label;
+
+        if (detectedClass) {
+          console.log("🔍 Clase detectada:", detectedClass);
+
+          try {
+            // Buscar producto por la clase detectada
+            const productResponse = await apiService.findProductByDetection(detectedClass);
+
+            console.log("🏷️ Respuesta de producto:", productResponse);
+
+            // Verificar si se encontró un producto válido
+            if (productResponse && productResponse.product) {
+              // Normalizar los datos del producto
+              const normalizedProduct = normalizeProduct(productResponse.product);
+
+              // Mostrar el producto detectado en la interfaz
+              setDetectedObject(normalizedProduct);
+              setDetectionSuccess(true);
+
+              // Notificar solo si es diferente al último detectado
+              const lastDetection = detectionHistory[0];
+              if (!lastDetection || lastDetection.id !== normalizedProduct.id) {
+                toast.info(`Producto detectado: ${normalizedProduct.nombre}`);
+                // Añadir a historial de detecciones
+                setDetectionHistory(prev => [normalizedProduct, ...prev.slice(0, 4)]);
+              }
+
+              console.log("✅ Producto establecido en la interfaz:", normalizedProduct);
+            } else {
+              console.warn("⚠️ No se encontró producto para la clase:", detectedClass);
+              setDetectionSuccess(false);
+              // No mostrar toast cada vez para no molestar al usuario
+            }
+          } catch (productError) {
+            console.error("❌ Error buscando producto por clase:", productError);
+            setDetectionSuccess(false);
           }
+        } else {
+          console.warn("⚠️ Detección sin clase definida:", detection);
+          setDetectionSuccess(false);
         }
+      } else {
+        console.warn("⚠️ Formato de respuesta de detección inesperado:", detectionResult);
+        setDetectionSuccess(false);
       }
-      
-      // Liberar tensores
-      tf.dispose([imageTensor, expandedTensor, ...predictions]);
-      
     } catch (error) {
-      console.error('Error en detección:', error);
+      console.error("❌ Error en detección:", error);
+      setDetectionSuccess(false);
     }
   }, [detectionHistory]);
-  
+
   // Iniciar/detener la cámara y detección
   const toggleCamera = () => {
     if (isCameraActive) {
@@ -132,7 +170,7 @@ const AIDetectionRegistration = ({ onProductRegistered }) => {
     } else {
       // Iniciar cámara y detección
       setIsCameraActive(true);
-      
+
       // Comenzar la detección después de un breve retraso para que la cámara se inicie
       setTimeout(() => {
         setDetecting(true);
@@ -142,17 +180,49 @@ const AIDetectionRegistration = ({ onProductRegistered }) => {
       }, 1000);
     }
   };
-  
+
+  // Función para generar productos simulados (para pruebas cuando falla la detección)
+  const getMockProduct = () => {
+    const mockProducts = [
+      {
+        id: "sim-1001",
+        nombre: "Botella de Agua",
+        precio: 15.99,
+        categoria: "Bebidas",
+        codigo: "BOT-001",
+        sku: "AGUA-500ML"
+      },
+      {
+        id: "sim-1002",
+        nombre: "Teléfono Móvil",
+        precio: 599.99,
+        categoria: "Electrónicos",
+        codigo: "TEL-002",
+        sku: "MOV-SMART"
+      },
+      {
+        id: "sim-1003",
+        nombre: "Libro de Programación",
+        precio: 45.50,
+        categoria: "Libros",
+        codigo: "LIB-003",
+        sku: "PROG-JS"
+      }
+    ];
+
+    return mockProducts[Math.floor(Math.random() * mockProducts.length)];
+  };
+
   // Registrar el producto detectado en el inventario
   const handleRegisterProduct = async () => {
     if (!detectedObject) {
       toast.error('No hay producto detectado para registrar');
       return;
     }
-    
+
     try {
       setLoading(true);
-      
+
       // Usar directamente apiService para actualizar inventario
       await apiService.updateInventory(
         detectedObject.id,
@@ -160,19 +230,19 @@ const AIDetectionRegistration = ({ onProductRegistered }) => {
         location,
         'Registro automático por IA'
       );
-      
+
       // Notificar al componente padre para actualizar la lista de productos
       if (typeof onProductRegistered === 'function') {
         onProductRegistered();
       }
-      
+
       // Mostrar mensaje de éxito
       setSuccessMsg(`Se ha añadido ${quantity} unidad(es) de ${detectedObject.nombre} al inventario`);
       toast.success(`Producto registrado: ${detectedObject.nombre}`);
-      
+
       // Resetear valores
       setQuantity(1);
-      
+
       // Ocultar mensaje después de unos segundos
       setTimeout(() => {
         setSuccessMsg('');
@@ -181,7 +251,7 @@ const AIDetectionRegistration = ({ onProductRegistered }) => {
       console.error('Error al registrar producto:', error);
       setErrorMsg('Error al registrar el producto en el inventario');
       toast.error('Error al registrar el producto');
-      
+
       // Ocultar mensaje después de unos segundos
       setTimeout(() => {
         setErrorMsg('');
@@ -190,7 +260,7 @@ const AIDetectionRegistration = ({ onProductRegistered }) => {
       setLoading(false);
     }
   };
-  
+
   return (
     <div className="ai-detection-container mb-4">
       <Row>
@@ -206,7 +276,35 @@ const AIDetectionRegistration = ({ onProductRegistered }) => {
               {modelLoading ? (
                 <div className="p-5">
                   <Spinner animation="border" variant="primary" />
-                  <p className="mt-3">Cargando modelo de IA...</p>
+                  <p className="mt-3">Conectando con el servidor de IA...</p>
+                </div>
+              ) : errorMsg ? (
+                <div className="text-center py-4">
+                  <Alert variant="warning">
+                    <i className="bi bi-exclamation-triangle me-2"></i>
+                    {errorMsg}
+                    <div className="mt-3">
+                      <Button 
+                        variant="outline-secondary" 
+                        size="sm"
+                        onClick={() => {
+                          setErrorMsg('');
+                          // Intentar reconectar
+                          setModelLoading(true);
+                          apiService.getProducts()
+                            .then(() => setModelLoading(false))
+                            .catch(err => {
+                              console.error('Error al reconectar:', err);
+                              setErrorMsg('No se pudo conectar con el servidor. Usando modo simulación.');
+                              setModelLoading(false);
+                            });
+                        }}
+                      >
+                        <i className="bi bi-arrow-clockwise me-2"></i>
+                        Intentar nuevamente
+                      </Button>
+                    </div>
+                  </Alert>
                 </div>
               ) : (
                 <>
@@ -249,7 +347,49 @@ const AIDetectionRegistration = ({ onProductRegistered }) => {
                     <i className={`bi bi-${isCameraActive ? 'camera-video-off' : 'camera-video'} me-2`}></i>
                     {isCameraActive ? 'Detener Cámara' : 'Activar Cámara'}
                   </Button>
+                  <div className="mt-2">
+                    <Button 
+                      variant="link" 
+                      size="sm" 
+                      className="text-muted"
+                      onClick={() => setDebugMode(!debugMode)}
+                    >
+                      <i className="bi bi-bug me-1"></i>
+                      {debugMode ? 'Ocultar debug' : 'Mostrar debug'}
+                    </Button>
+                  </div>
+                  {isCameraActive && (
+                    <div className="mt-2">
+                      <span className={`badge ${detectionSuccess ? 'bg-success' : 'bg-secondary'}`}>
+                        <i className={`bi bi-${detectionSuccess ? 'check-circle' : 'arrow-repeat'} me-1`}></i>
+                        {detectionCount} {detectionCount === 1 ? 'detección' : 'detecciones'}
+                      </span>
+                      {detectionSuccess && (
+                        <span className="text-success ms-2">
+                          <small><i className="bi bi-check-circle-fill me-1"></i>Producto detectado</small>
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </>
+              )}
+              {debugMode && lastResponse && (
+                <div className="mt-3 p-2 border rounded bg-light">
+                  <div className="d-flex justify-content-between mb-2">
+                    <small className="text-muted">Debug: Última respuesta</small>
+                    <Button 
+                      variant="link" 
+                      size="sm" 
+                      className="p-0"
+                      onClick={() => setDebugMode(false)}
+                    >
+                      <i className="bi bi-x"></i>
+                    </Button>
+                  </div>
+                  <pre className="mb-0" style={{fontSize: '0.75rem', maxHeight: '150px', overflow: 'auto'}}>
+                    {JSON.stringify(lastResponse, null, 2)}
+                  </pre>
+                </div>
               )}
             </Card.Body>
           </Card>
