@@ -263,6 +263,40 @@ const AIDetectionRegistration = ({ onProductRegistered }) => {
 
   return (
     <div className="ai-detection-container mb-4">
+      <Card className="mb-4">
+        <Card.Header className="bg-light">
+          <h5 className="mb-0">
+            <i className="bi bi-info-circle me-2"></i>
+            Instrucciones para el Registro con Inteligencia Artificial
+          </h5>
+        </Card.Header>
+        <Card.Body>
+          <Row>
+            <Col md={8}>
+              <ol>
+                <li className="mb-2">Haga clic en "Activar Cámara" para iniciar la detección automática.</li>
+                <li className="mb-2">Coloque el producto frente a la cámara para que sea detectado por la IA.</li>
+                <li className="mb-2">Una vez detectado, verifique los datos del producto en el panel de registro.</li>
+                <li className="mb-2">Ajuste la cantidad de unidades a registrar si es necesario.</li>
+                <li className="mb-2">Seleccione la ubicación donde se registrará el inventario.</li>
+                <li>Haga clic en "Registrar en Inventario" para finalizar el proceso.</li>
+              </ol>
+            </Col>
+            <Col md={4}>
+              <Alert variant="info" className="h-100 mb-0 d-flex align-items-center">
+                <div>
+                  <i className="bi bi-lightbulb-fill me-2 fs-4"></i>
+                  <strong>Consejos:</strong>
+                  <p className="mb-0 mt-2">
+                    Para mejores resultados, asegúrese de que el producto esté bien iluminado y centrado en la imagen. La detección funciona mejor con productos claramente visibles y sin obstrucciones.
+                  </p>
+                </div>
+              </Alert>
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
+
       <Row>
         <Col md={6}>
           <Card className="mb-4">
@@ -394,7 +428,6 @@ const AIDetectionRegistration = ({ onProductRegistered }) => {
             </Card.Body>
           </Card>
           
-          {/* Historial de detección */}
           {detectionHistory.length > 0 && (
             <Card>
               <Card.Header className="bg-light">
@@ -521,26 +554,6 @@ const AIDetectionRegistration = ({ onProductRegistered }) => {
                   </p>
                 </div>
               )}
-            </Card.Body>
-          </Card>
-          
-          <Card>
-            <Card.Header className="bg-light">
-              <h5 className="mb-0">Instrucciones</h5>
-            </Card.Header>
-            <Card.Body>
-              <ol>
-                <li className="mb-2">Haga clic en "Activar Cámara" para iniciar la detección.</li>
-                <li className="mb-2">Coloque el producto frente a la cámara para que sea detectado.</li>
-                <li className="mb-2">Una vez detectado, verifique los datos del producto.</li>
-                <li className="mb-2">Ajuste la cantidad si es necesario.</li>
-                <li className="mb-2">Seleccione la ubicación donde se registrará el inventario.</li>
-                <li>Haga clic en "Registrar en Inventario" para finalizar.</li>
-              </ol>
-              <Alert variant="info" className="mt-3">
-                <i className="bi bi-info-circle me-2"></i>
-                Para mejores resultados, asegúrese de que el producto esté bien iluminado y centrado en la imagen.
-              </Alert>
             </Card.Body>
           </Card>
         </Col>

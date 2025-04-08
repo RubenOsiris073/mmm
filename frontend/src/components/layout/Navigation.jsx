@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navbar, Nav, Container, NavDropdown } from 'react-bootstrap';
 import { Link, useLocation } from 'react-router-dom';
-import { BiStore, BiPackage, BiBarcode, BiBox, BiListCheck, BiDollar } from 'react-icons/bi';
+import { BiStore, BiPackage, BiBarcode, BiBox, BiListCheck, BiDollar, BiCamera } from 'react-icons/bi';
 
 const Navigation = () => {
   const location = useLocation();
@@ -76,6 +76,14 @@ const Navigation = () => {
               >
                 <BiBarcode className="me-1" size={18} />
                 Registro Automático
+              </NavDropdown.Item>
+              <NavDropdown.Item
+                as={Link}
+                to="/inventory?location=ai"
+                active={isActive('/inventory') && location.search.includes('ai')}
+              >
+                <BiCamera className="me-1" size={18} />
+                Registro con IA
               </NavDropdown.Item>
               <NavDropdown.Divider />
               <NavDropdown.Item
