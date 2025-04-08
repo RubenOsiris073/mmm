@@ -58,3 +58,37 @@
   align-items: center;
   justify-content: center;
 }
+
+/* Estilos adicionales para las tarjetas de instrucciones */
+.bi-info-circle, .bi-lightbulb-fill {
+  color: #007bff;
+}
+
+.bi-lightbulb-fill {
+  color: #ffc107;
+}
+
+/* Números de la lista de instrucciones */
+ol li::marker {
+  color: #007bff;
+  font-weight: bold;
+}
+
+/* Highlight para las instrucciones al pasar el cursor */
+ol li:hover {
+  background-color: rgba(0, 123, 255, 0.05);
+  border-radius: 4px;
+}
+
+/* Estilos para los iconos en los consejos */
+.alert-info .bi {
+  vertical-align: middle;
+}
+
+/* Adaptación para pantallas pequeñas */
+@media (max-width: 768px) {
+  .alert.h-100 {
+    height: auto !important;
+    margin-top: 1rem;
+  }
+}

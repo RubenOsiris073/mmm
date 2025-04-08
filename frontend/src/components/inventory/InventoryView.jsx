@@ -5,16 +5,27 @@ import BatchProductForm from './BatchProductForm';
 import BatchProductList from './BatchProductList';
 import RegisteredProducts from './RegisteredProducts';
 import AutomaticRegistration from './AutomaticRegistration';
-import AIDetectionRegistration from './AIDetectionRegistration'; // Nuevo componente
+import AIDetectionRegistration from './AIDetectionRegistration';
+import apiService from '../../services/apiService';
+import { useSearchParams } from 'react-router-dom';
+import './inventory.css';
 
 const InventoryView = () => {
   const [products, setProducts] = useState([]);
   const [batchProducts, setBatchProducts] = useState([]);
   const [activeTab, setActiveTab] = useState('manual');
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     loadProducts();
   }, []);
+
+  useEffect(() => {
+    const location = searchParams.get('location');
+    if (location && ['manual', 'automatic', 'ai'].includes(location)) {
+      setActiveTab(location);
+    }
+  }, [searchParams]);
 
   const loadProducts = async () => {
     try {
@@ -51,7 +62,7 @@ const InventoryView = () => {
             onBatchSaved={onBatchSaved}
           />
         </Tab>
-        <Tab eventKey="automatic" title="Registro con Codigo de Barras">
+        <Tab eventKey="automatic" title="Registro con Código de Barras">
           <AutomaticRegistration onProductRegistered={loadProducts} />
         </Tab>
         <Tab eventKey="ai" title="Registro con IA">
