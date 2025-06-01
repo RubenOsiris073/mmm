@@ -1,0 +1,149 @@
+/* Variables CSS para tema claro */
+:root[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #e9ecef;
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --text-muted: #adb5bd;
+  --border-color: #dee2e6;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --navbar-bg: #343a40;
+  --navbar-text: #ffffff;
+  --card-bg: #ffffff;
+  --input-bg: #ffffff;
+  --accent-blue: #007bff;
+  --accent-blue-hover: #0056b3;
+}
+
+/* Variables CSS para tema oscuro */
+:root[data-theme="dark"] {
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --bg-tertiary: #2d2d2d;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --text-muted: #6c757d;
+  --border-color: #404040;
+  --shadow: rgba(0, 0, 0, 0.3);
+  --navbar-bg: #000000;
+  --navbar-text: #ffffff;
+  --card-bg: #1e1e1e;
+  --input-bg: #2d2d2d;
+  --accent-blue: #4dabf7;
+  --accent-blue-hover: #339af0;
+}
+
+/* Estilos base para ambos temas */
+.light-theme, .dark-theme {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Cards y contenedores */
+.card, .modal-content {
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+  box-shadow: 0 2px 8px var(--shadow) !important;
+}
+
+/* Inputs y formularios */
+.form-control, .form-select {
+  background-color: var(--input-bg) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.form-control:focus, .form-select:focus {
+  background-color: var(--input-bg) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--accent-blue) !important;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+}
+
+/* Tablas */
+.table {
+  color: var(--text-primary) !important;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > td,
+.table-striped > tbody > tr:nth-of-type(odd) > th {
+  background-color: var(--bg-secondary) !important;
+}
+
+/* Botones */
+.btn-primary {
+  background-color: var(--accent-blue) !important;
+  border-color: var(--accent-blue) !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-blue-hover) !important;
+  border-color: var(--accent-blue-hover) !important;
+}
+
+/* Navbar específicamente */
+.navbar-dark {
+  background-color: var(--navbar-bg) !important;
+}
+
+/* Dropdown menus */
+.dropdown-menu {
+  background-color: var(--card-bg) !important;
+  border-color: var(--border-color) !important;
+}
+
+.dropdown-item {
+  color: var(--text-primary) !important;
+}
+
+.dropdown-item:hover {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Modales */
+.modal {
+  --bs-modal-bg: var(--card-bg);
+  --bs-modal-color: var(--text-primary);
+}
+
+/* Alertas y badges */
+.alert {
+  border-color: var(--border-color) !important;
+}
+
+.badge {
+  color: var(--text-primary) !important;
+}
+
+/* Botón de cambio de tema */
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 6px 12px;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9em;
+}
+
+.theme-toggle:hover {
+  background-color: var(--bg-secondary);
+  border-color: var(--accent-blue);
+}
+
+.theme-toggle-icon {
+  font-size: 1em;
+  transition: transform 0.3s ease;
+}
+
+.theme-toggle:hover .theme-toggle-icon {
+  transform: rotate(180deg);
+}

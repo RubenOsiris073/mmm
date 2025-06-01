@@ -1,315 +1,74 @@
 import axios from 'axios';
 
-// Configuración de la API
-// Para Docker, usa el nombre del servicio backend definido en docker-compose.yml
-const API_URL = process.env.REACT_APP_API_URL || 
-               (process.env.NODE_ENV === 'production' ? 
-                'http://backend:5000/api' : 'http://localhost:5000/api');
-const TIMEOUT = 15000; // 15 segundos
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
-console.log('📡 Configuración API:', {
-  environment: process.env.NODE_ENV,
-  apiUrl: API_URL,
-  timestamp: new Date().toISOString()
+// Crear instancia de axios
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  }
 });
 
+// Interceptor para logs detallados
+api.interceptors.request.use((config) => {
+  console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
+  return config;
+});
+
+api.interceptors.response.use(
+  (response) => {
+    console.log(`✅ API Response: ${response.status} - ${response.config.url}`);
+    console.log('📦 Response Data:', response.data);
+    return response;
+  },
+  (error) => {
+    console.error('❌ API Error:', error.response?.status, error.response?.data || error.message);
+    return Promise.reject(error);
+  }
+);
+
 const apiService = {
-  api: axios.create({
-    baseURL: API_URL,
-    timeout: TIMEOUT,
-    headers: {
-      'Content-Type': 'application/json',
-    }
-  }),
-
-  // Inicializar interceptores
-  initInterceptors() {
-    this.api.interceptors.request.use(
-      (config) => {
-        console.log('Petición saliente:', {
-          url: config.url,
-          method: config.method,
-          data: config.data
-        });
-        return config;
-      },
-      (error) => {
-        console.error('Error en petición:', error.message);
-        return Promise.reject(error);
-      }
-    );
-
-    this.api.interceptors.response.use(
-      (response) => {
-        console.log('Respuesta recibida:', {
-          status: response.status,
-          data: response.data
-        });
-        return response;
-      },
-      (error) => {
-        console.error('Error en respuesta:', {
-          status: error.response?.status,
-          message: error.message,
-          data: error.response?.data
-        });
-        return Promise.reject(error);
-      }
-    );
-  },
-
-  // Productos
-  async getProducts() {
+  // Función para obtener productos - SIN MOCKS
+  getProducts: async () => {
     try {
-      const response = await this.api.get('/products');
-      return response.data;
+      console.log('🔍 Intentando obtener productos de:', `${API_BASE_URL}/products`);
+      
+      const response = await api.get('/products');
+      
+      console.log('📋 Respuesta completa del servidor:', response);
+      console.log('📊 Status:', response.status);
+      console.log('🔢 Data type:', typeof response.data);
+      console.log('📝 Data content:', response.data);
+      
+      // Retornar la respuesta tal como viene del servidor
+      return response;
+      
     } catch (error) {
-      console.error('Error obteniendo productos:', error);
-      throw error;
-    }
-  },
-
-  async getProduct(id) {
-    try {
-      const response = await this.api.get(`/products/${id}`);
-      return response.data;
-    } catch (error) {
-      console.error(`Error obteniendo producto ${id}:`, error);
-      throw error;
-    }
-  },
-
-  async triggerDetection(imageData, quality = 0.8) {
-    try {
-      // Validación inicial
-      if (!imageData) {
-        throw new Error('No se proporcionó imagen para la detección');
-      }
-  
-      // Diagnóstico: Verificar tamaño de la imagen original
-      const originalSize = Math.floor(imageData.length / 1024);
-      console.log('Diagnóstico - Tamaño original:', originalSize, 'KB');
-  
-      // Optimización de imagen
-      let optimizedImage = imageData;
-      if (typeof window.optimizeImage === 'function') {
-        console.log('Aplicando optimización de imagen...');
-        optimizedImage = await window.optimizeImage(imageData, quality);
-        const optimizedSize = Math.floor(optimizedImage.length / 1024);
-        console.log('Diagnóstico - Tamaño optimizado:', optimizedSize, 'KB', 
-                    `(${Math.floor((originalSize - optimizedSize) / originalSize * 100)}% reducción)`);
-      }
-  
-      // Diagnóstico: Verificar URL y preparación
-      console.log('URL de detección:', this.api.defaults.baseURL + '/detect');
-      console.log('Iniciando detección...');
-  
-      // Realizar petición con medición de tiempo
-      const startTime = Date.now();
-      const response = await this.api.post('/detect', { image: optimizedImage }, {
-        timeout: 30000, // 30 segundos para procesamiento
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Request-Timestamp': new Date().toISOString()
-        }
+      console.error('💥 Error detallado en getProducts:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        url: error.config?.url
       });
       
-      // Diagnóstico: Tiempo de respuesta
-      const processingTime = Date.now() - startTime;
-      console.log('Tiempo de procesamiento:', processingTime, 'ms');
-  
-      // Validación de respuesta
-      if (!response.data || !response.data.detection) {
-        throw new Error('Respuesta de detección inválida');
-      }
-  
-      return response.data;
-  
-    } catch (error) {
-      // Manejo de errores mejorado con diagnósticos específicos
-      if (error.code === 'ECONNABORTED') {
-        console.error('Error: Tiempo de espera agotado (30s). El procesamiento está tardando demasiado.');
-      } else if (error.response?.status === 413) {
-        console.error('Error: Imagen demasiado grande. Tamaño:', Math.floor(imageData.length / 1024), 'KB');
-      } else if (!navigator.onLine) {
-        console.error('Error: Sin conexión a internet. Verifica tu conectividad.');
-      } else {
-        console.error('Error en detección:', {
-          message: error.message,
-          status: error.response?.status,
-          statusText: error.response?.statusText,
-          url: this.api.defaults.baseURL + '/detect'
-        });
-      }
-  
-      // Agregar información de diagnóstico al error
-      error.diagnostics = {
-        timestamp: new Date().toISOString(),
-        imageSize: Math.floor(imageData.length / 1024) + 'KB',
-        url: this.api.defaults.baseURL + '/detect',
-        online: navigator.onLine
-      };
-  
-      throw error;
+      throw error; // Re-lanzar el error sin usar mocks
     }
   },
 
-  async getDetections() {
+  // Función para crear venta
+  createSale: async (saleData) => {
     try {
-      const response = await this.api.get('/detections');
+      console.log('💰 Enviando venta:', saleData);
+      const response = await api.post('/sales', saleData);
       return response.data;
     } catch (error) {
-      console.error('Error obteniendo detecciones:', error);
-      throw error;
-    }
-  },
-
-  async setDetectionMode(active, intervalMs = 3000) {
-    try {
-      const response = await this.api.post('/detection/continuous', { 
-        active, 
-        intervalMs 
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error al configurar modo de detección:', error);
-      throw error;
-    }
-  },
-
-  // Inventario
-  async getInventory() {
-    try {
-      const response = await this.api.get('/inventory');
-      return response.data;
-    } catch (error) {
-      console.error('Error obteniendo inventario:', error);
-      throw error;
-    }
-  },
-
-  async updateInventory(productId, adjustment, location, reason) {
-    try {
-      const response = await this.api.post('/inventory/update', {
-        productId,
-        adjustment,
-        location,
-        reason,
-        timestamp: new Date().toISOString()
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error actualizando inventario:', error);
-      throw error;
-    }
-  },
-
-  // Ventas
-  async createSale(saleData) {
-    try {
-      console.log('Enviando venta:', saleData);
-      const response = await this.api.post('/sales', saleData);
-      console.log('Respuesta de venta:', response.data);
-      return response.data;
-    } catch (error) {
-      console.error('Error creando venta:', error);
-      throw error;
-    }
-  },
-
-  async getSales(limit = 50) {
-    try {
-      const response = await this.api.get(`/sales?limit=${limit}`);
-      
-      // Asegurémonos de entender qué estamos recibiendo
-      console.log('Respuesta completa de getSales:', response);
-      
-      // La API devuelve { sales: [] } según salesRoutes.js
-      // Extraemos el array de sales correctamente
-      if (response.data && response.data.sales) {
-        return response.data.sales; // Devolvemos directamente el array
-      } else {
-        console.warn('Formato de respuesta inesperado en getSales:', response.data);
-        return []; // Devolvemos array vacío si no hay datos en formato esperado
-      }
-    } catch (error) {
-      console.error('Error obteniendo ventas:', error);
-      throw error;
-    }
-  },
-
-  // Método para buscar un producto por clase detectada por IA
-  async findProductByDetection(detectedClass) {
-    try {
-      console.log('🔍 Buscando producto para clase:', detectedClass);
-      
-      // Verificar si el parámetro es válido
-      if (!detectedClass) {
-        console.warn('⚠️ No se proporcionó clase para buscar producto');
-        return { success: false, message: 'Clase no proporcionada' };
-      }
-      
-      const classData = {
-        detectedClass: detectedClass.toString()
-      };
-      
-      console.log('📤 Enviando solicitud al endpoint /detection:', classData);
-      
-      try {
-        const response = await this.api.post('/detection', classData);
-        console.log('📥 Respuesta recibida de /detection:', response.data);
-        
-        // Si la respuesta no tiene el formato esperado, intentamos adaptarla
-        if (response.data && !response.data.product && !response.data.success) {
-          // Si la respuesta en sí misma parece ser un producto
-          if (response.data.id && (response.data.nombre || response.data.name)) {
-            console.log('⚙️ Adaptando formato de respuesta a formato estándar');
-            return {
-              success: true,
-              product: response.data
-            };
-          }
-        }
-        
-        return response.data;
-      } catch (apiError) {
-        console.error('❌ Error en llamada a API:', apiError);
-        
-        // Como fallback, intentamos buscar el producto localmente
-        console.log('🔄 Intentando simulación local...');
-        try {
-          const mockProducts = await this.getProducts();
-          const matchedProduct = mockProducts.find(p => 
-            p.categoria?.toLowerCase().includes(detectedClass.toString().toLowerCase()) ||
-            p.nombre?.toLowerCase().includes(detectedClass.toString().toLowerCase())
-          );
-          
-          if (matchedProduct) {
-            console.log('✅ Producto encontrado localmente:', matchedProduct);
-            return { 
-              product: matchedProduct,
-              success: true
-            };
-          } else {
-            console.warn('⚠️ No se encontró producto local para clase:', detectedClass);
-            return {
-              success: false,
-              message: 'No se encontró un producto para la clase detectada'
-            };
-          }
-        } catch (localError) {
-          console.error('❌ Error en simulación local:', localError);
-          throw apiError; // Lanzamos el error original
-        }
-      }
-    } catch (error) {
-      console.error('❌ Error buscando producto por clase detectada:', error);
+      console.error('💥 Error creating sale:', error);
       throw error;
     }
   }
 };
-
-// Inicializar interceptores al importar el módulo
-apiService.initInterceptors();
 
 export default apiService;

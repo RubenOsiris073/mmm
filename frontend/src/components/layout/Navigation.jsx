@@ -1,111 +1,53 @@
 import React from 'react';
 import { Navbar, Nav, Container, NavDropdown } from 'react-bootstrap';
-import { Link, useLocation } from 'react-router-dom';
-import { BiStore, BiPackage, BiBarcode, BiBox, BiListCheck, BiDollar, BiCamera } from 'react-icons/bi';
+import { Link } from 'react-router-dom';
+import { FaBoxes, FaStore, FaChartLine, FaPlus, FaCog, FaMoneyBillWave } from 'react-icons/fa';
+import './Navigation.css';
 
 const Navigation = () => {
-  const location = useLocation();
-
-  // Función auxiliar para verificar si una ruta está activa
-  const isActive = (path) => location.pathname === path;
-
   return (
-    <Navbar bg="dark" variant="dark" expand="lg" className="shadow-sm">
-      <Container>
+    <Navbar bg="dark" variant="dark" expand="lg" className="shadow">
+      <Container fluid>
         <Navbar.Brand as={Link} to="/">
-          Sistema F.I.S.G.O
+          <FaStore className="me-2" />
+          Sistema de Productos
         </Navbar.Brand>
+        
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="ms-auto">
-            {/* Punto de Venta */}
-            <Nav.Link
-              as={Link}
-              to="/"
-              active={isActive('/')}
-              className="d-flex align-items-center"
-            >
-              <BiStore className="me-1" size={20} />
-              <span>Punto de Venta</span>
+          <Nav className="me-auto">
+            <Nav.Link as={Link} to="/products">
+              <FaBoxes className="me-1" />
+              Productos
             </Nav.Link>
-
-            {/* Dropdown de Productos */}
-            <NavDropdown
-              title={
-                <div className="d-inline-flex align-items-center">
-                  <BiPackage className="me-1" size={20} />
-                  <span>Productos</span>
-                </div>
-              }
-              id="productos-dropdown"
-              active={['/products', '/product-form'].includes(location.pathname)}
+            
+            <Nav.Link as={Link} to="/inventory">
+              <FaCog className="me-1" />
+              Inventario
+            </Nav.Link>
+            
+            <Nav.Link as={Link} to="/sales">
+              <FaChartLine className="me-1" />
+              Ventas
+            </Nav.Link>
+          </Nav>
+          
+          <Nav>
+            <Nav.Link 
+              as={Link} 
+              to="/pos" 
+              className="pos-button-modern"
             >
-              <NavDropdown.Item as={Link} to="/products" active={isActive('/products')}>
-                <BiBarcode className="me-1" size={18} />
-                Lista de Productos
-              </NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/product-form" active={isActive('/product-form')}>
-                <BiPackage className="me-1" size={18} />
+              <FaMoneyBillWave className="pos-icon" />
+              <span className="pos-text">Punto de Venta</span>
+            </Nav.Link>
+            
+            <NavDropdown title="Acciones" id="actions-dropdown">
+              <NavDropdown.Item as={Link} to="/products/new">
+                <FaPlus className="me-1" />
                 Nuevo Producto
               </NavDropdown.Item>
             </NavDropdown>
-
-            {/* Dropdown de Inventario */}
-            <NavDropdown
-              title={
-                <div className="d-inline-flex align-items-center">
-                  <BiBox className="me-1" size={20} />
-                  <span>Almacen</span>
-                </div>
-              }
-              id="inventario-dropdown"
-              active={['/inventory'].includes(location.pathname)}
-            >
-              <NavDropdown.Item
-                as={Link}
-                to="/inventory?location=manual"
-                active={isActive('/inventory') && location.search.includes('manual')}
-              >
-                <BiBox className="me-1" size={18} />
-                Registro Manual
-              </NavDropdown.Item>
-              <NavDropdown.Item
-                as={Link}
-                to="/inventory?location=automatic"
-                active={isActive('/inventory') && location.search.includes('automatic')}
-              >
-                <BiBarcode className="me-1" size={18} />
-                Registro Automático
-              </NavDropdown.Item>
-              <NavDropdown.Item
-                as={Link}
-                to="/inventory?location=ai"
-                active={isActive('/inventory') && location.search.includes('ai')}
-              >
-                <BiCamera className="me-1" size={18} />
-                Registro con IA
-              </NavDropdown.Item>
-              <NavDropdown.Divider />
-              <NavDropdown.Item
-                as={Link}
-                to="/inventory"
-                active={isActive('/inventory') && !location.search}
-              >
-                <BiListCheck className="me-1" size={18} />
-                Ver Todo
-              </NavDropdown.Item>
-            </NavDropdown>
-            
-            {/* Ventas */}
-            <Nav.Link
-              as={Link}
-              to="/sales"
-              active={isActive('/sales')}
-              className="d-flex align-items-center"
-            >
-              <BiDollar className="me-1" size={20} />
-              <span>Ventas</span>
-            </Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Container>

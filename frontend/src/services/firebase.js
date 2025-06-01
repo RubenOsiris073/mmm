@@ -1,66 +1,69 @@
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getAuth } from 'firebase/auth';
-import { getStorage } from "firebase/storage";
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, getDocs, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit } from 'firebase/firestore';
 
-// Colecciones de Firestore
+// Colecciones de Firebase
 export const COLLECTIONS = {
-  DETECTIONS: 'detections',
   PRODUCTS: 'products',
-  WALLET: 'wallet',
-  TRANSACTIONS: 'transactions'
+  SALES: 'sales',
+  INVENTORY: 'inventory',
+  TRANSACTIONS: 'transactions',
 };
 
-// Variables para almacenar las instancias
+// Variable para almacenar la app inicializada
 let firebaseApp = null;
 let db = null;
-let auth = null;
-let storage = null;
 
-// Función para inicializar Firebase con la configuración del backend
-export const initializeFirebase = async () => {
-  // Si ya está inicializado, retornar las instancias existentes
-  if (firebaseApp) {
-    return { firebaseApp, db, auth, storage };
+// Función para obtener la instancia de Firestore
+export const getDb = () => {
+  if (!db && firebaseApp) {
+    db = getFirestore(firebaseApp);
   }
-  
+  return db;
+};
+
+// Exportamos la instancia de db para compatibilidad
+export { db };
+
+// Configuración de Firebase desde variables de entorno
+export const initializeFirebase = async () => {
   try {
-    // Obtener configuración del backend usando el endpoint que ya tienes
-    const response = await fetch('http://localhost:5000/api/firebase-config');
-    if (!response.ok) {
-      throw new Error('No se pudo obtener la configuración de Firebase del backend');
+    if (firebaseApp) {
+      console.log('Firebase ya está inicializado');
+      return firebaseApp;
     }
+
+    const firebaseConfig = {
+      apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+      authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+      projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+      storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+      appId: process.env.REACT_APP_FIREBASE_APP_ID,
+    };
+
+    console.log('Inicializando Firebase con proyecto:', firebaseConfig.projectId);
     
-    const firebaseConfig = await response.json();
-    
-    // Inicializar Firebase
     firebaseApp = initializeApp(firebaseConfig);
     db = getFirestore(firebaseApp);
-    auth = getAuth(firebaseApp);
-    storage = getStorage(firebaseApp);
     
-    console.log('Firebase inicializado correctamente con configuración del backend');
-    return { firebaseApp, db, auth, storage };
+    console.log('Firebase inicializado correctamente');
+    return firebaseApp;
   } catch (error) {
-    console.error('Error al inicializar Firebase:', error);
+    console.error("Error al inicializar Firebase:", error);
     throw error;
   }
 };
 
-// Funciones para acceder a las instancias (para uso en otros componentes)
-export const getDb = () => db;
-export const getFirebaseAuth = () => auth;
-export const getFirebaseStorage = () => storage;
-export const getFirebaseApp = () => firebaseApp;
-
-// Exportar para mantener compatibilidad con código existente
-export { db, firebaseApp, auth, storage };
-
-export default {
-  initializeFirebase,
-  getDb,
-  getFirebaseAuth,
-  getFirebaseStorage,
-  getFirebaseApp,
-  COLLECTIONS
+const firebaseService = {
+  getCollection: (collectionName) => collection(db || getDb(), collectionName),
+  getDocument: (collectionName, documentId) => doc(db || getDb(), collectionName, documentId),
+  addDocument: (collectionName, data) => addDoc(collection(db || getDb(), collectionName), data),
+  updateDocument: (collectionName, documentId, data) => updateDoc(doc(db || getDb(), collectionName, documentId), data),
+  deleteDocument: (collectionName, documentId) => deleteDoc(doc(db || getDb(), collectionName, documentId)),
+  getDocuments: async (collectionName) => {
+    const snapshot = await getDocs(collection(db || getDb(), collectionName));
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  }
 };
+
+export default firebaseService;

@@ -1,11 +1,8 @@
 module.exports = {
-    extends: [
-      'react-app'
-      // Removido 'react-app/jest' para evitar conflictos
-    ],
-    // No incluimos el plugin jest directamente
-    rules: {
-      'react-hooks/exhaustive-deps': 'warn',
-      'import/no-anonymous-default-export': 'off'
-    }
-  };
+  extends: ['react-app'],
+  rules: {
+    'no-unused-vars': 'warn', // Cambiar de error a advertencia
+    'react-hooks/exhaustive-deps': 'warn', // Cambiar de error a advertencia
+    'import/no-anonymous-default-export': 'off' // Desactivar esta regla
+  }
+};

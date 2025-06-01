@@ -64,3 +64,6 @@ const AutomaticRegistration = ({ onProductRegistered }) => {
 };
 
 export default AutomaticRegistration;
+
+/* eslint-disable no-unused-vars */
+// Resto del código existente

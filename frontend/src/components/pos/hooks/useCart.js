@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { toast } from 'react-toastify';
 
 const useCart = ({ wallet, products }) => {
@@ -49,9 +49,9 @@ const useCart = ({ wallet, products }) => {
   }, []);
 
   // Remove from cart
-  const removeFromCart = (id) => {
+  const removeFromCart = useCallback((id) => {
     setCartItems(cartItems.filter(item => item.id !== id));
-  };
+  }, [cartItems]);
 
   // Update quantity corregido
   const updateQuantity = useCallback((id, newQuantity) => {

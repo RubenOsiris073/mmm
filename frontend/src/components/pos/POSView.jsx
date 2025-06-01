@@ -1,21 +1,24 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Container, Row, Col, Alert, Button, Form, Card } from 'react-bootstrap';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Container, Row, Col, Card, Button, Form, Alert, Spinner } from 'react-bootstrap';
 import Webcam from 'react-webcam';
 import { toast } from 'react-toastify';
+
+// Importaciones correctas de servicios
+import apiService from '../../services/apiService';
+
+// Importaciones correctas de componentes
+import ProductList from './ProductList';
+import ShoppingCart from './ShoppingCart';
+import PaymentModal from './PaymentModal';
+
+// Importaciones correctas de hooks
+import useCart from './hooks/useCart';
+import usePayment from './hooks/usePayment';
+import useProductData from './hooks/useProductData';
+
 import { motion } from 'framer-motion';
 import { FaBarcode, FaBox } from 'react-icons/fa';
 import './styles.css';
-
-// Importar componentes
-import ShoppingCart from './ShoppingCart';
-import ProductList from './ProductList';
-import PaymentModal from './PaymentModal';
-
-// Importar hooks
-import useProductData from './hooks/useProductData';
-import useCart from './hooks/useCart';
-import usePayment from './hooks/usePayment';
-import apiService from '../../services/apiService';
 
 const POSView = () => {
   // Estados para manejo de error y webcam
@@ -412,7 +415,8 @@ const POSView = () => {
   }, [continuousDetection, detectionLoading, captureFrame, detectFromImage, addDetectedProductToCart]);
 
   return (
-    <Container fluid className="pos-container">
+    <div className="pos-view"> {/* Agregar esta clase */}
+      <Container fluid className="pos-container">
       
       {/* Instrucciones añadidas en la parte superior */}
       <Card className="mb-4">
@@ -594,6 +598,7 @@ const POSView = () => {
         loading={paymentLoading}
       />
     </Container>
+    </div>
   );
 };
 

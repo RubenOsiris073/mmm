@@ -1,7 +1,17 @@
 import React from 'react';
-import { Form, InputGroup, Button, Spinner, Row, Col } from 'react-bootstrap';
-import { FaSearch, FaBox, FaBoxOpen, FaUtensils, FaWineBottle, 
-         FaShoppingBag, FaTshirt, FaMobile, FaLaptop } from 'react-icons/fa';
+import { Row, Col, Card, Button, Badge, Form, InputGroup, Spinner } from 'react-bootstrap';
+import { 
+  FaPlus, 
+  FaSearch, 
+  FaUtensils, 
+  FaWineBottle, 
+  FaTshirt, 
+  FaLaptop, 
+  FaMobile, 
+  FaShoppingBag,
+  FaBox,
+  FaBoxOpen
+} from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 const ProductList = ({ products, loading, searchTerm, setSearchTerm, addToCart }) => {

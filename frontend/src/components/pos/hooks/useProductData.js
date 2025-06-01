@@ -1,153 +1,126 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { toast } from 'react-toastify';
 import apiService from '../../../services/apiService';
 
-/**
- * Custom hook to manage product data and related state
- * @param {Function} externalSetError - Optional external error handler
- * @returns {Object} Product data and related functions
- */
 const useProductData = (externalSetError = null) => {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [error, setInternalError] = useState(null);
-  
-  // Función para manejar errores internos y externos si están disponibles
-  const handleError = useCallback((message, duration = 3000) => {
-    console.error(message);
-    setInternalError(message);
+  const [error, setError] = useState(null);
+
+  // Función para manejar errores
+  const handleError = useCallback((error) => {
+    console.error('🚨 Error en useProductData:', error);
+    const errorMessage = error.message || 'Error desconocido';
+    setError(errorMessage);
     
     if (externalSetError) {
-      externalSetError(message);
-      // Si hay un manejador externo, también configurar un temporizador para limpiar
-      if (duration) {
-        setTimeout(() => externalSetError(null), duration);
-      }
-    }
-    
-    // Siempre limpiar el error interno después de un tiempo
-    if (duration) {
-      setTimeout(() => setInternalError(null), duration);
+      externalSetError(errorMessage);
+    } else {
+      toast.error(errorMessage);
     }
   }, [externalSetError]);
 
-  // Cargar datos de productos mejorado
+  // Función para eliminar duplicados
+  const removeDuplicateProducts = useCallback((products) => {
+    if (!Array.isArray(products)) return [];
+    
+    const unique = products.filter((product, index, self) => 
+      index === self.findIndex(p => p.id === product.id)
+    );
+    
+    console.log(`Productos originales: ${products.length}, únicos: ${unique.length}`);
+    return unique;
+  }, []);
+
+  // Función para cargar productos
   const loadProducts = useCallback(async () => {
     try {
       setLoading(true);
-      console.log("Cargando datos de productos...");
+      console.log('Cargando productos...');
       
-      // Obtener productos desde la API
-      const productsResponse = await apiService.getProducts();
+      const response = await apiService.getProducts();
+      console.log('Respuesta recibida:', response);
       
-      // Verificar estructura de respuesta
-      let productsData = [];
-      
-      if (productsResponse?.products) {
-        // Formato 1: { products: [...] }
-        productsData = productsResponse.products;
-      } else if (Array.isArray(productsResponse)) {
-        // Formato 2: directamente array
-        productsData = productsResponse;
-      } else {
-        throw new Error("Formato de respuesta de productos no válido");
+      if (!response || !response.data) {
+        throw new Error('No se recibieron datos válidos del servidor');
       }
-      
-      if (!productsData.length) {
-        console.log("No se recibieron productos de la API");
+
+      const productsData = Array.isArray(response.data) ? response.data : [];
+      console.log('Datos de productos:', productsData);
+
+      if (productsData.length === 0) {
+        console.log('No hay productos disponibles');
+        setProducts([]);
+        return;
       }
-      
-      // Normalizar y mejorar los datos de productos
+
+      // Formatear productos
       const formattedProducts = productsData.map(product => ({
         ...product,
-        // Garantizar que todos los productos tienen campos esenciales
         id: product.id || `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        nombre: product.nombre || product.label || "Producto sin nombre",
-        label: product.label || product.nombre || "",
-        precio: typeof product.precio === 'string' ? parseFloat(product.precio) : (product.precio || 0),
-        stock: typeof product.stock === 'string' ? parseInt(product.stock, 10) : (product.stock || 0),
-        categoria: product.categoria || 'general'
+        name: product.name || product.nombre || product.label || "Producto sin nombre",
+        nombre: product.nombre || product.name || product.label || "Producto sin nombre",
+        label: product.label || product.nombre || product.name || "",
+        price: typeof product.price === 'string' ? parseFloat(product.price) : (product.price || product.precio || 0),
+        precio: typeof product.precio === 'string' ? parseFloat(product.precio) : (product.precio || product.price || 0),
+        stock: typeof product.stock === 'string' ? parseInt(product.stock, 10) : (product.stock || product.cantidad || 0),
+        cantidad: typeof product.cantidad === 'string' ? parseInt(product.cantidad, 10) : (product.cantidad || product.stock || 0),
+        category: product.category || product.categoria || 'general',
+        categoria: product.categoria || product.category || 'general'
       }));
 
-      // Añadir normalización de productos al cargarlos
+      // Normalización adicional de productos
       const normalizedProducts = formattedProducts.map(product => {
-        // Normalizar la estructura del producto
         const stockDisponible = product.cantidad !== undefined ? product.cantidad : (product.stock || 0);
         
         return {
           ...product,
           nombre: product.nombre || product.label || "Producto sin nombre",
+          name: product.name || product.nombre || "Producto sin nombre",
           stock: stockDisponible,
-          cantidad: stockDisponible, // Mantener ambos para compatibilidad
+          cantidad: stockDisponible,
           precio: typeof product.precio === 'number' ? product.precio : parseFloat(product.precio || 0),
+          price: typeof product.price === 'number' ? product.price : parseFloat(product.price || 0),
         };
       });
 
-      setProducts(normalizedProducts);
+      setProducts(removeDuplicateProducts(normalizedProducts));
       console.log(`Productos cargados: ${normalizedProducts.length}`, normalizedProducts);
     } catch (err) {
       console.error("Error cargando productos:", err);
-      handleError(`Error al cargar productos: ${err.message}`);
+      handleError(err);
     } finally {
       setLoading(false);
     }
-  }, [handleError]);
+  }, [handleError, removeDuplicateProducts]);
 
-  // Cargar datos al montar el componente
+  // Cargar productos al montar el componente
   useEffect(() => {
     loadProducts();
   }, [loadProducts]);
 
-  // Filtrar productos por término de búsqueda - versión mejorada
+  // Productos filtrados con useMemo
   const filteredProducts = useMemo(() => {
     if (!searchTerm) return products;
     
-    const term = searchTerm.toLowerCase().trim();
-    
-    return products.filter(product => {
-      // Normalizar texto para mejor búsqueda
-      const nombre = (product.nombre || '').toLowerCase();
-      const label = (product.label || '').toLowerCase();
-      const categoria = (product.categoria || '').toLowerCase();
-      const codigo = (product.codigo || '').toString().toLowerCase();
-      
-      return nombre.includes(term) || 
-             label.includes(term) || 
-             categoria.includes(term) ||
-             codigo.includes(term);
-    });
+    const term = searchTerm.toLowerCase();
+    return products.filter(product => 
+      (product.name && product.name.toLowerCase().includes(term)) ||
+      (product.nombre && product.nombre.toLowerCase().includes(term)) ||
+      (product.label && product.label.toLowerCase().includes(term)) ||
+      (product.id && product.id.toLowerCase().includes(term))
+    );
   }, [products, searchTerm]);
-
-  // Función para recargar los datos manualmente
-  const refreshData = useCallback(async () => {
-    await loadProducts();
-  }, [loadProducts]);
-
-  // Agrupar productos por categoría
-  const productsByCategory = useMemo(() => {
-    const grouped = {};
-    
-    products.forEach(product => {
-      const category = product.categoria || 'sin-categoria';
-      if (!grouped[category]) {
-        grouped[category] = [];
-      }
-      grouped[category].push(product);
-    });
-    
-    return grouped;
-  }, [products]);
 
   return {
     products,
     loading,
-    error,
+    filteredProducts,
     searchTerm,
     setSearchTerm,
-    filteredProducts,
-    refreshData,
     loadProducts,
-    productsByCategory
+    error
   };
 };
 

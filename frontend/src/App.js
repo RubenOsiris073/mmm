@@ -1,15 +1,57 @@
 import React, { useEffect, useState } from 'react';
 import { initializeFirebase } from './services/firebase';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Container } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'react-toastify/dist/ReactToastify.css';
+
+// Componentes del sistema principal
 import Navigation from './components/layout/Navigation';
 import ProductsPage from './pages/ProductsPage';
 import ProductFormPage from './pages/ProductFormPage';
 import InventoryView from './components/inventory/InventoryView';
-import POSPage from './pages/POSPage';
 import SalesPage from './pages/SalesPage';
 import Footer from './components/layout/Footer';
+
+// Componentes del POS
+import POSMainPage from './pages/POSMainPage';
+
 import { ToastContainer } from 'react-toastify';
+
+// Componente para manejar layouts condicionales
+const AppContent = () => {
+  const location = useLocation();
+  const isPOSRoute = location.pathname.startsWith('/pos');
+
+  if (isPOSRoute) {
+    // Layout para rutas POS
+    return (
+      <Routes>
+        <Route path="/pos" element={<POSMainPage />} />
+        <Route path="/pos/*" element={<Navigate to="/pos" replace />} />
+      </Routes>
+    );
+  }
+
+  // Layout para rutas del sistema principal
+  return (
+    <div className="App d-flex flex-column min-vh-100">
+      <Navigation />
+      <Container fluid className="main-content py-4 flex-grow-1">
+        <Routes>
+          <Route path="/" element={<Navigate to="/products" replace />} />
+          <Route path="/products" element={<ProductsPage />} />
+          <Route path="/products/new" element={<ProductFormPage />} />
+          <Route path="/products/edit/:id" element={<ProductFormPage />} />
+          <Route path="/inventory" element={<InventoryView />} />
+          <Route path="/sales" element={<SalesPage />} />
+          <Route path="*" element={<Navigate to="/products" replace />} />
+        </Routes>
+      </Container>
+      <Footer />
+    </div>
+  );
+};
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -19,10 +61,11 @@ function App() {
     const setupFirebase = async () => {
       try {
         await initializeFirebase();
+        console.log('Firebase conectado exitosamente');
         setIsLoading(false);
       } catch (err) {
         console.error('Error al inicializar Firebase:', err);
-        setError('No se pudo conectar con el backend para obtener la configuración de Firebase');
+        setError(`Error de conexión a Firebase: ${err.message}`);
         setIsLoading(false);
       }
     };
@@ -31,49 +74,49 @@ function App() {
   }, []);
 
   if (isLoading) {
-    return <div className="loading">Cargando configuración de Firebase desde el backend...</div>;
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="text-center">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Cargando...</span>
+          </div>
+          <p className="mt-2">Conectando a Firebase...</p>
+        </div>
+      </div>
+    );
   }
   
   if (error) {
-    return <div className="error">{error}</div>;
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="alert alert-danger text-center">
+          <h4>Error de Conexión</h4>
+          <p>{error}</p>
+          <button 
+            className="btn btn-primary" 
+            onClick={() => window.location.reload()}
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
     <Router>
-      <div className="App d-flex flex-column min-vh-100">
-        <Navigation />
-        <Container fluid className="main-content py-4 flex-grow-1">
-          <Routes>
-            {/* Ruta raíz */}
-            <Route path="/" element={<POSPage />} />
-            
-            {/* Rutas de producto */}
-            <Route path="/products" element={<ProductsPage />} />
-            <Route path="/product-form" element={<ProductFormPage />} />
-            
-            {/* Rutas de inventario */}
-            <Route path="/inventory" element={<InventoryView />} />
-            
-            {/* Otras rutas */}
-            <Route path="/sales" element={<SalesPage />} />
-            
-            {/* Ruta para URLs no encontradas */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Container>
-        <Footer />
-        <ToastContainer
-          position="bottom-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-        />
-      </div>
+      <AppContent />
+      <ToastContainer 
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </Router>
   );
 }

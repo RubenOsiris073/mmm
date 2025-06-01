@@ -1,12 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Table, Spinner, Card, Alert, Button, Row, Col, Form } from 'react-bootstrap';
-import { FaFileInvoice, FaDownload, FaFilter, FaSearch, FaTimes } from 'react-icons/fa';
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useState, useEffect, useCallback } from 'react';
+import { Table, Spinner, Card, Alert, Button, Row, Col, Form, Badge } from 'react-bootstrap';
+import { FaFileInvoice, FaDownload, FaFilter, FaSearch, FaTimes, FaEye, FaCalendarAlt, FaDollarSign, FaShoppingCart } from 'react-icons/fa';
 import apiService from '../../services/apiService';
 import { toast } from 'react-toastify';
+import InvoiceModal from './InvoiceModal';
 
 const SalesHistory = ({ onGenerateInvoice, onDownloadReport }) => {
   const [sales, setSales] = useState([]);
   const [filteredSales, setFilteredSales] = useState([]);
+  const [selectedSale, setSelectedSale] = useState(null);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
@@ -22,16 +26,8 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport }) => {
   // Estado para controlar el panel de filtros
   const [showFilters, setShowFilters] = useState(false);
 
-  useEffect(() => {
-    loadSales();
-  }, [onDownloadReport]);
-
-  useEffect(() => {
-    // Aplicar filtros cada vez que cambien
-    applyFilters();
-  }, [sales, filters]);
-
-  const loadSales = async () => {
+  // Función para cargar ventas - declarada antes de los useEffect
+  const loadSales = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -64,13 +60,13 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [onDownloadReport]);
 
-  // Función para aplicar filtros
-  const applyFilters = () => {
+  // Función para aplicar filtros - declarada antes de los useEffect
+  const applyFilters = useCallback(() => {
     if (!Array.isArray(sales)) return;
     
-    const filtered = sales.filter(sale => {
+    let filtered = sales.filter(sale => {
       // Filtro por cliente
       if (filters.clientName && 
           !String(sale.client || sale.cliente || '').toLowerCase().includes(filters.clientName.toLowerCase())) {
@@ -99,7 +95,17 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport }) => {
     });
     
     setFilteredSales(filtered);
-  };
+  }, [sales, filters.clientName, filters.minAmount, filters.maxAmount, filters.startDate, filters.endDate]);
+
+  // useEffect para cargar ventas al montar el componente
+  useEffect(() => {
+    loadSales();
+  }, [loadSales]);
+
+  // useEffect para aplicar filtros cuando cambien
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
 
   // Manejar cambios en los filtros
   const handleFilterChange = (e) => {
@@ -118,12 +124,22 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport }) => {
     });
   };
 
+  const handleViewInvoice = (sale) => {
+    setSelectedSale(sale);
+    setShowInvoiceModal(true);
+  };
+
+  const handleDownloadInvoice = (sale) => {
+    // Implementar descarga de factura
+    toast.info('Funcionalidad de descarga en desarrollo');
+  };
+
   // Función para formatear fecha
   const formatDate = (dateString) => {
     if (!dateString) return 'Fecha desconocida';
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+      return date.toLocaleDateString('es-CO') + ' ' + date.toLocaleTimeString();
     } catch (e) {
       return 'Fecha inválida';
     }
@@ -140,6 +156,20 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport }) => {
     };
     
     return methods[method.toLowerCase()] || method;
+  };
+
+  // Función para formatear moneda
+  const formatCurrency = (amount) => {
+    if (amount === null || amount === undefined || isNaN(amount)) {
+      return '$0.00';
+    }
+    
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(Number(amount));
   };
 
   // Si hay un error pero no está cargando, mostramos el error
@@ -308,50 +338,52 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport }) => {
             </div>
           ) : (
             Array.isArray(filteredSales) && filteredSales.length > 0 ? (
-              <Table responsive hover className="mb-0">
+              <Table responsive striped hover className="mb-0">
                 <thead>
                   <tr>
                     <th>ID</th>
                     <th>Fecha</th>
                     <th>Cliente</th>
-                    <th>Método</th>
-                    <th className="text-end">Total</th>
-                    <th>Productos</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Método de Pago</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredSales.map((sale) => (
                     <tr key={sale.id || sale._id || `sale-${Math.random()}`}>
-                      <td>#{sale.id || sale._id || 'N/A'}</td>
-                      <td>{formatDate(sale.date || sale.fecha || sale.timestamp)}</td>
-                      <td>{sale.client || sale.cliente || 'Cliente general'}</td>
-                      <td>{formatPaymentMethod(sale.paymentMethod || sale.metodoPago)}</td>
-                      <td className="text-end fw-bold">${(sale.total || 0).toFixed(2)}</td>
                       <td>
-                        {Array.isArray(sale.items) ? (
-                          <ul className="mb-0 ps-3">
-                            {sale.items.slice(0, 3).map((item, index) => (
-                              <li key={index}>
-                                {item.nombre || item.name}: {item.cantidad || item.quantity} x ${(item.precioUnitario || item.price || 0).toFixed(2)}
-                              </li>
-                            ))}
-                            {sale.items.length > 3 && (
-                              <li>...y {sale.items.length - 3} más</li>
-                            )}
-                          </ul>
-                        ) : (
-                          <span className="text-muted">Sin detalles</span>
-                        )}
+                        <Badge bg="primary">{sale.id}</Badge>
                       </td>
                       <td>
-                        <Button 
-                          variant="outline-primary" 
+                        <FaCalendarAlt className="me-1" />
+                        {formatDate(sale.date || sale.fecha || sale.timestamp)}
+                      </td>
+                      <td>{sale.client || sale.cliente || 'Cliente general'}</td>
+                      <td>{Array.isArray(sale.items) ? `${sale.items.length} productos` : 'Sin detalles'}</td>
+                      <td>
+                        <FaDollarSign className="me-1" />
+                        <strong>{formatCurrency(sale.total)}</strong>
+                      </td>
+                      <td>
+                        <Badge bg="success">{sale.paymentMethod || 'Desconocido'}</Badge>
+                      </td>
+                      <td>
+                        <Button
+                          variant="outline-primary"
                           size="sm"
                           className="me-2"
-                          onClick={() => onGenerateInvoice && onGenerateInvoice(sale)}
+                          onClick={() => handleViewInvoice(sale)}
                         >
-                          <FaFileInvoice className="me-1" /> Factura
+                          <FaEye />
+                        </Button>
+                        <Button
+                          variant="outline-success"
+                          size="sm"
+                          onClick={() => handleDownloadInvoice(sale)}
+                        >
+                          <FaDownload />
                         </Button>
                       </td>
                     </tr>
@@ -393,6 +425,13 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport }) => {
           </div>
         </Card.Footer>
       </Card>
+
+      {/* Modal de factura */}
+      <InvoiceModal
+        show={showInvoiceModal}
+        onHide={() => setShowInvoiceModal(false)}
+        sale={selectedSale}
+      />
     </>
   );
 };

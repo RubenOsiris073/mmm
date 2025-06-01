@@ -1,3 +1,4 @@
+const admin = require('firebase-admin');
 const { initializeApp } = require('firebase/app');
 const { getFirestore } = require('firebase/firestore');
 const dotenv = require('dotenv');
@@ -36,7 +37,7 @@ const firebaseConfig = {
   projectId: process.env.FIREBASE_PROJECT_ID,
   storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.FIREBASE_APP_ID
+  appId: process.env.FIREBASE_APP_ID,
 };
 
 console.log("Firebase config:", {
@@ -45,8 +46,8 @@ console.log("Firebase config:", {
 });
 
 // Inicializar Firebase
-const firebaseApp = initializeApp(firebaseConfig);
-const db = getFirestore(firebaseApp);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 // Definir colecciones
 const COLLECTIONS = {
@@ -61,5 +62,5 @@ const COLLECTIONS = {
 module.exports = {
   db,
   COLLECTIONS,
-  firebaseApp
+  firebaseApp: app
 };

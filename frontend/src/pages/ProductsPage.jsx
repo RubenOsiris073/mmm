@@ -3,7 +3,7 @@ import { Row, Col, Card, Button, Alert, Tabs, Tab } from 'react-bootstrap';
 import { Link, useLocation } from 'react-router-dom';
 import ProductList from '../components/products/ProductList';
 import ProductGrid from '../components/products/ProductGrid';
-import { getDetections, getProductsWithSafeDates } from '../services/storageService';
+import { getDetections, getProductsWithSafeDates, assignCategoriesAutomatically } from '../services/storageService';
 import '../App.css';
 
 const ProductsPage = () => {
@@ -14,6 +14,7 @@ const ProductsPage = () => {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [activeTab, setActiveTab] = useState('grid');
+  const [categorizingProducts, setCategorizingProducts] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -72,6 +73,69 @@ const ProductsPage = () => {
 
     fetchData();
   }, []);
+
+  // Función para manejar la eliminación de productos
+  const handleProductDeleted = (deletedProductId) => {
+    // Actualizar la lista de productos registrados
+    setRegisteredProducts(prev => prev.filter(product => product.id !== deletedProductId));
+    
+    // Actualizar la lista de detecciones
+    setDetections(prev => prev.filter(detection => detection.id !== deletedProductId));
+    
+    // Actualizar la lista combinada de todos los productos
+    setAllProducts(prev => prev.filter(product => product.id !== deletedProductId));
+    
+    // Mostrar mensaje de éxito
+    setSuccessMessage("Producto eliminado correctamente");
+    setTimeout(() => setSuccessMessage(null), 5000);
+  };
+
+  // Función para manejar la categorización automática de productos
+  const handleAutoCategorize = async () => {
+    setCategorizingProducts(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      // Ejecutar la categorización automática (no necesita parámetros)
+      const result = await assignCategoriesAutomatically();
+
+      if (result.success) {
+        // Recargar todos los datos después de la categorización
+        const [detectionsData, productsData] = await Promise.all([
+          getDetections(),
+          getProductsWithSafeDates()
+        ]);
+        
+        const safeDetections = Array.isArray(detectionsData) ? detectionsData : [];
+        const safeProducts = Array.isArray(productsData) ? productsData : [];
+        
+        setDetections(safeDetections);
+        setRegisteredProducts(safeProducts);
+        
+        // Actualizar la lista combinada
+        const productMap = new Map();
+        safeProducts.forEach(product => {
+          productMap.set(product.id, product);
+        });
+        safeDetections.forEach(detection => {
+          if (!productMap.has(detection.id)) {
+            productMap.set(detection.id, detection);
+          }
+        });
+        setAllProducts(Array.from(productMap.values()));
+
+        setSuccessMessage(`¡Éxito! ${result.updatedCount} productos fueron categorizados automáticamente.`);
+      } else {
+        setError("No se pudieron categorizar los productos.");
+      }
+    } catch (error) {
+      console.error("Error al categorizar productos:", error);
+      setError("No se pudieron categorizar los productos. Por favor, intente nuevamente más tarde.");
+    } finally {
+      setCategorizingProducts(false);
+    }
+  };
 
   return (
     <>
@@ -173,15 +237,28 @@ const ProductsPage = () => {
                   <ProductGrid 
                     products={allProducts} 
                     loading={loading} 
+                    onProductDeleted={handleProductDeleted}
                   />
                 </Tab>
                 <Tab eventKey="list" title="Lista de Detecciones">
                   <ProductList 
                     products={detections} 
                     loading={loading} 
+                    onProductDeleted={handleProductDeleted}
                   />
                 </Tab>
               </Tabs>
+
+              {/* Botón para categorización automática */}
+              <div className="text-end">
+                <Button 
+                  variant="success" 
+                  onClick={handleAutoCategorize} 
+                  disabled={categorizingProducts}
+                >
+                  {categorizingProducts ? 'Categorizar...' : 'Categorizar Automáticamente'}
+                </Button>
+              </div>
             </Card.Body>
           </Card>
         </Col>
