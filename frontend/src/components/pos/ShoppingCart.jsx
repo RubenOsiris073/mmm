@@ -8,7 +8,7 @@ const ShoppingCart = ({ items, onRemove, onUpdateQuantity }) => {
   // Verificar si está vacío primero
   if (!cartItems.length) {
     return (
-      <div className="text-center p-4 bg-light border rounded">
+      <div className="text-center p-4 border rounded" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}>
         <p>El carrito está vacío</p>
       </div>
     );

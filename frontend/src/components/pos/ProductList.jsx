@@ -74,7 +74,7 @@ const ProductList = ({ products, loading, searchTerm, setSearchTerm, addToCart }
     <div className="product-catalog-container mt-4">
       {/* Barra de búsqueda simplificada */}
       <InputGroup className="mb-4 shadow-sm">
-        <InputGroup.Text className="bg-white border-end-0">
+        <InputGroup.Text className="border-end-0" style={{ backgroundColor: 'var(--input-bg)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}>
           <FaSearch size={18} className="text-muted" />
         </InputGroup.Text>
         <Form.Control
@@ -97,14 +97,20 @@ const ProductList = ({ products, loading, searchTerm, setSearchTerm, addToCart }
       
       {/* Contenido del catálogo */}
       {loading ? (
-        <div className="text-center p-5 bg-white rounded shadow-sm">
+        <div className="text-center p-5 rounded shadow-sm" style={{ backgroundColor: 'var(--card-bg)', color: 'var(--text-primary)' }}>
           <Spinner animation="border" variant="primary" size="lg" />
           <p className="mt-3 fs-5">Cargando productos...</p>
         </div>
       ) : (
         <>
           {products && products.length > 0 ? (
-            <div className="product-grid bg-white p-3 rounded" style={{ maxHeight: '450px', overflowY: 'auto', paddingRight: '5px' }}>
+            <div className="product-grid p-3 rounded" style={{ 
+              maxHeight: '450px', 
+              overflowY: 'auto', 
+              paddingRight: '5px',
+              backgroundColor: 'var(--card-bg)',
+              borderColor: 'var(--border-color)'
+            }}>
               <Row xs={1} md={2} lg={4} className="g-4">
                 {products.map(product => {
                   // Determinar stock disponible
@@ -171,7 +177,7 @@ const ProductList = ({ products, loading, searchTerm, setSearchTerm, addToCart }
               </Row>
             </div>
           ) : (
-            <div className="text-center p-5 bg-light rounded shadow-sm">
+            <div className="text-center p-5 rounded shadow-sm" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
               <p className="fs-5">No hay productos disponibles{searchTerm ? ' para esta búsqueda' : ''}</p>
             </div>
           )}

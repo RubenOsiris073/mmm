@@ -10,6 +10,7 @@ import './styles/themes.css';
 
 // Importar el contexto de tema
 import { ThemeProvider } from './contexts/ThemeContext';
+import { AuthProvider } from './contexts/AuthContext';
 
 // Importar pantalla de carga y hook
 import LoadingScreen from './components/shared/LoadingScreen';
@@ -123,20 +124,22 @@ function App() {
 
   return (
     <ThemeProvider>
-      <Router>
-        <AppContent />
-        <ToastContainer 
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-        />
-      </Router>
+      <AuthProvider>
+        <Router>
+          <AppContent />
+          <ToastContainer 
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
+        </Router>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

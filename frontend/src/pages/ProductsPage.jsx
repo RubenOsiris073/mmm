@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Alert, Tabs, Tab } from 'react-bootstrap';
 import { Link, useLocation } from 'react-router-dom';
+import { FaPlus } from 'react-icons/fa';
 import ProductList from '../components/products/ProductList';
 import ProductGrid from '../components/products/ProductGrid';
 import { getDetections, getProductsWithSafeDates } from '../services/storageService';
+import UserRegistration from '../components/admin/UserRegistration';
 import '../App.css';
 
 const ProductsPage = () => {
@@ -14,6 +16,7 @@ const ProductsPage = () => {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [activeTab, setActiveTab] = useState('grid');
+  const [showUserRegistration, setShowUserRegistration] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -91,6 +94,40 @@ const ProductsPage = () => {
 
   return (
     <>
+      <Row className="mb-4">
+        <Col>
+          <div className="d-flex justify-content-between align-items-center">
+            <h1>Lista de Productos</h1>
+            <div>
+              <Button 
+                variant="outline-secondary" 
+                size="sm"
+                className="me-2"
+                onClick={() => setShowUserRegistration(true)}
+              >
+                <i className="bi bi-person-plus me-1"></i>
+                Crear Usuario POS
+              </Button>
+              <Button 
+                as={Link} 
+                to="/products/new" 
+                variant="primary"
+                className="me-2"
+              >
+                <FaPlus className="me-1" />
+                Nuevo Producto
+              </Button>
+              <Link to="/">
+                <Button variant="outline-secondary">
+                  <i className="bi bi-camera me-2"></i>
+                  Volver a Cámara
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </Col>
+      </Row>
+
       {/* Banner de productos - Versión simplificada */}
       <Card className="mb-4">
         <Card.Body>
@@ -101,20 +138,6 @@ const ProductsPage = () => {
                 Gestione su catálogo de productos, visualice las detecciones automáticas y mantenga su inventario actualizado.
                 Este módulo le permite ver, editar y añadir productos para optimizar su gestión de inventario.
               </p>
-            </Col>
-            <Col md={4} className="text-md-end mt-3 mt-md-0">
-              <Link to="/product-form">
-                <Button variant="primary" className="me-2">
-                  <i className="bi bi-plus-circle me-2"></i>
-                  Añadir Producto
-                </Button>
-              </Link>
-              <Link to="/">
-                <Button variant="outline-secondary">
-                  <i className="bi bi-camera me-2"></i>
-                  Volver a Cámara
-                </Button>
-              </Link>
             </Col>
           </Row>
         </Card.Body>
@@ -204,6 +227,12 @@ const ProductsPage = () => {
           </Card>
         </Col>
       </Row>
+
+      {/* Modal de registro de usuario */}
+      <UserRegistration 
+        show={showUserRegistration}
+        onHide={() => setShowUserRegistration(false)}
+      />
     </>
   );
 };

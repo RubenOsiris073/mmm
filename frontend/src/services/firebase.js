@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, getDocs, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit } from 'firebase/firestore';
+import { getAuth as getFirebaseAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from 'firebase/auth';
 
 // Colecciones de Firebase
 export const COLLECTIONS = {
@@ -12,6 +13,7 @@ export const COLLECTIONS = {
 // Variable para almacenar la app inicializada
 let firebaseApp = null;
 let db = null;
+let auth = null;
 
 // Función para obtener la instancia de Firestore
 export const getDb = () => {
@@ -19,6 +21,14 @@ export const getDb = () => {
     db = getFirestore(firebaseApp);
   }
   return db;
+};
+
+// Función para obtener la instancia de Auth
+export const getAuth = () => {
+  if (!auth && firebaseApp) {
+    auth = getFirebaseAuth(firebaseApp);
+  }
+  return auth;
 };
 
 // Exportamos la instancia de db para compatibilidad
@@ -45,12 +55,53 @@ export const initializeFirebase = async () => {
     
     firebaseApp = initializeApp(firebaseConfig);
     db = getFirestore(firebaseApp);
+    auth = getFirebaseAuth(firebaseApp);
     
     console.log('Firebase inicializado correctamente');
     return firebaseApp;
   } catch (error) {
     console.error("Error al inicializar Firebase:", error);
     throw error;
+  }
+};
+
+// Servicios de autenticación
+export const authService = {
+  // Login con email y password
+  signInWithEmail: async (email, password) => {
+    const authInstance = auth || getAuth();
+    return await signInWithEmailAndPassword(authInstance, email, password);
+  },
+
+  // Login con Google
+  signInWithGoogle: async () => {
+    const authInstance = auth || getAuth();
+    const provider = new GoogleAuthProvider();
+    return await signInWithPopup(authInstance, provider);
+  },
+
+  // Registro con email y password
+  signUpWithEmail: async (email, password) => {
+    const authInstance = auth || getAuth();
+    return await createUserWithEmailAndPassword(authInstance, email, password);
+  },
+
+  // Cerrar sesión
+  signOut: async () => {
+    const authInstance = auth || getAuth();
+    return await signOut(authInstance);
+  },
+
+  // Observador de estado de autenticación
+  onAuthStateChanged: (callback) => {
+    const authInstance = auth || getAuth();
+    return onAuthStateChanged(authInstance, callback);
+  },
+
+  // Obtener usuario actual
+  getCurrentUser: () => {
+    const authInstance = auth || getAuth();
+    return authInstance.currentUser;
   }
 };
 

@@ -1,7 +1,8 @@
 /* Estilos para el catálogo de productos */
 .product-card {
   transition: all 0.3s ease;
-  background-color: #ffffff;
+  background-color: var(--card-bg);
+  color: var(--text-primary);
   cursor: pointer;
 }
 
@@ -21,14 +22,16 @@
   align-items: center;
   width: 50px;
   height: 50px;
-  background-color: #f8f9fa;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  box-shadow: 0 2px 6px var(--shadow);
   transition: all 0.2s ease;
 }
 
 .product-card:hover .category-icon {
   transform: scale(1.1);
-  background-color: #e9f5ff;
+  background-color: var(--accent-blue);
+  color: white;
 }
 
 .add-to-cart-btn:hover {
@@ -42,17 +45,17 @@
 }
 
 .product-grid::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--bg-secondary);
   border-radius: 4px;
 }
 
 .product-grid::-webkit-scrollbar-thumb {
-  background: #007bff;
+  background: var(--accent-blue);
   border-radius: 4px;
 }
 
 .product-grid::-webkit-scrollbar-thumb:hover {
-  background: #0056b3;
+  background: var(--accent-blue-hover);
 }
 
 /* Textos de stock */
@@ -74,19 +77,25 @@
 .search-input {
   font-size: 1.1rem;
   padding: 10px 15px;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
 }
 
 .search-input:focus {
-  border-color: #007bff;
+  border-color: var(--accent-blue);
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
 }
 
 /* Contenedor para la animación del escáner */
 .scanner-animation {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
-  border: 1px solid #dee2e6;
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
 }
 
 /* Contenedor del icono del escáner */
@@ -103,7 +112,7 @@
 /* Icono de código de barras */
 .scanner-barcode-icon {
   font-size: 6rem;
-  color: #212529;
+  color: var(--text-secondary);
   opacity: 0.8;
   position: absolute;
   z-index: 1;
@@ -112,7 +121,7 @@
 /* Icono de producto */
 .scanner-product-icon {
   font-size: 3.5rem;
-  color: #007bff;
+  color: var(--accent-blue);
   position: relative;
   z-index: 2;
 }
@@ -122,10 +131,187 @@
   position: absolute;
   height: 2px;
   width: 100%;
-  background-color: #007bff;
+  background-color: var(--accent-blue);
   z-index: 3;
   box-shadow: 0px 0px 8px 2px rgba(0, 123, 255, 0.8);
   left: 0;
+}
+
+/* POS VIEW CONTAINER */
+.pos-view {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  min-height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+}
+
+.pos-container {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+/* FORZAR QUE NO HAY BORDES BLANCOS EN POS */
+.pos-layout {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100vw !important;
+  overflow-x: hidden;
+}
+
+.pos-layout {
+  background-color: var(--bg-primary) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.pos-content {
+  margin: 0 !important;
+  width: 100% !important;
+  background-color: var(--bg-primary) !important;
+}
+
+/* ASEGURAR QUE EL BODY Y HTML NO TENGAN BORDES BLANCOS CUANDO ESTEMOS EN POS */
+body.pos-active {
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: var(--bg-primary) !important;
+}
+
+html.pos-active {
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: var(--bg-primary) !important;
+}
+
+/* FORZAR FONDO NEGRO EN TODO EL POS - SIN ALTERAR LAYOUT */
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+html {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Cuando estamos en POS, forzar el fondo del tema */
+.pos-layout {
+  background-color: var(--bg-primary) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.pos-view {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.pos-container {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* FORZAR QUE BOOTSTRAP CONTAINERS RESPETEN EL TEMA EN POS */
+.pos-layout .container-fluid {
+  background-color: transparent !important;
+}
+
+/* ELIMINAR CUALQUIER FONDO BLANCO DE BOOTSTRAP EN EL POS */
+.pos-view .container-fluid,
+.pos-view .container,
+.pos-view .row,
+.pos-view .col,
+.pos-view .col-md-5,
+.pos-view .col-md-7,
+.pos-view .col-md-12 {
+  background-color: transparent !important;
+}
+
+/* PANELES DEL POS */
+.detection-panel {
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.cart-panel {
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+/* ÚLTIMA DETECCIÓN */
+.last-detection {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* ESTILOS PARA EL SELECTOR DE ACCESO */
+.pos-access-selector {
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  min-height: 100vh;
+}
+
+.access-card {
+  transition: all 0.3s ease;
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.access-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
+  border-color: var(--accent-blue) !important;
+}
+
+.access-card .card-body {
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+/* MEJORAR EL TEMA DEL SELECTOR */
+.pos-access-selector h1 {
+  color: var(--accent-blue) !important;
+}
+
+.pos-access-selector .text-primary {
+  color: var(--accent-blue) !important;
+}
+
+.pos-access-selector .text-danger {
+  color: #dc3545 !important;
+}
+
+/* BOTONES DEL SELECTOR */
+.access-card .btn-primary {
+  background-color: var(--accent-blue) !important;
+  border-color: var(--accent-blue) !important;
+  transition: all 0.3s ease;
+}
+
+.access-card .btn-primary:hover {
+  background-color: var(--accent-blue-hover) !important;
+  border-color: var(--accent-blue-hover) !important;
+  transform: translateY(-2px);
+}
+
+.access-card .btn-danger {
+  background-color: #dc3545 !important;
+  border-color: #dc3545 !important;
+  transition: all 0.3s ease;
+}
+
+.access-card .btn-danger:hover {
+  background-color: #c82333 !important;
+  border-color: #c82333 !important;
+  transform: translateY(-2px);
 }
 
 /* Mejoras para dispositivos móviles */

@@ -415,7 +415,7 @@ const POSView = () => {
   }, [continuousDetection, detectionLoading, captureFrame, detectFromImage, addDetectedProductToCart]);
 
   return (
-    <div className="pos-view"> {/* Agregar esta clase */}
+    <div className="pos-view">
       <Container fluid className="pos-container">
       
       {/* Instrucciones añadidas en la parte superior */}
@@ -461,7 +461,7 @@ const POSView = () => {
 
       <Row className="mb-4">
         <Col md={5}>
-          <div className="detection-panel p-4 bg-white shadow-sm rounded">
+          <div className="detection-panel p-4 shadow-sm rounded">
             {/* Animación del escáner */}
             {renderScannerAnimation()}
 
@@ -497,7 +497,7 @@ const POSView = () => {
 
             {/* Mostrar última detección */}
             {lastDetection && (
-              <div className="last-detection p-3 border rounded bg-light mt-3">
+              <div className="last-detection p-3 border rounded mt-3">
                 <h5>Última detección: <span className="text-primary">{lastDetection.label}</span></h5>
                 <p className="mb-2">
                   Confianza: <span className="badge bg-info">{lastDetection.similarity.toFixed(1)}%</span>
@@ -521,7 +521,7 @@ const POSView = () => {
         </Col>
         
         <Col md={7}>
-          <div className="cart-panel h-100 p-4 bg-white shadow-sm rounded">
+          <div className="cart-panel h-100 p-4 shadow-sm rounded">
             <h3 className="mb-3 text-primary">Carrito de Compras</h3>
             
             <div className="cart-container" style={{maxHeight: '300px', overflowY: 'auto'}}>
