@@ -188,7 +188,7 @@ const ProductGrid = ({ products = [], loading }) => {
             )}
           </div>
         </Card.Body>
-        <Card.Footer className="bg-white border-top-0 d-flex gap-2">
+        <Card.Footer className="bg-light border-top-0 d-flex gap-2">
           <Link 
             to="/product-form" 
             state={{ product }}

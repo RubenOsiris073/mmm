@@ -5,6 +5,12 @@ import { Container } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
 
+// Importar estilos de temas
+import './styles/themes.css';
+
+// Importar el contexto de tema
+import { ThemeProvider } from './contexts/ThemeContext';
+
 // Componentes del sistema principal
 import Navigation from './components/layout/Navigation';
 import ProductsPage from './pages/ProductsPage';
@@ -104,20 +110,22 @@ function App() {
   }
 
   return (
-    <Router>
-      <AppContent />
-      <ToastContainer 
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <AppContent />
+        <ToastContainer 
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
+      </Router>
+    </ThemeProvider>
   );
 }
 

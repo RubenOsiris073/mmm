@@ -1,10 +1,13 @@
 import React from 'react';
 import { Navbar, Nav, Container, NavDropdown } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { FaBoxes, FaStore, FaChartLine, FaPlus, FaCog, FaMoneyBillWave } from 'react-icons/fa';
+import { FaBoxes, FaStore, FaChartLine, FaPlus, FaCog, FaMoneyBillWave, FaSun, FaMoon } from 'react-icons/fa';
+import { useTheme } from '../../contexts/ThemeContext';
 import './Navigation.css';
 
 const Navigation = () => {
+  const { isDark, toggleTheme } = useTheme();
+
   return (
     <Navbar bg="dark" variant="dark" expand="lg" className="shadow">
       <Container fluid>
@@ -33,6 +36,17 @@ const Navigation = () => {
           </Nav>
           
           <Nav>
+            <button 
+              className="theme-toggle me-3"
+              onClick={toggleTheme}
+              title={isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
+            >
+              {isDark ? <FaSun className="theme-toggle-icon" /> : <FaMoon className="theme-toggle-icon" />}
+              <span className="d-none d-md-inline">
+                {isDark ? 'Claro' : 'Oscuro'}
+              </span>
+            </button>
+
             <Nav.Link 
               as={Link} 
               to="/pos" 
