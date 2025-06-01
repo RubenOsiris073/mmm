@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Row, Col, Card, Button } from 'react-bootstrap';
 import * as tf from '@tensorflow/tfjs';
-import Camera from './Camera';
+import Camera from './shared/Camera';
 import PredictionDisplay from './PredictionDisplay';
 import ProductForm from './ProductForm';
 import ModelDiagnostic from './ModelDiagnostic';

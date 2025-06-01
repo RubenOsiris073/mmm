@@ -1,47 +1,69 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Spinner, Alert } from 'react-bootstrap';
 
-const Camera = ({ videoRef }) => {
+const Camera = ({ videoRef, className = "" }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
-    const startCamera = async () => {
+    let stream = null;
+
+    const setupCamera = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
+        setIsLoading(true);
+        setError(null);
+
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { 
             facingMode: 'environment',
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
+            width: { ideal: 640 },
+            height: { ideal: 480 }
           }
         });
         
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          videoRef.current.play();
+          await videoRef.current.play();
+          setIsLoading(false);
         }
-      } catch (error) {
-        console.error('Error al acceder a la cámara:', error);
+      } catch (err) {
+        console.error('Error accediendo a la cámara:', err);
+        setError('No se pudo acceder a la cámara. Verifica los permisos.');
+        setIsLoading(false);
       }
     };
 
-    startCamera();
+    setupCamera();
 
-    // Cleanup function
     return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        const tracks = videoRef.current.srcObject.getTracks();
-        tracks.forEach(track => track.stop());
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
       }
     };
   }, [videoRef]);
 
+  if (isLoading) {
+    return (
+      <div className="text-center p-4">
+        <Spinner animation="border" />
+        <p className="mt-2">Inicializando cámara...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="danger" className="text-center">
+        {error}
+      </Alert>
+    );
+  }
+
   return (
     <video
       ref={videoRef}
-      style={{
-        width: '100%',
-        maxHeight: '70vh',
-        objectFit: 'contain',
-        backgroundColor: '#000'
-      }}
-      autoPlay
+      className={`w-100 ${className}`}
+      style={{ maxHeight: '400px', objectFit: 'cover' }}
       playsInline
       muted
     />

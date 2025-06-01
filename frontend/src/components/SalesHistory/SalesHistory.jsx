@@ -13,6 +13,7 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport }) => {
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isComponentMounted, setIsComponentMounted] = useState(false);
   
   // Estados para filtros
   const [filters, setFilters] = useState({
@@ -56,11 +57,21 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport }) => {
       setError(err.message || 'Error al cargar el historial de ventas');
       setSales([]);
       setFilteredSales([]);
-      toast.error('Error al cargar el historial de ventas');
+      
+      // Solo mostrar toast si el componente ya se ha montado completamente
+      if (isComponentMounted) {
+        toast.error('Error al cargar el historial de ventas');
+      }
     } finally {
       setLoading(false);
+      // Marcar el componente como montado después de la primera carga
+      if (!isComponentMounted) {
+        setTimeout(() => {
+          setIsComponentMounted(true);
+        }, 500); // Pequeño retraso para asegurar que la UI se haya renderizado
+      }
     }
-  }, [onDownloadReport]);
+  }, [onDownloadReport, isComponentMounted]);
 
   // Función para aplicar filtros - declarada antes de los useEffect
   const applyFilters = useCallback(() => {
@@ -130,8 +141,10 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport }) => {
   };
 
   const handleDownloadInvoice = (sale) => {
-    // Implementar descarga de factura
-    toast.info('Funcionalidad de descarga en desarrollo');
+    // Solo mostrar toast si el componente ya se ha montado completamente
+    if (isComponentMounted) {
+      toast.info('Funcionalidad de descarga en desarrollo');
+    }
   };
 
   // Función para formatear fecha

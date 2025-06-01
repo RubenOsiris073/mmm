@@ -3,7 +3,7 @@ import { Card, Button, Spinner } from 'react-bootstrap';
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-webgl';
 
-const CamaraDetector = ({ onDetection }) => {
+const DetectionCamera = ({ onDetection }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [isActive, setIsActive] = useState(false);
@@ -120,4 +120,4 @@ const CamaraDetector = ({ onDetection }) => {
   );
 };
 
-export default CamaraDetector;
+export default DetectionCamera;

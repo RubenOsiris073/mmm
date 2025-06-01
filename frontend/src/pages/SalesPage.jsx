@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Row, Col, Button, Card } from 'react-bootstrap';
 import { FaFilePdf, FaDownload, FaFileInvoice } from 'react-icons/fa';
 import SalesHistory from '../components/SalesHistory/SalesHistory';
@@ -10,6 +10,16 @@ const SalesPage = () => {
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [selectedSale, setSelectedSale] = useState(null);
   const [downloading, setDownloading] = useState(false);
+  const [isComponentMounted, setIsComponentMounted] = useState(false);
+
+  // Marcar el componente como montado después de un breve retraso
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsComponentMounted(true);
+    }, 1000); // Retraso de 1 segundo para asegurar que la carga inicial termine
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // Función para abrir el modal de factura con la venta seleccionada
   const handleShowInvoice = (sale) => {
@@ -20,17 +30,23 @@ const SalesPage = () => {
   // Función para descargar todas las ventas como PDF
   const handleDownloadSalesReport = async (sales) => {
     if (!sales || sales.length === 0) {
-      toast.warning('No hay ventas para generar el reporte');
+      if (isComponentMounted) {
+        toast.warning('No hay ventas para generar el reporte');
+      }
       return;
     }
 
     try {
       setDownloading(true);
       await generateSalesReportPDF(sales);
-      toast.success('Reporte de ventas descargado correctamente');
+      if (isComponentMounted) {
+        toast.success('Reporte de ventas descargado correctamente');
+      }
     } catch (error) {
       console.error('Error al generar el reporte de ventas:', error);
-      toast.error('Error al generar el reporte. Intente más tarde.');
+      if (isComponentMounted) {
+        toast.error('Error al generar el reporte. Intente más tarde.');
+      }
     } finally {
       setDownloading(false);
     }

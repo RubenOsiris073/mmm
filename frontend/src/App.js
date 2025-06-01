@@ -11,12 +11,17 @@ import './styles/themes.css';
 // Importar el contexto de tema
 import { ThemeProvider } from './contexts/ThemeContext';
 
+// Importar pantalla de carga y hook
+import LoadingScreen from './components/shared/LoadingScreen';
+import useRouteLoading from './hooks/useRouteLoading';
+
 // Componentes del sistema principal
 import Navigation from './components/layout/Navigation';
 import ProductsPage from './pages/ProductsPage';
 import ProductFormPage from './pages/ProductFormPage';
 import InventoryView from './components/inventory/InventoryView';
 import SalesPage from './pages/SalesPage';
+import CameraPage from './pages/CameraPage';
 import Footer from './components/layout/Footer';
 
 // Componentes del POS
@@ -28,6 +33,12 @@ import { ToastContainer } from 'react-toastify';
 const AppContent = () => {
   const location = useLocation();
   const isPOSRoute = location.pathname.startsWith('/pos');
+  const isRouteLoading = useRouteLoading(2000); // 2 segundos de carga
+
+  // Mostrar pantalla de carga cuando cambien las rutas
+  if (isRouteLoading) {
+    return <LoadingScreen />;
+  }
 
   if (isPOSRoute) {
     // Layout para rutas POS
@@ -51,6 +62,7 @@ const AppContent = () => {
           <Route path="/products/edit/:id" element={<ProductFormPage />} />
           <Route path="/inventory" element={<InventoryView />} />
           <Route path="/sales" element={<SalesPage />} />
+          <Route path="/camera" element={<CameraPage />} />
           <Route path="*" element={<Navigate to="/products" replace />} />
         </Routes>
       </Container>

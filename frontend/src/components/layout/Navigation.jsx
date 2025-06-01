@@ -24,9 +24,20 @@ const Navigation = () => {
               Productos
             </Nav.Link>
             
-            <Nav.Link as={Link} to="/inventory">
-              <FaCog className="me-1" />
-              Inventario
+            <NavDropdown title={<><FaPlus className="me-1" />Agregar</>} id="add-dropdown">
+              <NavDropdown.Item as={Link} to="/products/add">
+                <FaPlus className="me-2" />
+                Nuevo Producto
+              </NavDropdown.Item>
+              <NavDropdown.Item as={Link} to="/inventory">
+                <FaBoxes className="me-2" />
+                Gestión de Inventario
+              </NavDropdown.Item>
+            </NavDropdown>
+            
+            <Nav.Link as={Link} to="/pos">
+              <FaMoneyBillWave className="me-1" />
+              Punto de Venta
             </Nav.Link>
             
             <Nav.Link as={Link} to="/sales">
@@ -36,32 +47,20 @@ const Navigation = () => {
           </Nav>
           
           <Nav>
-            <button 
-              className="theme-toggle me-3"
-              onClick={toggleTheme}
-              title={isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
-            >
-              {isDark ? <FaSun className="theme-toggle-icon" /> : <FaMoon className="theme-toggle-icon" />}
-              <span className="d-none d-md-inline">
-                {isDark ? 'Claro' : 'Oscuro'}
-              </span>
-            </button>
-
-            <Nav.Link 
-              as={Link} 
-              to="/pos" 
-              className="pos-button-modern"
-            >
-              <FaMoneyBillWave className="pos-icon" />
-              <span className="pos-text">Punto de Venta</span>
+            <Nav.Link as={Link} to="/camera">
+              <FaCog className="me-1" />
+              Cámara
             </Nav.Link>
             
-            <NavDropdown title="Acciones" id="actions-dropdown">
-              <NavDropdown.Item as={Link} to="/products/new">
-                <FaPlus className="me-1" />
-                Nuevo Producto
-              </NavDropdown.Item>
-            </NavDropdown>
+            {/* Botón de cambio de tema */}
+            <button 
+              className="theme-toggle ms-2" 
+              onClick={toggleTheme}
+              aria-label={`Cambiar a tema ${isDark ? 'claro' : 'oscuro'}`}
+            >
+              {isDark ? <FaSun className="theme-toggle-icon" /> : <FaMoon className="theme-toggle-icon" />}
+              {isDark ? 'Claro' : 'Oscuro'}
+            </button>
           </Nav>
         </Navbar.Collapse>
       </Container>
