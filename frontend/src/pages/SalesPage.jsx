@@ -11,6 +11,7 @@ const SalesPage = () => {
   const [selectedSale, setSelectedSale] = useState(null);
   const [downloading, setDownloading] = useState(false);
   const [isComponentMounted, setIsComponentMounted] = useState(false);
+  const [salesData, setSalesData] = useState([]); // Estado para almacenar todas las ventas
 
   // Marcar el componente como montado después de un breve retraso
   useEffect(() => {
@@ -27,9 +28,14 @@ const SalesPage = () => {
     setShowInvoiceModal(true);
   };
 
+  // Función para recibir y almacenar los datos de ventas del componente hijo
+  const handleSalesDataUpdate = (sales) => {
+    setSalesData(sales || []);
+  };
+
   // Función para descargar todas las ventas como PDF
-  const handleDownloadSalesReport = async (sales) => {
-    if (!sales || sales.length === 0) {
+  const handleDownloadSalesReport = async () => {
+    if (!salesData || salesData.length === 0) {
       if (isComponentMounted) {
         toast.warning('No hay ventas para generar el reporte');
       }
@@ -38,7 +44,7 @@ const SalesPage = () => {
 
     try {
       setDownloading(true);
-      await generateSalesReportPDF(sales);
+      await generateSalesReportPDF(salesData);
       if (isComponentMounted) {
         toast.success('Reporte de ventas descargado correctamente');
       }
@@ -67,8 +73,8 @@ const SalesPage = () => {
                 </div>
                 <Button 
                   variant="primary"
-                  onClick={(salesData) => handleDownloadSalesReport(salesData)}
-                  disabled={downloading}
+                  onClick={handleDownloadSalesReport}
+                  disabled={downloading || salesData.length === 0}
                   className="d-flex align-items-center"
                 >
                   {downloading ? (
@@ -90,6 +96,7 @@ const SalesPage = () => {
           <SalesHistory 
             onGenerateInvoice={handleShowInvoice}
             onDownloadReport={handleDownloadSalesReport}
+            onSalesDataUpdate={handleSalesDataUpdate}
           />
         </Col>
       </Row>

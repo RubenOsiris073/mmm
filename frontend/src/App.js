@@ -33,7 +33,6 @@ import { ToastContainer } from 'react-toastify';
 // Componente para manejar layouts condicionales
 const AppContent = () => {
   const location = useLocation();
-  const isPOSRoute = location.pathname.startsWith('/pos');
   const isRouteLoading = useRouteLoading(2000); // 2 segundos de carga
 
   // Mostrar pantalla de carga cuando cambien las rutas
@@ -41,34 +40,77 @@ const AppContent = () => {
     return <LoadingScreen />;
   }
 
-  if (isPOSRoute) {
-    // Layout para rutas POS
-    return (
-      <Routes>
-        <Route path="/pos" element={<POSMainPage />} />
-        <Route path="/pos/*" element={<Navigate to="/pos" replace />} />
-      </Routes>
-    );
-  }
-
-  // Layout para rutas del sistema principal
   return (
-    <div className="App d-flex flex-column min-vh-100">
-      <Navigation />
-      <Container fluid className="main-content py-4 flex-grow-1">
-        <Routes>
-          <Route path="/" element={<Navigate to="/products" replace />} />
-          <Route path="/products" element={<ProductsPage />} />
-          <Route path="/products/new" element={<ProductFormPage />} />
-          <Route path="/products/edit/:id" element={<ProductFormPage />} />
-          <Route path="/inventory" element={<InventoryView />} />
-          <Route path="/sales" element={<SalesPage />} />
-          <Route path="/camera" element={<CameraPage />} />
-          <Route path="*" element={<Navigate to="/products" replace />} />
-        </Routes>
-      </Container>
-      <Footer />
-    </div>
+    <Routes>
+      {/* Ruta principal que redirige al selector POS/Admin */}
+      <Route path="/" element={<Navigate to="/pos" replace />} />
+      
+      {/* Rutas POS - Sin navegación */}
+      <Route path="/pos" element={<POSMainPage />} />
+      <Route path="/pos/*" element={<Navigate to="/pos" replace />} />
+      
+      {/* Rutas del sistema principal - Con navegación */}
+      <Route path="/products" element={
+        <div className="App d-flex flex-column min-vh-100">
+          <Navigation />
+          <Container fluid className="main-content py-4 flex-grow-1">
+            <ProductsPage />
+          </Container>
+          <Footer />
+        </div>
+      } />
+      <Route path="/products/new" element={
+        <div className="App d-flex flex-column min-vh-100">
+          <Navigation />
+          <Container fluid className="main-content py-4 flex-grow-1">
+            <ProductFormPage />
+          </Container>
+          <Footer />
+        </div>
+      } />
+      <Route path="/products/edit/:id" element={
+        <div className="App d-flex flex-column min-vh-100">
+          <Navigation />
+          <Container fluid className="main-content py-4 flex-grow-1">
+            <ProductFormPage />
+          </Container>
+          <Footer />
+        </div>
+      } />
+      <Route path="/inventory" element={
+        <div className="App d-flex flex-column min-vh-100">
+          <Navigation />
+          <Container fluid className="main-content py-4 flex-grow-1">
+            <InventoryView />
+          </Container>
+          <Footer />
+        </div>
+      } />
+      <Route path="/sales" element={
+        <div className="App d-flex flex-column min-vh-100">
+          <Navigation />
+          <Container fluid className="main-content py-4 flex-grow-1">
+            <SalesPage />
+          </Container>
+          <Footer />
+        </div>
+      } />
+      <Route path="/camera" element={
+        <div className="App d-flex flex-column min-vh-100">
+          <Navigation />
+          <Container fluid className="main-content py-4 flex-grow-1">
+            <CameraPage />
+          </Container>
+          <Footer />
+        </div>
+      } />
+      
+      {/* Ruta de admin que redirige a products */}
+      <Route path="/admin" element={<Navigate to="/products" replace />} />
+      
+      {/* Cualquier otra ruta redirige al selector */}
+      <Route path="*" element={<Navigate to="/pos" replace />} />
+    </Routes>
   );
 };
 

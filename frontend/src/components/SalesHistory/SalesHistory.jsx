@@ -1,12 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Table, Spinner, Card, Alert, Button, Row, Col, Form, Badge } from 'react-bootstrap';
 import { FaFileInvoice, FaDownload, FaFilter, FaSearch, FaTimes, FaEye, FaCalendarAlt, FaDollarSign, FaShoppingCart } from 'react-icons/fa';
 import apiService from '../../services/apiService';
 import { toast } from 'react-toastify';
 import InvoiceModal from './InvoiceModal';
+import { generateInvoicePDF } from '../../utils/pdfGenerator';
 
-const SalesHistory = ({ onGenerateInvoice, onDownloadReport }) => {
+const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }) => {
   const [sales, setSales] = useState([]);
   const [filteredSales, setFilteredSales] = useState([]);
   const [selectedSale, setSelectedSale] = useState(null);
@@ -15,6 +16,14 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport }) => {
   const [error, setError] = useState(null);
   const [isComponentMounted, setIsComponentMounted] = useState(false);
   
+  // Usar useRef para mantener una referencia estable a onSalesDataUpdate
+  const onSalesDataUpdateRef = useRef(onSalesDataUpdate);
+  
+  // Actualizar la referencia cuando cambie la prop
+  useEffect(() => {
+    onSalesDataUpdateRef.current = onSalesDataUpdate;
+  }, [onSalesDataUpdate]);
+
   // Estados para filtros
   const [filters, setFilters] = useState({
     startDate: '',
@@ -27,7 +36,7 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport }) => {
   // Estado para controlar el panel de filtros
   const [showFilters, setShowFilters] = useState(false);
 
-  // Función para cargar ventas - declarada antes de los useEffect
+  // Función para cargar ventas - SIN onSalesDataUpdate en dependencias
   const loadSales = useCallback(async () => {
     try {
       setLoading(true);
@@ -42,21 +51,31 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport }) => {
         setSales(salesData);
         setFilteredSales(salesData);
         
-        // Pasar las ventas al componente padre para disponibilidad inmediata
-        if (typeof onDownloadReport === 'function') {
-          onDownloadReport(salesData);
+        // Enviar los datos al componente padre usando la referencia estable
+        if (typeof onSalesDataUpdateRef.current === 'function') {
+          onSalesDataUpdateRef.current(salesData);
         }
       } else {
         console.error('getSales no devolvió un array:', salesData);
         setSales([]);
         setFilteredSales([]);
         setError('La respuesta del servidor no tiene el formato esperado');
+        
+        // Informar al padre que no hay datos
+        if (typeof onSalesDataUpdateRef.current === 'function') {
+          onSalesDataUpdateRef.current([]);
+        }
       }
     } catch (err) {
       console.error('Error al cargar ventas:', err);
       setError(err.message || 'Error al cargar el historial de ventas');
       setSales([]);
       setFilteredSales([]);
+      
+      // Informar al padre que no hay datos debido al error
+      if (typeof onSalesDataUpdateRef.current === 'function') {
+        onSalesDataUpdateRef.current([]);
+      }
       
       // Solo mostrar toast si el componente ya se ha montado completamente
       if (isComponentMounted) {
@@ -68,10 +87,10 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport }) => {
       if (!isComponentMounted) {
         setTimeout(() => {
           setIsComponentMounted(true);
-        }, 500); // Pequeño retraso para asegurar que la UI se haya renderizado
+        }, 500);
       }
     }
-  }, [onDownloadReport, isComponentMounted]);
+  }, [isComponentMounted]); // Solo isComponentMounted como dependencia
 
   // Función para aplicar filtros - declarada antes de los useEffect
   const applyFilters = useCallback(() => {
@@ -140,10 +159,22 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport }) => {
     setShowInvoiceModal(true);
   };
 
-  const handleDownloadInvoice = (sale) => {
-    // Solo mostrar toast si el componente ya se ha montado completamente
-    if (isComponentMounted) {
-      toast.info('Funcionalidad de descarga en desarrollo');
+  const handleDownloadInvoice = async (sale) => {
+    try {
+      if (isComponentMounted) {
+        toast.info('Generando factura PDF...');
+      }
+      
+      await generateInvoicePDF(sale);
+      
+      if (isComponentMounted) {
+        toast.success('Factura descargada exitosamente');
+      }
+    } catch (error) {
+      console.error('Error al generar factura PDF:', error);
+      if (isComponentMounted) {
+        toast.error('Error al generar la factura PDF');
+      }
     }
   };
 
@@ -425,15 +456,6 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport }) => {
               <small className="text-muted">
                 Total de ventas: <strong>{filteredSales.length}</strong>
               </small>
-            </div>
-            <div>
-              <Button 
-                variant="outline-success" 
-                size="sm"
-                onClick={() => onDownloadReport && onDownloadReport(filteredSales)}
-              >
-                <FaDownload className="me-1" /> Exportar datos
-              </Button>
             </div>
           </div>
         </Card.Footer>

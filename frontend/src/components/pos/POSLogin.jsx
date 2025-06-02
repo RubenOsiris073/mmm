@@ -28,7 +28,7 @@ const POSLogin = ({ accessType, onBack, onLoginSuccess }) => {
       title: 'Administración',
       subtitle: 'Acceso para administradores del sistema',
       icon: <FaCog size={48} className="text-danger" />,
-      redirectPath: '/',
+      redirectPath: '/products',
       variant: 'danger'
     }
   };
@@ -60,7 +60,7 @@ const POSLogin = ({ accessType, onBack, onLoginSuccess }) => {
       
       // Redirigir según el tipo de acceso
       if (accessType === 'admin') {
-        navigate('/');
+        navigate('/products');
       } else {
         // Para POS, el POSMainPage se encargará de mostrar el POSView
         if (onLoginSuccess) {
@@ -81,7 +81,7 @@ const POSLogin = ({ accessType, onBack, onLoginSuccess }) => {
       
       // Redirigir según el tipo de acceso
       if (accessType === 'admin') {
-        navigate('/');
+        navigate('/products');
       } else {
         // Para POS, el POSMainPage se encargará de mostrar el POSView
         if (onLoginSuccess) {

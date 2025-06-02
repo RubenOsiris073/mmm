@@ -58,6 +58,33 @@ const apiService = {
     }
   },
 
+  // Función para obtener ventas
+  getSales: async () => {
+    try {
+      console.log('🔍 Intentando obtener ventas de:', `${API_BASE_URL}/sales`);
+      
+      const response = await api.get('/sales');
+      
+      console.log('📋 Respuesta completa del servidor (sales):', response);
+      console.log('📊 Status:', response.status);
+      console.log('📝 Data content:', response.data);
+      
+      // El backend devuelve { sales: [...] }, extraemos el array
+      return response.data.sales || [];
+      
+    } catch (error) {
+      console.error('💥 Error detallado en getSales:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        url: error.config?.url
+      });
+      
+      throw error;
+    }
+  },
+
   // Función para crear venta
   createSale: async (saleData) => {
     try {
