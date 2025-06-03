@@ -36,9 +36,13 @@ async function createSale(saleData) {
   try {
     const { items, total, paymentMethod, amountReceived, change, clientName } = saleData;
     
+    console.log("Datos de venta recibidos:", JSON.stringify(saleData, null, 2));
+    
     if (!items || !Array.isArray(items) || items.length === 0) {
       throw new Error("Se requieren productos en la venta");
     }
+    
+    console.log("Items de la venta:", JSON.stringify(items, null, 2));
     
     // Crear documento de venta
     const saleRecord = {
@@ -60,7 +64,15 @@ async function createSale(saleData) {
     // Actualizar inventario
     try {
       for (const item of items) {
-        await inventoryService.updateStock(item.id, -item.quantity);
+        const productId = item.productId || item.id;
+        console.log(`Actualizando stock para producto: ${productId}, cantidad: ${item.cantidad}`);
+        
+        if (!productId) {
+          console.error('ProductId es undefined para item:', item);
+          continue; // Saltar este item si no tiene ID válido
+        }
+        
+        await inventoryService.updateStock(productId, -item.cantidad);
       }
       console.log("Inventario actualizado con éxito");
     } catch (walletError) {

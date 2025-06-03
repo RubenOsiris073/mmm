@@ -8,8 +8,6 @@ const PaymentModal = ({
   setPaymentMethod,
   amountReceived,
   setAmountReceived,
-  clientName,
-  setClientName,
   total,
   handleProcessSale,
   loading
@@ -25,10 +23,6 @@ const PaymentModal = ({
   const safeSetAmountReceived = typeof setAmountReceived === 'function'
     ? setAmountReceived
     : () => console.error('setAmountReceived no es una función');
-    
-  const safeSetClientName = typeof setClientName === 'function'
-    ? setClientName
-    : () => console.error('setClientName no es una función');
     
   const safeHandleProcessSale = typeof handleProcessSale === 'function'
     ? handleProcessSale
@@ -48,16 +42,16 @@ const PaymentModal = ({
     }
   }, [amountReceived, total, paymentMethod]);
 
-  // Validación del formulario
+  // Validación del formulario - SIMPLIFICADA: solo validar monto para efectivo
   useEffect(() => {
-    let valid = !!clientName;
+    let valid = true;
     
     if (paymentMethod === 'efectivo') {
-      valid = valid && parseFloat(amountReceived) >= total;
+      valid = parseFloat(amountReceived) >= total;
     }
     
     setIsFormValid(valid);
-  }, [clientName, amountReceived, total, paymentMethod]);
+  }, [amountReceived, total, paymentMethod]);
 
   return (
     <Modal show={show} onHide={safeOnHide} centered backdrop="static">
@@ -66,18 +60,6 @@ const PaymentModal = ({
       </Modal.Header>
       <Modal.Body>
         <Form>
-          <Form.Group className="mb-3">
-            <Form.Label>Nombre del Cliente</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Ingrese nombre del cliente"
-              value={clientName}
-              onChange={(e) => safeSetClientName(e.target.value)}
-              disabled={loading}
-              required
-            />
-          </Form.Group>
-          
           <Form.Group className="mb-3">
             <Form.Label>Método de Pago</Form.Label>
             <Form.Select

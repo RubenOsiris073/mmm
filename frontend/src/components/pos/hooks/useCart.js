@@ -1,28 +1,44 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { toast } from 'react-toastify';
 
-const useCart = ({ wallet, products }) => {
+const useCart = ({ products, setError }) => {
   const [cartItems, setCartItems] = useState([]);
   const [lastAddedProduct, setLastAddedProduct] = useState(null);
 
-  // Implementación mejorada para addToCart
+  // Validar stock disponible - CORREGIDO: usar products en lugar de wallet
+  const getAvailableStock = useCallback((productId) => {
+    if (!products || !Array.isArray(products)) return 0;
+    
+    const product = products.find(p => p && p.id === productId);
+    return product ? (product.cantidad || product.stock || 0) : 0;
+  }, [products]);
+
+  // Añadir producto al carrito
   const addToCart = useCallback((product) => {
-    // Validar entrada
     if (!product || !product.id) {
       console.error("Producto no válido para añadir al carrito");
       return;
     }
 
-    console.log("Añadiendo al carrito:", product);
-
+    // Obtener stock directamente del producto para evitar discrepancias
+    const availableStock = product.cantidad !== undefined ? product.cantidad : (product.stock || 0);
+    
+    console.log(`Añadiendo producto: ${product.nombre}, Stock disponible: ${availableStock}`);
+    
     setCartItems(currentItems => {
-      // Buscar si el producto ya está en el carrito
       const existingItemIndex = currentItems.findIndex(item => item.id === product.id);
       
       if (existingItemIndex >= 0) {
-        // El producto ya está en el carrito, actualizar cantidad
+        // Producto ya existe, incrementar cantidad
         const updatedItems = [...currentItems];
-        const newQuantity = (updatedItems[existingItemIndex].quantity || 0) + 1;
+        const currentQuantity = updatedItems[existingItemIndex].quantity || 0;
+        const newQuantity = currentQuantity + 1;
+        
+        // Verificar stock
+        if (newQuantity > availableStock) {
+          toast.error(`No hay suficiente stock para ${product.nombre}. Stock disponible: ${availableStock}`);
+          return currentItems;
+        }
         
         updatedItems[existingItemIndex] = {
           ...updatedItems[existingItemIndex],
@@ -32,8 +48,12 @@ const useCart = ({ wallet, products }) => {
         
         return updatedItems;
       } else {
-        // El producto no está en el carrito, agregar como nuevo item
-        // Asegurarnos de que tiene los campos necesarios
+        // Nuevo producto
+        if (availableStock <= 0) {
+          toast.error(`${product.nombre}: Sin stock disponible (Stock: ${availableStock})`);
+          return currentItems;
+        }
+        
         const newItem = { 
           ...product, 
           quantity: 1, 
@@ -44,60 +64,49 @@ const useCart = ({ wallet, products }) => {
       }
     });
     
-    // NO mostrar toast aquí para evitar duplicación
-    
+    setLastAddedProduct(product);
+    setTimeout(() => setLastAddedProduct(null), 2000);
   }, []);
 
-  // Remove from cart
+  // Remover producto del carrito
   const removeFromCart = useCallback((id) => {
-    setCartItems(cartItems.filter(item => item.id !== id));
-  }, [cartItems]);
+    setCartItems(currentItems => currentItems.filter(item => item.id !== id));
+  }, []);
 
-  // Update quantity corregido
+  // Actualizar cantidad
   const updateQuantity = useCallback((id, newQuantity) => {
     if (newQuantity <= 0) {
       removeFromCart(id);
       return;
     }
 
-    // Check available stock - Con verificaciones de seguridad
-    const cartItem = cartItems.find(item => item.id === id);
-    if (!cartItem) {
-      console.error(`No se encontró el item con id ${id} en el carrito`);
+    const availableStock = getAvailableStock(id);
+    
+    if (newQuantity > availableStock) {
+      const cartItem = cartItems.find(item => item.id === id);
+      toast.error(`No hay suficiente stock para ${cartItem?.nombre || 'este producto'}. Stock disponible: ${availableStock}`);
       return;
     }
-    
-    // Verificar si wallet existe y es un array antes de usarlo
-    if (wallet && Array.isArray(wallet)) {
-      const walletItem = wallet.find(w => w && w.id === id);
 
-      if (walletItem && newQuantity > (walletItem.cantidad || walletItem.stock || 0)) {
-        toast.error(`No hay suficiente stock para ${cartItem.nombre}`);
-        return;
-      }
-    }
+    setCartItems(currentItems =>
+      currentItems.map(item =>
+        item.id === id
+          ? { 
+              ...item, 
+              quantity: newQuantity, 
+              total: (item.precio || 0) * newQuantity
+            }
+          : item
+      )
+    );
+  }, [getAvailableStock, removeFromCart, cartItems]);
 
-    setCartItems(cartItems.map(item =>
-      item.id === id
-        ? { 
-            ...item, 
-            quantity: newQuantity, 
-            total: item.precio * newQuantity // Calcular total
-          }
-        : item
-    ));
-  }, [cartItems, removeFromCart, wallet]);
-
-  // Calculate total mejorado
+  // Calcular total del carrito
   const calculateTotal = useCallback(() => {
     return cartItems.reduce((sum, item) => {
-      // Verificar que precio y quantity existen
       const precio = item.precio || 0;
       const quantity = item.quantity || 0;
-      const itemTotal = precio * quantity;
-      
-      console.log(`Item ${item.nombre}: $${precio} x ${quantity} = $${itemTotal}`);
-      return sum + itemTotal;
+      return sum + (precio * quantity);
     }, 0);
   }, [cartItems]);
 
@@ -109,7 +118,7 @@ const useCart = ({ wallet, products }) => {
     updateQuantity,
     calculateTotal,
     lastAddedProduct,
-    setLastAddedProduct, // Exportar esto también
+    setLastAddedProduct,
   };
 };
 

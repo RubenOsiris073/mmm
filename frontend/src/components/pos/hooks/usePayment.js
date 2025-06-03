@@ -6,10 +6,9 @@ const usePayment = ({ cartItems, calculateTotal, setError }) => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('efectivo');
   const [amountReceived, setAmountReceived] = useState('');
-  const [clientName, setClientName] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Función para procesar la venta
+  // Función para procesar la venta - SIN campo clientName
   const processSale = useCallback(async () => {
     if (cartItems.length === 0) {
       setError('No hay productos en el carrito');
@@ -29,9 +28,9 @@ const usePayment = ({ cartItems, calculateTotal, setError }) => {
     try {
       setLoading(true);
       
-      // Preparar los datos de la venta
+      // Preparar los datos de la venta - Cliente general por defecto
       const saleData = {
-        client: clientName.trim() || 'Cliente general',
+        client: 'Cliente general',
         paymentMethod: paymentMethod,
         total: total,
         amountReceived: paymentMethod === 'efectivo' ? parseFloat(amountReceived) : total,
@@ -60,7 +59,6 @@ const usePayment = ({ cartItems, calculateTotal, setError }) => {
         
         // Restablecer estados
         setAmountReceived('');
-        setClientName('');
         
         return true;
       } else {
@@ -74,18 +72,16 @@ const usePayment = ({ cartItems, calculateTotal, setError }) => {
     } finally {
       setLoading(false);
     }
-  }, [cartItems, calculateTotal, paymentMethod, amountReceived, clientName, setError]);
+  }, [cartItems, calculateTotal, paymentMethod, amountReceived, setError]);
 
   return {
     showPaymentModal,
     paymentMethod,
     amountReceived,
-    clientName,
     loading,
     setShowPaymentModal,
     setPaymentMethod,
     setAmountReceived,
-    setClientName,
     processSale
   };
 };

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Navbar, Nav, Container, Dropdown } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { FaMoneyBillWave, FaHome, FaUser, FaSignOutAlt, FaSun, FaMoon } from 'react-icons/fa';
+import { FaMoneyBillWave, FaUser, FaSignOutAlt, FaSun, FaMoon } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 
@@ -76,11 +76,6 @@ const POSLayout = ({ children }) => {
               </Dropdown.Toggle>
 
               <Dropdown.Menu align="end">
-                <Dropdown.Item as={Link} to="/">
-                  <FaHome className="me-2" />
-                  Sistema Principal
-                </Dropdown.Item>
-                <Dropdown.Divider />
                 <Dropdown.Item onClick={handleSignOut} className="text-danger">
                   <FaSignOutAlt className="me-2" />
                   Cerrar Sesión

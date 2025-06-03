@@ -58,9 +58,14 @@ class InventoryService {
   /**
    * Actualiza el stock de un producto en el inventario
    */
-  async updateStock(productId, adjustment, location, reason) {
+  async updateStock(productId, adjustment, location = 'warehouse', reason = 'Venta') {
     try {
-      //console.log(`Actualizando stock para ID: ${productId}, ajuste: ${adjustment}, ubicación: ${location}`);
+      // Validación del productId
+      if (!productId || typeof productId !== 'string') {
+        throw new Error(`ProductId inválido: ${productId}`);
+      }
+      
+      console.log(`Actualizando stock para ID: ${productId}, ajuste: ${adjustment}, ubicación: ${location}`);
       
       const inventoryRef = doc(db, COLLECTIONS.INVENTORY, productId);
       const inventoryDoc = await getDoc(inventoryRef);

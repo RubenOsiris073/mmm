@@ -5,6 +5,7 @@ import { FaFileInvoice, FaDownload, FaFilter, FaSearch, FaTimes, FaEye, FaCalend
 import apiService from '../../services/apiService';
 import { toast } from 'react-toastify';
 import InvoiceModal from './InvoiceModal';
+import ClientNameModal from './ClientNameModal';
 import { generateInvoicePDF } from '../../utils/pdfGenerator';
 
 const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }) => {
@@ -12,9 +13,12 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
   const [filteredSales, setFilteredSales] = useState([]);
   const [selectedSale, setSelectedSale] = useState(null);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [showClientNameModal, setShowClientNameModal] = useState(false);
+  const [saleForInvoice, setSaleForInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isComponentMounted, setIsComponentMounted] = useState(false);
+  const [generatingPDF, setGeneratingPDF] = useState(false);
   
   // Usar useRef para mantener una referencia estable a onSalesDataUpdate
   const onSalesDataUpdateRef = useRef(onSalesDataUpdate);
@@ -159,23 +163,48 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
     setShowInvoiceModal(true);
   };
 
-  const handleDownloadInvoice = async (sale) => {
+  const handleDownloadInvoice = (sale) => {
+    setSaleForInvoice(sale);
+    setShowClientNameModal(true);
+  };
+
+  const handleConfirmClientName = async (clientName) => {
     try {
+      setGeneratingPDF(true);
+      
       if (isComponentMounted) {
         toast.info('Generando factura PDF...');
       }
       
-      await generateInvoicePDF(sale);
+      // Crear copia de la venta con el nombre del cliente actualizado
+      const updatedSale = {
+        ...saleForInvoice,
+        client: clientName,
+        cliente: clientName
+      };
+      
+      await generateInvoicePDF(updatedSale);
       
       if (isComponentMounted) {
-        toast.success('Factura descargada exitosamente');
+        toast.success(`Factura generada para ${clientName}`);
       }
+      
+      setShowClientNameModal(false);
+      setSaleForInvoice(null);
     } catch (error) {
       console.error('Error al generar factura PDF:', error);
       if (isComponentMounted) {
         toast.error('Error al generar la factura PDF');
       }
+    } finally {
+      setGeneratingPDF(false);
     }
+  };
+
+  const handleCloseClientNameModal = () => {
+    setShowClientNameModal(false);
+    setSaleForInvoice(null);
+    setGeneratingPDF(false);
   };
 
   // Función para formatear fecha
@@ -466,6 +495,14 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
         show={showInvoiceModal}
         onHide={() => setShowInvoiceModal(false)}
         sale={selectedSale}
+      />
+
+      {/* Modal para nombre del cliente */}
+      <ClientNameModal
+        show={showClientNameModal}
+        onHide={handleCloseClientNameModal}
+        onConfirm={handleConfirmClientName}
+        loading={generatingPDF}
       />
     </>
   );
