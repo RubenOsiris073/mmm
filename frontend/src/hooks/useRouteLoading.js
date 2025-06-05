@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
-const useRouteLoading = (duration = 2000) => {
+const useRouteLoading = (duration = 1000) => {
   const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navbar, Nav, Container, NavDropdown } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { FaBoxes, FaStore, FaChartLine, FaPlus, FaCog, FaMoneyBillWave, FaSun, FaMoon } from 'react-icons/fa';
+import { FaBoxes, FaStore, FaChartLine, FaPlus, FaCog, FaMoneyBillWave, FaSun, FaMoon, FaBuilding } from 'react-icons/fa';
 import { useTheme } from '../../contexts/ThemeContext';
 import './Navigation.css';
 
@@ -24,14 +24,19 @@ const Navigation = () => {
               Productos
             </Nav.Link>
             
+            <Nav.Link as={Link} to="/proveedores">
+              <FaBuilding className="me-1" />
+              Proveedores
+            </Nav.Link>
+            
             <NavDropdown title={<><FaPlus className="me-1" />Agregar</>} id="add-dropdown">
-              <NavDropdown.Item as={Link} to="/products/add">
+              <NavDropdown.Item as={Link} to="/products/new">
                 <FaPlus className="me-2" />
                 Nuevo Producto
               </NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/inventory">
-                <FaBoxes className="me-2" />
-                Gestión de Inventario
+              <NavDropdown.Item as={Link} to="/proveedores">
+                <FaBuilding className="me-2" />
+                Gestión de Proveedores
               </NavDropdown.Item>
             </NavDropdown>
             

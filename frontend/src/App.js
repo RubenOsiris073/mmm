@@ -20,7 +20,7 @@ import useRouteLoading from './hooks/useRouteLoading';
 import Navigation from './components/layout/Navigation';
 import ProductsPage from './pages/ProductsPage';
 import ProductFormPage from './pages/ProductFormPage';
-import InventoryView from './components/inventory/InventoryView';
+import ProveedorView from './components/proveedor/ProveedorView';
 import SalesPage from './pages/SalesPage';
 import CameraPage from './pages/CameraPage';
 import Footer from './components/layout/Footer';
@@ -77,11 +77,11 @@ const AppContent = () => {
           <Footer />
         </div>
       } />
-      <Route path="/inventory" element={
+      <Route path="/proveedores" element={
         <div className="App d-flex flex-column min-vh-100">
           <Navigation />
           <Container fluid className="main-content py-4 flex-grow-1">
-            <InventoryView />
+            <ProveedorView />
           </Container>
           <Footer />
         </div>
