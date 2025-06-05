@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form, InputGroup } from 'react-bootstrap';
+import SimpleQRPayment from './SimpleQRPayment';
 
 const PaymentModal = ({
   show,
@@ -14,6 +15,7 @@ const PaymentModal = ({
 }) => {
   const [change, setChange] = useState(0);
   const [isFormValid, setIsFormValid] = useState(false);
+  const [qrPaymentConfirmed, setQrPaymentConfirmed] = useState(false);
 
   // Verificamos que todas las funciones sean realmente funciones
   const safeSetPaymentMethod = typeof setPaymentMethod === 'function' 
@@ -42,19 +44,35 @@ const PaymentModal = ({
     }
   }, [amountReceived, total, paymentMethod]);
 
-  // Validación del formulario - SIMPLIFICADA: solo validar monto para efectivo
+  // Validación del formulario - sin transferencia
   useEffect(() => {
     let valid = true;
     
     if (paymentMethod === 'efectivo') {
       valid = parseFloat(amountReceived) >= total;
+    } else if (paymentMethod === 'qr-spei') {
+      valid = qrPaymentConfirmed;
+    } else if (paymentMethod === 'tarjeta') {
+      valid = true; // Para tarjeta no necesitamos validación adicional
     }
     
     setIsFormValid(valid);
-  }, [amountReceived, total, paymentMethod]);
+  }, [amountReceived, total, paymentMethod, qrPaymentConfirmed]);
+
+  // Manejar confirmación de pago QR
+  const handleQRPaymentConfirmed = (paymentData) => {
+    setQrPaymentConfirmed(true);
+    // Aquí podrías guardar datos adicionales del pago QR si necesitas
+    console.log('Pago QR confirmado:', paymentData);
+  };
+
+  // Reiniciar estados cuando se cambia el método de pago
+  useEffect(() => {
+    setQrPaymentConfirmed(false);
+  }, [paymentMethod]);
 
   return (
-    <Modal show={show} onHide={safeOnHide} centered backdrop="static">
+    <Modal show={show} onHide={safeOnHide} centered backdrop="static" size={paymentMethod === 'qr-spei' ? 'xl' : 'lg'}>
       <Modal.Header closeButton>
         <Modal.Title>Procesar Pago</Modal.Title>
       </Modal.Header>
@@ -69,7 +87,7 @@ const PaymentModal = ({
             >
               <option value="efectivo">Efectivo</option>
               <option value="tarjeta">Tarjeta</option>
-              <option value="transferencia">Transferencia</option>
+              <option value="qr-spei">QR mediante SPEI</option>
             </Form.Select>
           </Form.Group>
           
@@ -105,10 +123,20 @@ const PaymentModal = ({
               </Form.Group>
             </>
           )}
+
+          {paymentMethod === 'qr-spei' && (
+            <SimpleQRPayment 
+              amount={total}
+              concept={`Venta POS ${Date.now()}`}
+              onPaymentConfirmed={handleQRPaymentConfirmed}
+            />
+          )}
           
-          <div className="d-flex justify-content-between align-items-center mt-4">
-            <h5>Total a Pagar: ${total.toFixed(2)}</h5>
-          </div>
+          {paymentMethod !== 'qr-spei' && (
+            <div className="d-flex justify-content-between align-items-center mt-4">
+              <h5>Total a Pagar: ${total.toFixed(2)}</h5>
+            </div>
+          )}
         </Form>
       </Modal.Body>
       <Modal.Footer>

@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Table, Badge, Modal, Form, Alert, Spinner } from 'react-bootstrap';
 import { FaPlus, FaEdit, FaTrash, FaEye, FaBuilding, FaPhone, FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { useTheme } from '../../contexts/ThemeContext';
 import ProveedorForm from './ProveedorForm';
 import ProveedorDetails from './ProveedorDetails';
 
 const ProveedorView = () => {
+  const { isDark } = useTheme();
   const [proveedores, setProveedores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -167,7 +169,7 @@ const ProveedorView = () => {
       <Row className="mb-4">
         <Col>
           <Card className="shadow-sm">
-            <Card.Header className="bg-primary text-white">
+            <Card.Header className={isDark ? "bg-dark text-white" : "bg-primary text-white"}>
               <Row className="align-items-center">
                 <Col>
                   <h4 className="mb-0">
@@ -177,7 +179,11 @@ const ProveedorView = () => {
                   <small>Administra la información de tus proveedores</small>
                 </Col>
                 <Col xs="auto">
-                  <Button variant="light" onClick={handleCreate}>
+                  <Button 
+                    variant={isDark ? "outline-light" : "light"} 
+                    onClick={handleCreate}
+                    className={isDark ? "border-light" : ""}
+                  >
                     <FaPlus className="me-1" />
                     Nuevo Proveedor
                   </Button>
