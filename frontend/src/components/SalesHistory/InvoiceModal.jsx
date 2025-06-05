@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Modal, Button, Spinner } from 'react-bootstrap';
 import { FaDownload, FaPrint } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { generateInvoicePDF } from '../../utils/pdfGenerator';
 
 const InvoiceModal = ({ show, onHide, sale }) => {
   const [downloading, setDownloading] = useState(false);
@@ -12,7 +13,26 @@ const InvoiceModal = ({ show, onHide, sale }) => {
   
   const saleId = sale.id || sale._id || 'NoID';
 
+  // **NUEVA FUNCIÓN**: Usar el generador de PDF mejorado
   const handleDownloadInvoice = async () => {
+    try {
+      setDownloading(true);
+      toast.info('Generando factura PDF profesional...');
+      
+      // Usar la función mejorada del pdfGenerator
+      await generateInvoicePDF(sale);
+      
+      toast.success('Factura descargada correctamente');
+    } catch (error) {
+      console.error('Error al generar la factura:', error);
+      toast.error('Error al generar la factura: ' + (error.message || 'Error desconocido'));
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  // Función de respaldo usando html2canvas (por si falla la función principal)
+  const handleDownloadInvoiceBackup = async () => {
     if (!contentRef.current) {
       toast.error('No se puede generar la factura');
       return;
@@ -20,6 +40,7 @@ const InvoiceModal = ({ show, onHide, sale }) => {
 
     try {
       setDownloading(true);
+      toast.info('Generando factura usando método de respaldo...');
       
       // Cargar las bibliotecas necesarias dinámicamente
       const html2canvas = (await import('html2canvas')).default;
@@ -53,9 +74,9 @@ const InvoiceModal = ({ show, onHide, sale }) => {
       // Guardar el PDF con un nombre basado en el ID de la venta
       pdf.save(`Factura-${saleId}.pdf`);
       
-      toast.success('Factura descargada correctamente');
+      toast.success('Factura descargada correctamente (método de respaldo)');
     } catch (error) {
-      console.error('Error al generar la factura:', error);
+      console.error('Error al generar la factura con método de respaldo:', error);
       toast.error('Error al generar la factura');
     } finally {
       setDownloading(false);
@@ -195,10 +216,13 @@ const InvoiceModal = ({ show, onHide, sale }) => {
         <Button variant="primary" onClick={() => window.print()}>
           <FaPrint className="me-1" /> Imprimir
         </Button>
+        
+        {/* Botón principal mejorado */}
         <Button 
           variant="success" 
           onClick={handleDownloadInvoice}
           disabled={downloading}
+          title="Descargar PDF profesional"
         >
           {downloading ? (
             <>
@@ -210,6 +234,19 @@ const InvoiceModal = ({ show, onHide, sale }) => {
             </>
           )}
         </Button>
+        
+        {/* Botón de respaldo (opcional, solo si hay problemas) */}
+        {/* 
+        <Button 
+          variant="outline-success" 
+          onClick={handleDownloadInvoiceBackup}
+          disabled={downloading}
+          size="sm"
+          title="Método de respaldo"
+        >
+          <FaDownload className="me-1" /> Imagen
+        </Button>
+        */}
       </Modal.Footer>
     </Modal>
   );

@@ -7,64 +7,84 @@ const useProductFilters = (products = []) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
-  // Extraer categorías únicas
+  // Obtener todas las categorías únicas
   const allCategories = useMemo(() => {
-    return [...new Set(products
-      .filter(p => p.categoria)
-      .map(p => p.categoria))];
-  }, [products]);
-
-  // Productos filtrados
-  const filteredProducts = useMemo(() => {
-    return products.filter(product => {
-      // Filtro de búsqueda por término
-      const searchMatch = searchTerm === '' || 
-        (product.nombre || product.label || '')
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
-      
-      // Filtro por categoría
-      const categoryMatch = selectedCategory === 'all' || 
-        product.categoria === selectedCategory;
-
-      return searchMatch && categoryMatch;
-    });
-  }, [products, searchTerm, selectedCategory]);
-
-  // Productos agrupados por categoría
-  const groupedProducts = useMemo(() => {
-    const grouped = {};
+    if (!Array.isArray(products)) return [];
     
-    // Inicializar con categorías conocidas
-    allCategories.forEach(cat => {
-      grouped[cat] = [];
-    });
-    
-    // Categoría para productos sin categoría asignada
-    grouped['sin-categoria'] = [];
-    
-    // Agrupar productos filtrados
-    filteredProducts.forEach(product => {
-      if (product.categoria) {
-        grouped[product.categoria].push(product);
-      } else {
-        grouped['sin-categoria'].push(product);
+    const categories = new Set();
+    products.forEach(product => {
+      const category = product.categoria || product.category;
+      if (category && category !== 'sin-categoria') {
+        categories.add(category);
       }
     });
     
-    // Filtrar grupos vacíos si se está buscando
-    if (searchTerm || selectedCategory !== 'all') {
-      Object.keys(grouped).forEach(key => {
-        if (grouped[key].length === 0) {
-          delete grouped[key];
+    return Array.from(categories).sort();
+  }, [products]);
+
+  // Filtrar productos por búsqueda y categoría
+  const filteredProducts = useMemo(() => {
+    if (!Array.isArray(products)) return [];
+    
+    let filtered = products;
+    
+    // Filtrar por término de búsqueda
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(product => 
+        (product.nombre && product.nombre.toLowerCase().includes(term)) ||
+        (product.name && product.name.toLowerCase().includes(term)) ||
+        (product.label && product.label.toLowerCase().includes(term)) ||
+        (product.codigo && product.codigo.toLowerCase().includes(term))
+      );
+    }
+    
+    // Filtrar por categoría
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(product => {
+        const productCategory = product.categoria || product.category;
+        
+        if (selectedCategory === 'sin-categoria') {
+          return !productCategory || productCategory === 'sin-categoria';
         }
+        
+        return productCategory === selectedCategory;
       });
     }
     
-    return grouped;
-  }, [filteredProducts, allCategories, searchTerm, selectedCategory]);
+    return filtered;
+  }, [products, searchTerm, selectedCategory]);
 
-  // Limpiar filtros
+  // Agrupar productos por categoría
+  const groupedProducts = useMemo(() => {
+    const groups = {};
+    
+    filteredProducts.forEach(product => {
+      const category = product.categoria || product.category || 'sin-categoria';
+      
+      if (!groups[category]) {
+        groups[category] = [];
+      }
+      
+      groups[category].push(product);
+    });
+    
+    // Ordenar categorías, poniendo 'sin-categoria' al final
+    const sortedGroups = {};
+    const sortedKeys = Object.keys(groups).sort((a, b) => {
+      if (a === 'sin-categoria') return 1;
+      if (b === 'sin-categoria') return -1;
+      return a.localeCompare(b);
+    });
+    
+    sortedKeys.forEach(key => {
+      sortedGroups[key] = groups[key];
+    });
+    
+    return sortedGroups;
+  }, [filteredProducts]);
+
+  // Función para limpiar filtros
   const clearFilters = () => {
     setSearchTerm('');
     setSelectedCategory('all');

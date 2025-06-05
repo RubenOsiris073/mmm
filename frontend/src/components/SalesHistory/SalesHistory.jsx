@@ -6,6 +6,7 @@ import apiService from '../../services/apiService';
 import { toast } from 'react-toastify';
 import InvoiceModal from './InvoiceModal';
 import ClientNameModal from './ClientNameModal';
+import OrderProductManagementModal from '../orders/OrderProductManagementModal';
 import { generateInvoicePDF } from '../../utils/pdfGenerator';
 
 const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }) => {
@@ -14,6 +15,7 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
   const [selectedSale, setSelectedSale] = useState(null);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [showClientNameModal, setShowClientNameModal] = useState(false);
+  const [showProductModal, setShowProductModal] = useState(false);
   const [saleForInvoice, setSaleForInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -151,7 +153,6 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
   const clearFilters = () => {
     setFilters({
       startDate: '',
-      endDate: '',
       clientName: '',
       minAmount: '',
       maxAmount: ''
@@ -161,6 +162,11 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
   const handleViewInvoice = (sale) => {
     setSelectedSale(sale);
     setShowInvoiceModal(true);
+  };
+
+  const handleViewProducts = (sale) => {
+    setSelectedSale(sale);
+    setShowProductModal(true);
   };
 
   const handleDownloadInvoice = (sale) => {
@@ -436,7 +442,6 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
                       <td>{sale.client || sale.cliente || 'Cliente general'}</td>
                       <td>{Array.isArray(sale.items) ? `${sale.items.length} productos` : 'Sin detalles'}</td>
                       <td>
-                        <FaDollarSign className="me-1" />
                         <strong>{formatCurrency(sale.total)}</strong>
                       </td>
                       <td>
@@ -446,15 +451,26 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
                         <Button
                           variant="outline-primary"
                           size="sm"
-                          className="me-2"
+                          className="me-1"
                           onClick={() => handleViewInvoice(sale)}
+                          title="Ver factura"
                         >
                           <FaEye />
+                        </Button>
+                        <Button
+                          variant="outline-info"
+                          size="sm"
+                          className="me-1"
+                          onClick={() => handleViewProducts(sale)}
+                          title="Ver productos"
+                        >
+                          <FaShoppingCart />
                         </Button>
                         <Button
                           variant="outline-success"
                           size="sm"
                           onClick={() => handleDownloadInvoice(sale)}
+                          title="Descargar PDF"
                         >
                           <FaDownload />
                         </Button>
@@ -503,6 +519,22 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
         onHide={handleCloseClientNameModal}
         onConfirm={handleConfirmClientName}
         loading={generatingPDF}
+      />
+
+      {/* Modal para gestión de productos - CORREGIDO */}
+      <OrderProductManagementModal
+        show={showProductModal}
+        onHide={() => setShowProductModal(false)}
+        products={selectedSale?.items || []}
+        orderInfo={{
+          id: selectedSale?.id,
+          fecha: selectedSale?.date || selectedSale?.fecha || selectedSale?.timestamp,
+          metodoPago: selectedSale?.paymentMethod,
+          montoRecibido: selectedSale?.amountReceived,
+          cambio: selectedSale?.change,
+          cliente: selectedSale?.client || selectedSale?.cliente
+        }}
+        onUpdate={loadSales}
       />
     </>
   );

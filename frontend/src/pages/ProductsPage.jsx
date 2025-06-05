@@ -5,7 +5,6 @@ import { FaPlus } from 'react-icons/fa';
 import ProductList from '../components/products/ProductList';
 import ProductGrid from '../components/products/ProductGrid';
 import { getDetections, getProductsWithSafeDates } from '../services/storageService';
-import UserRegistration from '../components/admin/UserRegistration';
 import '../App.css';
 
 const ProductsPage = () => {
@@ -16,7 +15,6 @@ const ProductsPage = () => {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [activeTab, setActiveTab] = useState('grid');
-  const [showUserRegistration, setShowUserRegistration] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -99,15 +97,6 @@ const ProductsPage = () => {
           <div className="d-flex justify-content-between align-items-center">
             <h1>Lista de Productos</h1>
             <div>
-              <Button 
-                variant="outline-secondary" 
-                size="sm"
-                className="me-2"
-                onClick={() => setShowUserRegistration(true)}
-              >
-                <i className="bi bi-person-plus me-1"></i>
-                Crear Usuario POS
-              </Button>
               <Button 
                 as={Link} 
                 to="/products/new" 
@@ -227,12 +216,6 @@ const ProductsPage = () => {
           </Card>
         </Col>
       </Row>
-
-      {/* Modal de registro de usuario */}
-      <UserRegistration 
-        show={showUserRegistration}
-        onHide={() => setShowUserRegistration(false)}
-      />
     </>
   );
 };
