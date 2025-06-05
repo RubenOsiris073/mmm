@@ -26,31 +26,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/products/:id
-router.get('/:id', async (req, res) => {
-  try {
-    const productRef = doc(db, COLLECTIONS.PRODUCTS, req.params.id);
-    const productDoc = await getDoc(productRef);
-
-    if (!productDoc.exists()) {
-      return res.status(404).json({ 
-        error: 'Producto no encontrado' 
-      });
-    }
-
-    res.json({
-      id: productDoc.id,
-      ...productDoc.data()
-    });
-  } catch (error) {
-    console.error('Error al obtener producto:', error);
-    res.status(500).json({ 
-      error: 'Error al obtener producto',
-      message: error.message 
-    });
-  }
-});
-
 // Nuevo endpoint para inicializar stock automáticamente
 router.post('/initialize-stock', async (req, res) => {
   try {
@@ -82,7 +57,7 @@ router.post('/initialize-stock', async (req, res) => {
   }
 });
 
-// Nuevo endpoint para obtener resumen de stock
+// Nuevo endpoint para obtener resumen de stock - MOVER ANTES DE /:id
 router.get('/stock-summary', async (req, res) => {
   try {
     const products = await productService.getAllProducts();
@@ -104,6 +79,72 @@ router.get('/stock-summary', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Error al obtener resumen de stock'
+    });
+  }
+});
+
+// GET /api/products/:id - DESPUÉS de las rutas específicas
+router.get('/:id', async (req, res) => {
+  try {
+    const productRef = doc(db, COLLECTIONS.PRODUCTS, req.params.id);
+    const productDoc = await getDoc(productRef);
+
+    if (!productDoc.exists()) {
+      return res.status(404).json({ 
+        error: 'Producto no encontrado' 
+      });
+    }
+
+    res.json({
+      id: productDoc.id,
+      ...productDoc.data()
+    });
+  } catch (error) {
+    console.error('Error al obtener producto:', error);
+    res.status(500).json({ 
+      error: 'Error al obtener producto',
+      message: error.message 
+    });
+  }
+});
+
+// PUT /api/products/:id/stock - Actualizar stock directamente en el producto
+router.put('/:id/stock', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { adjustment, reason = 'Ajuste manual' } = req.body;
+    
+    if (typeof adjustment !== 'number') {
+      return res.status(400).json({
+        success: false,
+        error: 'El ajuste debe ser un número'
+      });
+    }
+    
+    console.log(`📊 Actualizando stock del producto ${id}: ajuste ${adjustment}`);
+    
+    // Usar productService unificado
+    const updateResult = await productService.updateProductStock(id, adjustment, reason);
+    
+    res.json({
+      success: true,
+      message: 'Stock actualizado correctamente',
+      product: {
+        id,
+        nombre: updateResult.productName,
+        cantidad: updateResult.newStock,
+        stock: updateResult.newStock
+      },
+      adjustment,
+      newStock: updateResult.newStock
+    });
+    
+  } catch (error) {
+    console.error(`Error actualizando stock del producto ${req.params.id}:`, error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al actualizar stock',
+      message: error.message
     });
   }
 });
@@ -151,79 +192,6 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Error al eliminar producto',
-      message: error.message
-    });
-  }
-});
-
-// **NUEVO ENDPOINT**: PUT /api/products/:id/stock - Actualizar stock directamente en el producto
-router.put('/:id/stock', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { adjustment, reason = 'Ajuste manual' } = req.body;
-    
-    if (typeof adjustment !== 'number') {
-      return res.status(400).json({
-        success: false,
-        error: 'El ajuste debe ser un número'
-      });
-    }
-    
-    console.log(`📊 Actualizando stock del producto ${id}: ajuste ${adjustment}`);
-    
-    // Obtener el producto actual
-    const productRef = doc(db, COLLECTIONS.PRODUCTS, req.params.id);
-    const productDoc = await getDoc(productRef);
-    
-    if (!productDoc.exists()) {
-      return res.status(404).json({
-        success: false,
-        error: 'Producto no encontrado'
-      });
-    }
-    
-    const productData = productDoc.data();
-    const currentStock = productData.cantidad || productData.stock || 0;
-    const newStock = Math.max(0, currentStock + adjustment); // No permitir stock negativo
-    
-    await updateDoc(productRef, {
-      cantidad: newStock,
-      stock: newStock, // Mantener ambos campos para compatibilidad
-      updatedAt: serverTimestamp(),
-      lastUpdate: {
-        adjustment,
-        reason,
-        user: 'RubenOsiris073', // En el futuro esto vendrá del auth
-        timestamp: serverTimestamp()
-      }
-    });
-    
-    console.log(`✅ Stock actualizado: ${productData.nombre} - ${currentStock} → ${newStock}`);
-    
-    res.json({
-      success: true,
-      message: 'Stock actualizado correctamente',
-      product: {
-        id,
-        nombre: productData.nombre,
-        cantidad: newStock,
-        stock: newStock,
-        lastUpdate: {
-          adjustment,
-          reason,
-          user: 'RubenOsiris073',
-          timestamp: new Date()
-        }
-      },
-      adjustment,
-      newStock
-    });
-    
-  } catch (error) {
-    console.error(`Error actualizando stock del producto ${req.params.id}:`, error);
-    res.status(500).json({
-      success: false,
-      error: 'Error al actualizar stock',
       message: error.message
     });
   }

@@ -1,6 +1,6 @@
 const { db, COLLECTIONS } = require('../config/firebase');
 const { collection, addDoc, getDocs, query, orderBy, serverTimestamp } = require('firebase/firestore');
-const inventoryService = require('./inventoryService');
+const productService = require('./productService'); // Cambiar a productService
 const { processTimestamp } = require('../utils/helpers');
 
 /**
@@ -10,10 +10,11 @@ async function getAllSales() {
   try {
     const salesRef = collection(db, COLLECTIONS.SALES);
     const q = query(salesRef, orderBy('timestamp', 'desc'));
-    const querySnapshot = await getDocs(q);
-    
+    const snapshot = await getDocs(q);
+
     const sales = [];
-    querySnapshot.forEach(doc => {
+    
+    snapshot.forEach(doc => {
       const data = doc.data();
       sales.push({
         id: doc.id,
@@ -21,7 +22,8 @@ async function getAllSales() {
         timestamp: processTimestamp(data.timestamp)
       });
     });
-    
+
+    console.log(`Obtenidas ${sales.length} ventas desde Firebase`);
     return sales;
   } catch (error) {
     console.error("Error al obtener ventas:", error);
@@ -30,28 +32,21 @@ async function getAllSales() {
 }
 
 /**
- * Crea una nueva venta
+ * Crea una nueva venta y actualiza el stock directamente en PRODUCTS
  */
 async function createSale(saleData) {
   try {
-    const { items, total, paymentMethod, amountReceived, change, clientName } = saleData;
+    const { items, total, paymentMethod, amountReceived = 0, change = 0, clientName } = saleData;
     
-    console.log("=== DATOS DE VENTA RECIBIDOS ===");
-    console.log("Items completos:", JSON.stringify(items, null, 2));
-    console.log("Total items:", items?.length);
+    console.log("Procesando nueva venta:", { items: items.length, total });
     
     if (!items || !Array.isArray(items) || items.length === 0) {
-      throw new Error("Se requieren productos en la venta");
+      throw new Error("La venta debe tener al menos un producto");
     }
     
-    // Validar cada item antes de procesar
+    // Validar items antes de procesar
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      console.log(`Item ${i}:`, JSON.stringify(item, null, 2));
-      console.log(`  - ID: ${item.id}`);
-      console.log(`  - ProductId: ${item.productId}`);
-      console.log(`  - Nombre: ${item.nombre}`);
-      console.log(`  - Cantidad: ${item.cantidad}`);
       
       // Validar que cada item tenga los datos necesarios
       if (!item.productId && !item.id) {
@@ -77,35 +72,71 @@ async function createSale(saleData) {
     const salesRef = collection(db, COLLECTIONS.SALES);
     const docRef = await addDoc(salesRef, saleRecord);
     
-    console.log("Venta creada correctamente, actualizando inventario...");
+    console.log("Venta creada correctamente, actualizando stock en PRODUCTS...");
     
-    // Actualizar inventario
+    // Actualizar stock usando productService (PRODUCTS collection)
     try {
-      console.log("Iniciando actualización de inventario...");
+      console.log("Iniciando actualización de stock...");
+      
+      const stockUpdates = [];
+      
       for (const item of items) {
         const productId = item.productId || item.id;
-        console.log(`Intentando actualizar stock para producto: ${productId}, cantidad: ${item.cantidad}`);
+        const quantitySold = parseInt(item.cantidad, 10);
         
-        if (!productId) {
-          console.error('ProductId es undefined para item:', item);
-          continue; // Saltar este item si no tiene ID válido
+        console.log(`Actualizando stock para producto ${productId}: -${quantitySold}`);
+        
+        try {
+          // Usar productService para actualizar stock directamente en PRODUCTS
+          const updateResult = await productService.updateProductStock(
+            productId, 
+            -quantitySold, // Ajuste negativo para venta
+            `Venta #${docRef.id}`
+          );
+          
+          stockUpdates.push({
+            productId,
+            productName: updateResult.productName,
+            quantitySold,
+            newStock: updateResult.newStock,
+            success: true
+          });
+          
+          console.log(`✅ Stock actualizado: ${updateResult.productName} - Nuevo stock: ${updateResult.newStock}`);
+          
+        } catch (stockError) {
+          console.error(`❌ Error actualizando stock para ${productId}:`, stockError);
+          stockUpdates.push({
+            productId,
+            quantitySold,
+            success: false,
+            error: stockError.message
+          });
         }
-        
-        // Actualizar stock restando la cantidad vendida
-        await inventoryService.updateStock(productId, -item.cantidad, 'warehouse', 'Venta POS');
-        console.log(`Stock actualizado exitosamente para ${productId}`);
       }
-      console.log("Inventario actualizado con éxito");
+      
+      console.log("Resumen de actualizaciones de stock:", stockUpdates);
+      
+      // Verificar si hubo errores críticos
+      const failedUpdates = stockUpdates.filter(update => !update.success);
+      if (failedUpdates.length > 0) {
+        console.warn(`⚠️ ${failedUpdates.length} productos no pudieron actualizar su stock`);
+      }
+      
     } catch (inventoryError) {
-      console.error("Error actualizando inventario:", inventoryError);
-      // No fallar la venta, pero registrar el error
-      throw new Error(`Error actualizando inventario: ${inventoryError.message}`);
+      console.error("Error general actualizando stock:", inventoryError);
+      // No lanzar error para no cancelar la venta, pero registrar el problema
     }
     
-    return { 
-      success: true, 
-      saleId: docRef.id 
+    const newSale = {
+      id: docRef.id,
+      ...saleRecord,
+      timestamp: new Date().toISOString()
     };
+    
+    console.log(`✅ Venta procesada exitosamente: ${docRef.id}`);
+    return newSale;
+    
   } catch (error) {
     console.error("Error al crear venta:", error);
     throw error;
