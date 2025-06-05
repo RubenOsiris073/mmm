@@ -35,16 +35,22 @@ const usePayment = ({ cartItems, calculateTotal, setError }) => {
         total: total,
         amountReceived: paymentMethod === 'efectivo' ? parseFloat(amountReceived) : total,
         change: paymentMethod === 'efectivo' ? parseFloat(amountReceived) - total : 0,
-        items: cartItems.map(item => ({
-          productId: item.id,
-          cantidad: item.quantity,
-          precioUnitario: item.precio,
-          total: item.total,
-          nombre: item.nombre
-        }))
+        items: cartItems.map(item => {
+          console.log("Procesando item del carrito:", item);
+          return {
+            productId: item.id,
+            id: item.id, // Agregar también como 'id' por si acaso
+            cantidad: item.quantity,
+            precioUnitario: item.precio,
+            total: item.total,
+            nombre: item.nombre
+          };
+        })
       };
       
-      console.log("Enviando datos de venta:", saleData);
+      console.log("=== DATOS ENVIADOS AL BACKEND ===");
+      console.log("SaleData completo:", JSON.stringify(saleData, null, 2));
+      console.log("Items mapeados:", saleData.items);
       
       // Enviar la venta al servidor
       const response = await apiService.createSale(saleData);

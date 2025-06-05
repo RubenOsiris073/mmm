@@ -1,86 +1,158 @@
 const express = require('express');
 const router = express.Router();
-const { db, COLLECTIONS } = require('../config/firebase');
-const { collection, getDocs, doc, getDoc, updateDoc, addDoc, increment, serverTimestamp } = require('firebase/firestore');
+const inventoryService = require('../services/inventoryService');
 
-// GET /api/inventory
+// GET /api/inventory - Obtener todo el inventario
 router.get('/', async (req, res) => {
-  console.log('GET /inventory - Recibido');
   try {
-    const inventoryRef = collection(db, COLLECTIONS.INVENTORY);
-    const snapshot = await getDocs(inventoryRef);
-    const inventory = [];
-    
-    snapshot.forEach(doc => {
-      inventory.push({
-        id: doc.id,
-        ...doc.data()
-      });
+    const inventory = await inventoryService.getInventory();
+    res.json({
+      success: true,
+      data: inventory,
+      count: inventory.length
     });
-
-    //console.log('Enviando inventario:', inventory);
-    res.json(inventory);
   } catch (error) {
     console.error('Error al obtener inventario:', error);
-    res.status(500).json({ 
+    res.status(500).json({
+      success: false,
       error: 'Error al obtener inventario',
-      message: error.message 
+      message: error.message
     });
   }
 });
-// POST /api/inventory/update
-router.post('/update', async (req, res) => {
+
+// GET /api/inventory/:productId/stock - Obtener stock de un producto específico
+router.get('/:productId/stock', async (req, res) => {
   try {
-    const { productId, adjustment, location, reason } = req.body;
-
-    const inventoryRef = doc(db, COLLECTIONS.INVENTORY, productId);
-    const inventoryDoc = await getDoc(inventoryRef);
-
-    if (!inventoryDoc.exists()) {
-      return res.status(404).json({ error: 'Producto no encontrado en inventario' });
-    }
-
-    const currentStock = inventoryDoc.data().cantidad || 0;
-    const newStock = currentStock + adjustment;
-
-    if (newStock < 0) {
-      return res.status(400).json({ error: 'Stock insuficiente' });
-    }
-
-    await updateDoc(inventoryRef, {
-      cantidad: increment(adjustment),
-      location,
-      updatedAt: serverTimestamp(),
-      lastUpdate: {
-        adjustment,
-        reason,
-        timestamp: serverTimestamp()
-      }
-    });
-
-    // Registrar movimiento
-    const movementRef = collection(db, COLLECTIONS.INVENTORY_MOVEMENTS);
-    await addDoc(movementRef, {
-      productId,
-      adjustment,
-      location,
-      reason,
-      previousQuantity: currentStock,
-      newQuantity: newStock,
-      timestamp: serverTimestamp()
-    });
-
-    const updatedDoc = await getDoc(inventoryRef);
+    const { productId } = req.params;
+    const stockInfo = await inventoryService.getProductStock(productId);
     
     res.json({
-      id: updatedDoc.id,
-      ...updatedDoc.data()
+      success: true,
+      productId,
+      stock: stockInfo.quantity,
+      location: stockInfo.location
     });
   } catch (error) {
-    console.error('Error al actualizar inventario:', error);
-    res.status(500).json({ 
-      error: 'Error al actualizar inventario',
-      message: error.message 
+    console.error(`Error al obtener stock para ${req.params.productId}:`, error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al obtener stock del producto',
+      message: error.message
+    });
+  }
+});
+
+// PUT /api/inventory/:productId/stock - Actualizar stock (ajuste relativo)
+router.put('/:productId/stock', async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { adjustment, reason, location } = req.body;
+    
+    if (typeof adjustment !== 'number') {
+      return res.status(400).json({
+        success: false,
+        error: 'El ajuste debe ser un número válido'
+      });
+    }
+    
+    console.log(`📊 Actualizando stock: ${productId}, ajuste: ${adjustment}, razón: ${reason}`);
+    
+    const updatedItem = await inventoryService.updateStock(
+      productId, 
+      adjustment, 
+      location || 'warehouse', 
+      reason || 'Ajuste manual desde interfaz'
+    );
+    
+    res.json({
+      success: true,
+      message: 'Stock actualizado correctamente',
+      product: updatedItem,
+      adjustment,
+      newStock: updatedItem.cantidad
+    });
+  } catch (error) {
+    console.error(`Error actualizando stock para ${req.params.productId}:`, error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al actualizar stock',
+      message: error.message
+    });
+  }
+});
+
+// PUT /api/inventory/:productId/set-stock - Establecer stock absoluto
+router.put('/:productId/set-stock', async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { quantity, reason, location } = req.body;
+    
+    if (typeof quantity !== 'number' || quantity < 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'La cantidad debe ser un número válido mayor o igual a 0'
+      });
+    }
+    
+    console.log(`📦 Estableciendo stock absoluto: ${productId}, cantidad: ${quantity}`);
+    
+    // Primero obtener el stock actual
+    const currentStock = await inventoryService.getProductStock(productId);
+    const currentQuantity = currentStock.quantity || 0;
+    
+    // Calcular el ajuste necesario
+    const adjustment = quantity - currentQuantity;
+    
+    const updatedItem = await inventoryService.updateStock(
+      productId, 
+      adjustment, 
+      location || 'warehouse', 
+      reason || 'Establecer stock desde interfaz'
+    );
+    
+    res.json({
+      success: true,
+      message: 'Stock establecido correctamente',
+      product: updatedItem,
+      previousStock: currentQuantity,
+      newStock: quantity,
+      adjustment
+    });
+  } catch (error) {
+    console.error(`Error estableciendo stock para ${req.params.productId}:`, error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al establecer stock',
+      message: error.message
+    });
+  }
+});
+
+// GET /api/inventory/movements - Obtener movimientos de inventario
+router.get('/movements', async (req, res) => {
+  try {
+    const { location, startDate, endDate, limit } = req.query;
+    
+    const filters = {};
+    if (location) filters.location = location;
+    if (startDate) filters.startDate = new Date(startDate);
+    if (endDate) filters.endDate = new Date(endDate);
+    if (limit) filters.limit = parseInt(limit);
+    
+    const movements = await inventoryService.getMovements(filters);
+    
+    res.json({
+      success: true,
+      data: movements,
+      count: movements.length
+    });
+  } catch (error) {
+    console.error('Error al obtener movimientos de inventario:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al obtener movimientos de inventario',
+      message: error.message
     });
   }
 });

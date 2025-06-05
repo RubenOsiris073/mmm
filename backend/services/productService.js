@@ -1,21 +1,49 @@
 const { db, COLLECTIONS } = require('../config/firebase');
 const { collection, doc, addDoc, getDocs, query, serverTimestamp } = require('firebase/firestore');
-const { queryDocuments, searchByField, getServerTimestamp } = require('../utils/firebaseUtils');
+const { queryDocuments, searchByField, getServerTimestamp, getDocumentById } = require('../utils/firebaseUtils');
+const inventoryService = require('./inventoryService');
+
 /**
- * Obtiene todos los productos
+ * Obtiene todos los productos directamente desde Firebase
+ * El stock se lee directamente del campo 'cantidad' o 'stock' del documento
  */
 async function getAllProducts() {
     try {
-      // Utilizar la utilidad para simplificar la consulta
-      return await queryDocuments(COLLECTIONS.PRODUCTS);
+      console.log("🔍 Obteniendo productos directamente desde Firebase...");
+      
+      // Obtener productos del catálogo con stock incluido
+      const products = await queryDocuments(COLLECTIONS.PRODUCTS);
+      
+      if (products.length === 0) {
+        console.log("No hay productos en el catálogo");
+        return [];
+      }
+      
+      // Los productos ya vienen con su stock desde Firebase
+      // Solo asegurar que tengan campos de stock consistentes
+      const productsWithStock = products.map(product => ({
+        ...product,
+        cantidad: product.cantidad || product.stock || 0,
+        stock: product.stock || product.cantidad || 0
+      }));
+      
+      console.log(`✅ Productos obtenidos: ${productsWithStock.length} (stock desde documento Firebase)`);
+      
+      // Mostrar resumen de stock
+      const productsWithStock_count = productsWithStock.filter(p => (p.cantidad || 0) > 0).length;
+      const productsWithoutStock_count = productsWithStock.filter(p => (p.cantidad || 0) === 0).length;
+      
+      console.log(`📊 Resumen: ${productsWithStock_count} con stock, ${productsWithoutStock_count} sin stock`);
+      
+      return productsWithStock;
     } catch (error) {
-      console.error("Error al obtener productos:", error);
+      console.error("❌ Error al obtener productos:", error);
       throw error;
     }
   }
   
   /**
-   * Busca productos por nombre o etiqueta
+   * Busca productos por nombre o etiqueta con stock sincronizado
    */
   async function searchProducts(term) {
     try {
@@ -23,19 +51,17 @@ async function getAllProducts() {
         return await getAllProducts();
       }
       
-      // Buscar en múltiples campos
-      const byName = await searchByField(COLLECTIONS.PRODUCTS, 'nombre', term);
-      const byLabel = await searchByField(COLLECTIONS.PRODUCTS, 'label', term);
+      // Obtener todos los productos con stock para filtrar localmente
+      const allProductsWithStock = await getAllProducts();
       
-      // Combinar resultados y eliminar duplicados
-      const combined = [...byName];
-      byLabel.forEach(product => {
-        if (!combined.find(p => p.id === product.id)) {
-          combined.push(product);
-        }
-      });
+      // Filtrar por término de búsqueda
+      const filteredProducts = allProductsWithStock.filter(product => 
+        (product.nombre && product.nombre.toLowerCase().includes(term.toLowerCase())) ||
+        (product.label && product.label.toLowerCase().includes(term.toLowerCase())) ||
+        (product.codigo && product.codigo.toLowerCase().includes(term.toLowerCase()))
+      );
       
-      return combined;
+      return filteredProducts;
     } catch (error) {
       console.error("Error buscando productos:", error);
       throw error;

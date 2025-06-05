@@ -26,7 +26,8 @@ const POSView = () => {
     loading: productsLoading, 
     filteredProducts, 
     searchTerm, 
-    setSearchTerm 
+    setSearchTerm,
+    loadProducts  // Agregar esta función para poder refrescar productos
   } = useProductData(setError);
 
   const {
@@ -83,10 +84,14 @@ const POSView = () => {
   
   // Escuchar evento para limpiar carrito después de venta exitosa
   useEffect(() => {
-    const handleSaleCompleted = () => setCartItems([]);
+    const handleSaleCompleted = () => {
+      setCartItems([]);
+      // Refrescar productos para mostrar stock actualizado
+      loadProducts();
+    };
     window.addEventListener('sale-completed', handleSaleCompleted);
     return () => window.removeEventListener('sale-completed', handleSaleCompleted);
-  }, [setCartItems]);
+  }, [setCartItems, loadProducts]);
 
   // Activar detección manual
   const handleScanProduct = useCallback(async () => {

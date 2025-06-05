@@ -1,227 +1,72 @@
 import React, { useState } from 'react';
-import { Row, Col, Card, Badge, Button, Form, InputGroup, Modal } from 'react-bootstrap';
+import { Row, Col, Badge, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import { BsSearch, BsGrid3X3, BsList } from 'react-icons/bs';
-import { deleteProduct } from '../../services/storageService';
 
-const ProductGrid = ({ products = [], loading }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+// Hooks personalizados
+import useProductSync from './hooks/useProductSync';
+import useProductFilters from './hooks/useProductFilters';
+
+// Componentes modulares
+import ProductCard from './components/ProductCard';
+import ProductFilters from './components/ProductFilters';
+import ProductManagementModal from './ProductManagementModal';
+
+// Utilidades
+import { getCategoryColor, getCategoryIcon, formatCategoryTitle } from './utils/categoryUtils';
+
+const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
   const [viewMode, setViewMode] = useState('grid'); // 'grid' o 'list'
   
-  // Agregar estados para el modal
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [productToDelete, setProductToDelete] = useState(null);
+  // Estados para el modal de gestión
+  const [showManagementModal, setShowManagementModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
-  // Extraer categorías únicas de todos los productos
-  const allCategories = [...new Set(products
-    .filter(p => p.categoria)
-    .map(p => p.categoria))];
+  // Hook para sincronización de productos
+  const {
+    products: syncedProducts,
+    loading: syncLoading,
+    updateProduct,
+    removeProduct
+  } = useProductSync(products);
 
-  // Función para obtener productos filtrados
-  const getFilteredProducts = () => {
-    return products.filter(product => {
-      // Filtro de búsqueda por término
-      const searchMatch = searchTerm === '' || 
-        (product.nombre || product.label || '')
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
-      
-      // Filtro por categoría
-      const categoryMatch = selectedCategory === 'all' || 
-        product.categoria === selectedCategory;
+  // Hook para filtros
+  const {
+    searchTerm,
+    setSearchTerm,
+    selectedCategory,
+    setSelectedCategory,
+    allCategories,
+    groupedProducts,
+    clearFilters
+  } = useProductFilters(syncedProducts);
 
-      return searchMatch && categoryMatch;
-    });
+  // Función para manejar la gestión de un producto
+  const handleManageProduct = (product) => {
+    setSelectedProduct(product);
+    setShowManagementModal(true);
   };
 
-  // Agrupar productos por categoría
-  const groupProductsByCategory = () => {
-    const groupedProducts = {};
-    
-    // Inicializar con categorías conocidas
-    allCategories.forEach(cat => {
-      groupedProducts[cat] = [];
-    });
-    
-    // Categoría para productos sin categoría asignada
-    groupedProducts['sin-categoria'] = [];
-    
-    // Agrupar productos
-    getFilteredProducts().forEach(product => {
-      if (product.categoria) {
-        groupedProducts[product.categoria].push(product);
-      } else {
-        groupedProducts['sin-categoria'].push(product);
-      }
-    });
-    
-    // Filtrar grupos vacíos si se está buscando
-    if (searchTerm || selectedCategory !== 'all') {
-      Object.keys(groupedProducts).forEach(key => {
-        if (groupedProducts[key].length === 0) {
-          delete groupedProducts[key];
-        }
-      });
-    }
-    
-    return groupedProducts;
+  // Función para manejar la actualización de un producto
+  const handleProductUpdated = (updatedProduct) => {
+    updateProduct(updatedProduct);
   };
 
-  // Obtener color según la categoría
-  const getCategoryColor = (category) => {
-    const colors = {
-      'alimentos': 'success',
-      'bebidas': 'info',
-      'limpieza': 'primary',
-      'medicamentos': 'danger',
-      'sin-categoria': 'secondary',
-      'otros': 'warning'
-    };
-    return colors[category] || 'light';
-  };
-
-  // Obtener icono para la categoría
-  const getCategoryIcon = (category) => {
-    const icons = {
-      'alimentos': '🍎',
-      'bebidas': '🥤',
-      'limpieza': '🧹',
-      'medicamentos': '💊',
-      'sin-categoria': '📦',
-      'otros': '🔍'
-    };
-    return icons[category] || '📦';
-  };
-
-  // Formatear el título de categoría
-  const formatCategoryTitle = (category) => {
-    if (category === 'sin-categoria') return 'Sin Categoría';
-    return category.charAt(0).toUpperCase() + category.slice(1);
-  };
-
-  // Función para manejar la eliminación
-  const handleDelete = async () => {
-    try {
-      await deleteProduct(productToDelete.id);
-      setShowDeleteModal(false);
-      window.location.reload();
-    } catch (error) {
-      console.error("Error al eliminar el producto:", error);
-      alert("Error al eliminar el producto");
+  // Función para manejar la eliminación de un producto
+  const handleProductDeleted = (deletedProductId) => {
+    removeProduct(deletedProductId);
+    
+    // Llamar al callback del componente padre si existe
+    if (onProductDeleted) {
+      onProductDeleted(deletedProductId);
     }
   };
 
-  // Modal de confirmación de eliminación
-  const DeleteConfirmationModal = () => (
-    <Modal
-      show={showDeleteModal}
-      onHide={() => setShowDeleteModal(false)}
-      centered
-    >
-      <Modal.Header closeButton>
-        <Modal.Title>Confirmar Eliminación</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        {productToDelete && (
-          <>
-            <p>¿Estás seguro de que deseas eliminar este producto?</p>
-            <div className="d-flex align-items-center p-3 bg-light rounded">
-              <div className="product-icon me-3">
-                {getCategoryIcon(productToDelete.categoria || 'sin-categoria')}
-              </div>
-              <div>
-                <h5 className="mb-1 text-capitalize">
-                  {productToDelete.nombre || productToDelete.label || 'Producto sin nombre'}
-                </h5>
-                {productToDelete.descripcion && (
-                  <p className="text-muted mb-0 small">
-                    {productToDelete.descripcion}
-                  </p>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="outline-secondary" onClick={() => setShowDeleteModal(false)}>
-          Cancelar
-        </Button>
-        <Button variant="danger" onClick={handleDelete}>
-          Eliminar
-        </Button>
-      </Modal.Footer>
-    </Modal>
-  );
-
-  // Contenido de la tarjeta de producto
-  const renderProductCard = (product) => {
-    return (
-      <Card className="h-100 product-card">
-        <Card.Body className="d-flex flex-column">
-          <div className="product-icon mb-3">
-            {getCategoryIcon(product.categoria || 'sin-categoria')}
-          </div>
-          <Card.Title className="text-capitalize">
-            {product.nombre || product.label || 'Producto sin nombre'}
-          </Card.Title>
-          <Card.Text as="div" className="small text-muted flex-grow-1">
-            {product.descripcion || product.notas || 
-              `Producto ${product.tipoDetectado || product.label || ''} detectado automáticamente`}
-          </Card.Text>
-          <div className="mt-3">
-            {product.cantidad && (
-              <Badge bg="info" className="me-2">
-                {product.cantidad} {product.unidadMedida || 'unidades'}
-              </Badge>
-            )}
-            {product.precio && (
-              <Badge bg="success" className="me-2">
-                ${parseFloat(product.precio).toFixed(2)}
-              </Badge>
-            )}
-            {(product.similarity || product.precisionDeteccion) && (
-              <Badge bg="warning">
-                Precisión: {product.similarity || product.precisionDeteccion}%
-              </Badge>
-            )}
-          </div>
-        </Card.Body>
-        <Card.Footer className="bg-light border-top-0 d-flex gap-2">
-          <Link 
-            to="/product-form" 
-            state={{ product }}
-            className="w-50"
-          >
-            <Button variant="outline-primary" size="sm" className="w-100">
-              {product.nombre ? 'Editar' : 'Registrar Detalles'}
-            </Button>
-          </Link>
-          <Button 
-            variant="outline-danger" 
-            size="sm" 
-            className="w-50"
-            onClick={() => {
-              setProductToDelete(product);
-              setShowDeleteModal(true);
-            }}
-          >
-            Eliminar
-          </Button>
-        </Card.Footer>
-      </Card>
-    );
-  };
-
-  // Renderizar la vista de lista
+  // Renderizar vista de lista
   const renderListView = () => {
-    const groupedProducts = groupProductsByCategory();
-    
     return Object.entries(groupedProducts).map(([category, categoryProducts]) => (
       <div key={category} className="mb-5">
         <h4 className="mb-3 d-flex align-items-center">
-          <span className={`category-icon bg-${getCategoryColor(category)} me-2`}>
+          <span className={`badge bg-${getCategoryColor(category)} me-2 fs-5`}>
             {getCategoryIcon(category)}
           </span>
           {formatCategoryTitle(category)}
@@ -231,64 +76,80 @@ const ProductGrid = ({ products = [], loading }) => {
         </h4>
         
         <div className="list-group">
-          {categoryProducts.map(product => (
-            <div 
-              key={product.id} 
-              className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-            >
-              <div>
-                <h5 className="mb-1 text-capitalize">
-                  {product.nombre || product.label || 'Producto sin nombre'}
-                </h5>
-                <p className="mb-1 small text-muted">
-                  {product.descripcion || product.notas || 
-                    `Producto ${product.tipoDetectado || product.label || ''} detectado automáticamente`}
-                </p>
-                <div>
-                  {product.cantidad && (
-                    <Badge bg="info" className="me-1">
-                      {product.cantidad} {product.unidadMedida || 'unidades'}
+          {categoryProducts.map(product => {
+            const currentStock = product.cantidad || product.stock || 0;
+            
+            return (
+              <div 
+                key={product.id} 
+                className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+              >
+                <div className="flex-grow-1">
+                  <div className="d-flex align-items-center mb-2">
+                    <span className="me-3 fs-4">
+                      {getCategoryIcon(product.categoria || 'sin-categoria')}
+                    </span>
+                    <div>
+                      <h5 className="mb-1 text-capitalize">
+                        {product.nombre || product.label || 'Producto sin nombre'}
+                      </h5>
+                      <p className="mb-1 small text-muted">
+                        {product.descripcion || product.notas || 
+                          `Producto detectado automáticamente`}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Badge 
+                      bg={currentStock > 10 ? "success" : currentStock > 5 ? "warning" : currentStock > 0 ? "danger" : "secondary"}
+                      className="me-2"
+                    >
+                      Stock: {currentStock} {product.unidadMedida || 'unidades'}
                     </Badge>
-                  )}
-                  {product.precio && (
-                    <Badge bg="success" className="me-1">
-                      ${parseFloat(product.precio).toFixed(2)}
-                    </Badge>
-                  )}
+                    {product.precio && (
+                      <Badge bg="info" className="me-2">
+                        ${parseFloat(product.precio).toFixed(2)}
+                      </Badge>
+                    )}
+                    {product.codigo && (
+                      <Badge bg="outline-secondary">
+                        {product.codigo}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="d-flex gap-2 ms-3">
+                  <Link to={`/products/edit/${product.id}`} state={{ product }}>
+                    <Button variant="outline-primary" size="sm">
+                      <i className="bi bi-pencil me-1"></i>
+                      {product.nombre ? 'Editar' : 'Completar'}
+                    </Button>
+                  </Link>
+                  <Button 
+                    variant="outline-warning" 
+                    size="sm"
+                    onClick={() => handleManageProduct(product)}
+                  >
+                    <i className="bi bi-gear me-1"></i>
+                    Gestionar
+                  </Button>
                 </div>
               </div>
-              <div className="d-flex gap-2">
-                <Link to="/product-form" state={{ product }}>
-                  <Button variant="outline-primary" size="sm">
-                    {product.nombre ? 'Editar' : 'Registrar'}
-                  </Button>
-                </Link>
-                <Button 
-                  variant="outline-danger" 
-                  size="sm"
-                  onClick={() => {
-                    setProductToDelete(product);
-                    setShowDeleteModal(true);
-                  }}
-                >
-                  Eliminar
-                </Button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     ));
   };
 
-  // Renderizar la vista de cuadrícula
+  // Renderizar vista de cuadrícula
   const renderGridView = () => {
-    const groupedProducts = groupProductsByCategory();
-    
     return Object.entries(groupedProducts).map(([category, categoryProducts]) => (
       <div key={category} className="mb-5">
         <h4 className="mb-3 d-flex align-items-center">
-          <span className={`category-icon bg-${getCategoryColor(category)} me-2`}>
+          <span className={`badge bg-${getCategoryColor(category)} me-2 fs-5`}>
             {getCategoryIcon(category)}
           </span>
           {formatCategoryTitle(category)}
@@ -297,10 +158,13 @@ const ProductGrid = ({ products = [], loading }) => {
           </Badge>
         </h4>
         
-        <Row xs={1} sm={2} md={3} lg={4} className="g-4">
+        <Row xs={1} sm={2} md={3} lg={4} xl={5} className="g-4">
           {categoryProducts.map(product => (
             <Col key={product.id}>
-              {renderProductCard(product)}
+              <ProductCard 
+                product={product} 
+                onManage={handleManageProduct}
+              />
             </Col>
           ))}
         </Row>
@@ -308,17 +172,24 @@ const ProductGrid = ({ products = [], loading }) => {
     ));
   };
 
+  // Estado de carga
+  const isLoading = loading || syncLoading;
+
   // Si no hay productos
-  if (!loading && (!products || products.length === 0)) {
+  if (!isLoading && (!syncedProducts || syncedProducts.length === 0)) {
     return (
       <div className="text-center p-5">
+        <div className="mb-4">
+          <i className="bi bi-box-seam display-1 text-muted"></i>
+        </div>
         <h4>No hay productos en el inventario</h4>
-        <p className="text-muted">
+        <p className="text-muted mb-4">
           Registra productos manualmente o detecta con la cámara para comenzar
         </p>
         <Link to="/product-form">
-          <Button variant="primary" className="mt-3">
-            Agregar Producto
+          <Button variant="primary" size="lg">
+            <i className="bi bi-plus-circle me-2"></i>
+            Agregar Primer Producto
           </Button>
         </Link>
       </div>
@@ -328,59 +199,55 @@ const ProductGrid = ({ products = [], loading }) => {
   return (
     <div className="product-grid-container">
       {/* Barra de filtros */}
-      <div className="mb-4">
-        <Row>
-          <Col md={6} lg={4}>
-            <InputGroup className="mb-3">
-              <InputGroup.Text>
-                <BsSearch />
-              </InputGroup.Text>
-              <Form.Control
-                placeholder="Buscar productos..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </InputGroup>
-          </Col>
-          <Col md={4} lg={4}>
-            <Form.Select 
-              className="mb-3"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-            >
-              <option value="all">Todas las categorías</option>
-              {allCategories.map(cat => (
-                <option key={cat} value={cat}>
-                  {formatCategoryTitle(cat)}
-                </option>
-              ))}
-              <option value="sin-categoria">Sin categoría</option>
-            </Form.Select>
-          </Col>
-          <Col md={2} lg={4} className="d-flex justify-content-end">
-            <div className="btn-group mb-3">
-              <Button
-                variant={viewMode === 'grid' ? 'primary' : 'outline-primary'}
-                onClick={() => setViewMode('grid')}
-              >
-                <BsGrid3X3 />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'primary' : 'outline-primary'}
-                onClick={() => setViewMode('list')}
-              >
-                <BsList />
-              </Button>
-            </div>
-          </Col>
-        </Row>
-      </div>
+      <ProductFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        allCategories={allCategories}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        onClearFilters={clearFilters}
+      />
+
+      {/* Indicador de carga */}
+      {isLoading && (
+        <div className="text-center py-4">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Cargando productos...</span>
+          </div>
+        </div>
+      )}
 
       {/* Contenido principal */}
-      {viewMode === 'grid' ? renderGridView() : renderListView()}
+      {!isLoading && (
+        <div>
+          {Object.keys(groupedProducts).length === 0 ? (
+            <div className="text-center py-5">
+              <i className="bi bi-search display-1 text-muted"></i>
+              <h4 className="mt-3">No se encontraron productos</h4>
+              <p className="text-muted">
+                Intenta con otros términos de búsqueda o revisa los filtros aplicados
+              </p>
+              <Button variant="outline-primary" onClick={clearFilters}>
+                <i className="bi bi-arrow-clockwise me-1"></i>
+                Limpiar filtros
+              </Button>
+            </div>
+          ) : (
+            viewMode === 'grid' ? renderGridView() : renderListView()
+          )}
+        </div>
+      )}
       
-      {/* Incluir el modal */}
-      <DeleteConfirmationModal />
+      {/* Modal de gestión de productos */}
+      <ProductManagementModal
+        show={showManagementModal}
+        onHide={() => setShowManagementModal(false)}
+        product={selectedProduct}
+        onProductUpdated={handleProductUpdated}
+        onProductDeleted={handleProductDeleted}
+      />
     </div>
   );
 };

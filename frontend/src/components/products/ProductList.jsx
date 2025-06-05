@@ -186,7 +186,7 @@ const ProductList = ({ products, onAddToCart, loading, onProductDeleted, showCar
                   ) : (
                     <div className="d-flex gap-2">
                       <Link 
-                        to="/product-form" 
+                        to={`/products/edit/${product.id}`} 
                         state={{ product }}
                         className="flex-fill"
                       >

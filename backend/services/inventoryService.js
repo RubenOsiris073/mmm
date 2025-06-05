@@ -113,12 +113,22 @@ class InventoryService {
         const updatedItem = await getDocumentById(COLLECTIONS.INVENTORY, productId);
         return updatedItem;
       } else {
-        // El producto no existe en inventario, buscarlo en products
+        // El producto no existe en inventario
+        console.log(`Producto ${productId} no existe en inventario, intentando crearlo...`);
+        
+        // Primero intentar buscarlo en products
         const productData = await getDocumentById(COLLECTIONS.PRODUCTS, productId);
         
         if (productData) {
-          // Crear entrada en inventario
+          // El producto existe en la colección products, crear entrada en inventario
           const initialStock = adjustment > 0 ? adjustment : 0;
+          
+          // Si el ajuste es negativo y no hay inventario, no permitir la venta
+          if (adjustment < 0) {
+            console.log(`No se puede vender producto ${productId}: no hay stock disponible`);
+            throw new Error(`Stock insuficiente para el producto ${productData.nombre || productId}`);
+          }
+          
           await setDoc(inventoryRef, {
             id: productId,
             nombre: productData.nombre || productData.label || "Producto",
@@ -159,7 +169,40 @@ class InventoryService {
             createdAt: timestamp
           };
         } else {
-          throw new Error(`Producto ${productId} no existe en la base de datos`);
+          // El producto no existe ni en products ni en inventario
+          // Para ventas, esto no debería pasar - vamos a permitirlo pero con advertencia
+          console.warn(`Producto ${productId} no existe en la base de datos, pero se permite la venta`);
+          
+          // Si es una venta (ajuste negativo), no podemos proceder sin producto
+          if (adjustment < 0) {
+            throw new Error(`No se puede vender un producto inexistente: ${productId}`);
+          }
+          
+          // Si es un incremento de stock, crear el producto con datos mínimos
+          const initialStock = adjustment > 0 ? adjustment : 0;
+          await setDoc(inventoryRef, {
+            id: productId,
+            nombre: `Producto ${productId}`,
+            cantidad: initialStock,
+            location,
+            updatedAt: serverTimestamp(),
+            createdAt: serverTimestamp(),
+            lastUpdate: {
+              adjustment,
+              reason,
+              timestamp,
+              user: 'RubenOsiris073'
+            }
+          });
+          
+          return {
+            id: productId,
+            nombre: `Producto ${productId}`,
+            cantidad: initialStock,
+            location,
+            updatedAt: timestamp,
+            createdAt: timestamp
+          };
         }
       }
     } catch (error) {
@@ -177,13 +220,24 @@ class InventoryService {
       const inventoryRef = collection(db, COLLECTIONS.INVENTORY);
       const inventorySnapshot = await getDocs(inventoryRef);
       
-      if (inventorySnapshot.empty) {
-        //console.log("Inventario vacío. Inicializando con productos del catálogo...");
-        const productsRef = collection(db, COLLECTIONS.PRODUCTS);
-        const productsSnapshot = await getDocs(productsRef);
-        
-        let count = 0;
-        for (const productDoc of productsSnapshot.docs) {
+      // Obtener todos los productos del catálogo
+      const productsRef = collection(db, COLLECTIONS.PRODUCTS);
+      const productsSnapshot = await getDocs(productsRef);
+      
+      console.log(`Productos en catálogo: ${productsSnapshot.size}`);
+      console.log(`Productos en inventario: ${inventorySnapshot.size}`);
+      
+      // Crear un mapa de productos existentes en inventario
+      const existingInventoryIds = new Set();
+      inventorySnapshot.forEach(doc => {
+        existingInventoryIds.add(doc.id);
+      });
+      
+      let createdCount = 0;
+      
+      // Crear entradas de inventario para productos que no las tienen
+      for (const productDoc of productsSnapshot.docs) {
+        if (!existingInventoryIds.has(productDoc.id)) {
           const productData = productDoc.data();
           const inventoryItemRef = doc(db, COLLECTIONS.INVENTORY, productDoc.id);
           
@@ -192,23 +246,41 @@ class InventoryService {
           await setDoc(inventoryItemRef, {
             id: productDoc.id,
             nombre: productData.nombre || productData.label || "Producto sin nombre",
-            cantidad: 0,
-            location: 'warehouse', // ubicación por defecto
+            cantidad: 10, // Stock inicial de 10 unidades para productos nuevos
+            location: 'warehouse',
             updatedAt: serverTimestamp(),
             createdAt: serverTimestamp(),
             lastUpdate: {
-              adjustment: 0,
-              reason: 'Inicialización de inventario',
+              adjustment: 10,
+              reason: 'Inicialización de inventario - Stock inicial',
               timestamp,
               user: 'RubenOsiris073'
             }
           });
-          count++;
+          
+          // Registrar movimiento inicial
+          const movementRef = collection(db, COLLECTIONS.INVENTORY_MOVEMENTS);
+          await addDoc(movementRef, {
+            productId: productDoc.id,
+            adjustment: 10,
+            location: 'warehouse',
+            reason: 'Inicialización de inventario - Stock inicial',
+            previousQuantity: 0,
+            newQuantity: 10,
+            timestamp: serverTimestamp(),
+            createdAt: timestamp,
+            createdBy: 'RubenOsiris073'
+          });
+          
+          createdCount++;
+          console.log(`Creada entrada de inventario para: ${productData.nombre || productDoc.id}`);
         }
-        
-        console.log(`Inventario inicializado con ${count} productos`);
+      }
+      
+      if (createdCount > 0) {
+        console.log(`Inventario actualizado: ${createdCount} nuevas entradas creadas`);
       } else {
-        console.log(`Inventario ya inicializado con ${inventorySnapshot.size} productos`);
+        console.log(`Inventario ya está sincronizado con el catálogo de productos`);
       }
       
       return true;
@@ -241,7 +313,7 @@ class InventoryService {
   }
 
   /**
-   * Obtiene los movimientos de inventario con filtros
+   * Obtiene los movimientos de inventario with filtros
    */
   async getMovements(filters = {}) {
     try {

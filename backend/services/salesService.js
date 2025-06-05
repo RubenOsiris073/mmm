@@ -36,13 +36,31 @@ async function createSale(saleData) {
   try {
     const { items, total, paymentMethod, amountReceived, change, clientName } = saleData;
     
-    console.log("Datos de venta recibidos:", JSON.stringify(saleData, null, 2));
+    console.log("=== DATOS DE VENTA RECIBIDOS ===");
+    console.log("Items completos:", JSON.stringify(items, null, 2));
+    console.log("Total items:", items?.length);
     
     if (!items || !Array.isArray(items) || items.length === 0) {
       throw new Error("Se requieren productos en la venta");
     }
     
-    console.log("Items de la venta:", JSON.stringify(items, null, 2));
+    // Validar cada item antes de procesar
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      console.log(`Item ${i}:`, JSON.stringify(item, null, 2));
+      console.log(`  - ID: ${item.id}`);
+      console.log(`  - ProductId: ${item.productId}`);
+      console.log(`  - Nombre: ${item.nombre}`);
+      console.log(`  - Cantidad: ${item.cantidad}`);
+      
+      // Validar que cada item tenga los datos necesarios
+      if (!item.productId && !item.id) {
+        throw new Error(`Item ${i} no tiene ID válido`);
+      }
+      if (!item.cantidad || item.cantidad <= 0) {
+        throw new Error(`Item ${i} no tiene cantidad válida`);
+      }
+    }
     
     // Crear documento de venta
     const saleRecord = {
@@ -63,21 +81,25 @@ async function createSale(saleData) {
     
     // Actualizar inventario
     try {
+      console.log("Iniciando actualización de inventario...");
       for (const item of items) {
         const productId = item.productId || item.id;
-        console.log(`Actualizando stock para producto: ${productId}, cantidad: ${item.cantidad}`);
+        console.log(`Intentando actualizar stock para producto: ${productId}, cantidad: ${item.cantidad}`);
         
         if (!productId) {
           console.error('ProductId es undefined para item:', item);
           continue; // Saltar este item si no tiene ID válido
         }
         
-        await inventoryService.updateStock(productId, -item.cantidad);
+        // Actualizar stock restando la cantidad vendida
+        await inventoryService.updateStock(productId, -item.cantidad, 'warehouse', 'Venta POS');
+        console.log(`Stock actualizado exitosamente para ${productId}`);
       }
       console.log("Inventario actualizado con éxito");
-    } catch (walletError) {
-      console.error("Error actualizando inventario:", walletError);
+    } catch (inventoryError) {
+      console.error("Error actualizando inventario:", inventoryError);
       // No fallar la venta, pero registrar el error
+      throw new Error(`Error actualizando inventario: ${inventoryError.message}`);
     }
     
     return { 

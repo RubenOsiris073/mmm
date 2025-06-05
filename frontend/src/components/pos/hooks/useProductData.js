@@ -10,7 +10,7 @@ const useProductData = (externalSetError = null) => {
 
   // Función para manejar errores
   const handleError = useCallback((error) => {
-    console.error('🚨 Error en useProductData:', error);
+    console.error('Error en useProductData:', error);
     const errorMessage = error.message || 'Error desconocido';
     setError(errorMessage);
     
@@ -37,7 +37,7 @@ const useProductData = (externalSetError = null) => {
   const loadProducts = useCallback(async () => {
     try {
       setLoading(true);
-      console.log('Cargando productos...');
+      console.log('Cargando productos desde Firebase...');
       
       const response = await apiService.getProducts();
       console.log('Respuesta recibida:', response);
@@ -46,8 +46,22 @@ const useProductData = (externalSetError = null) => {
         throw new Error('No se recibieron datos válidos del servidor');
       }
 
-      const productsData = Array.isArray(response.data) ? response.data : [];
-      console.log('Datos de productos:', productsData);
+      // **CORRECCIÓN**: El backend devuelve { data: [productos], success: true, count: 56 }
+      // Necesitamos acceder a response.data.data para obtener el array de productos
+      const productsData = Array.isArray(response.data.data) ? response.data.data : 
+                          Array.isArray(response.data) ? response.data : [];
+      
+      console.log('Estructura del backend:', {
+        hasData: !!response.data,
+        hasDataArray: !!response.data.data,
+        dataType: typeof response.data,
+        dataDataType: typeof response.data.data,
+        isArray: Array.isArray(response.data.data),
+        count: response.data.count || 'no count'
+      });
+      
+      console.log('Datos de productos extraídos:', productsData);
+      console.log('Cantidad de productos:', productsData.length);
 
       if (productsData.length === 0) {
         console.log('No hay productos disponibles');
@@ -85,8 +99,39 @@ const useProductData = (externalSetError = null) => {
         };
       });
 
-      setProducts(removeDuplicateProducts(normalizedProducts));
-      console.log(`Productos cargados: ${normalizedProducts.length}`, normalizedProducts);
+      // **DIAGNÓSTICO**: Mostrar todos los productos antes del filtro
+      console.log('=== DIAGNÓSTICO DE PRODUCTOS ===');
+      normalizedProducts.forEach((product, index) => {
+        console.log(`${index + 1}. ${product.nombre} - Stock: ${product.cantidad}`);
+      });
+
+      // Solo mostrar productos que tengan stock disponible
+      const productsWithStock = normalizedProducts.filter(product => {
+        const stockDisponible = product.cantidad !== undefined ? product.cantidad : (product.stock || 0);
+        const hasStock = stockDisponible > 0;
+        
+        if (!hasStock) {
+          console.log(`Producto filtrado por falta de stock: ${product.nombre} (Stock: ${stockDisponible})`);
+        }
+        
+        return hasStock;
+      });
+
+      console.log(`Productos originales: ${normalizedProducts.length}, con stock: ${productsWithStock.length}`);
+
+      setProducts(removeDuplicateProducts(productsWithStock));
+      console.log(`Productos disponibles en POS: ${productsWithStock.length}`, productsWithStock.slice(0, 3));
+
+      // Mostrar notificación informativa sobre productos filtrados
+      const productosSinStock = normalizedProducts.length - productsWithStock.length;
+      if (productosSinStock > 0) {
+        console.log(`${productosSinStock} producto(s) sin stock no se mostrarán en el POS`);
+      }
+      
+      if (productsWithStock.length > 0) {
+        console.log(`${productsWithStock.length} producto(s) disponibles en POS`);
+      }
+
     } catch (err) {
       console.error("Error cargando productos:", err);
       handleError(err);
@@ -100,17 +145,26 @@ const useProductData = (externalSetError = null) => {
     loadProducts();
   }, [loadProducts]);
 
-  // Productos filtrados con useMemo
+  // Productos filtrados con useMemo - también verificar stock en tiempo real
   const filteredProducts = useMemo(() => {
     if (!searchTerm) return products;
     
     const term = searchTerm.toLowerCase();
-    return products.filter(product => 
-      (product.name && product.name.toLowerCase().includes(term)) ||
-      (product.nombre && product.nombre.toLowerCase().includes(term)) ||
-      (product.label && product.label.toLowerCase().includes(term)) ||
-      (product.id && product.id.toLowerCase().includes(term))
-    );
+    const filtered = products.filter(product => {
+      // Verificar que aún tenga stock disponible
+      const stockDisponible = product.cantidad !== undefined ? product.cantidad : (product.stock || 0);
+      if (stockDisponible <= 0) {
+        return false;
+      }
+      
+      // Aplicar filtro de búsqueda
+      return (product.name && product.name.toLowerCase().includes(term)) ||
+             (product.nombre && product.nombre.toLowerCase().includes(term)) ||
+             (product.label && product.label.toLowerCase().includes(term)) ||
+             (product.id && product.id.toLowerCase().includes(term));
+    });
+    
+    return filtered;
   }, [products, searchTerm]);
 
   return {
