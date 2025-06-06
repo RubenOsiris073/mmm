@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: productos-backend
+    env_file:
+      - ./.env
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    environment:
+      - PORT=5000
+      - NODE_ENV=development
+      - CORS_ORIGIN=http://localhost
+      - FIREBASE_API_KEY=${FIREBASE_API_KEY}
+      - FIREBASE_AUTH_DOMAIN=${FIREBASE_AUTH_DOMAIN}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_STORAGE_BUCKET=${FIREBASE_STORAGE_BUCKET}
+      - FIREBASE_MESSAGING_SENDER_ID=${FIREBASE_MESSAGING_SENDER_ID}
+      - FIREBASE_APP_ID=${FIREBASE_APP_ID}
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /app
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: package.json
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      # Acceso a la cámara del host
+      - /dev/video0:/dev/video0
+    devices:
+      - /dev/video0:/dev/video0
+    
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: productos-frontend
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      - REACT_APP_API_URL=http://backend:5000/api
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./frontend:/app  
+      - /app/node_modules
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /app
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: package.json
+
+networks:
+  default:
+    name: productos-network

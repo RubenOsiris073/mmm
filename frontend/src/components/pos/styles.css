@@ -1,0 +1,575 @@
+/* Estilos para el catálogo de productos */
+.product-card {
+  transition: all 0.3s ease;
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 123, 255, 0.15) !important;
+  border-color: #007bff !important;
+}
+
+.hover-effect {
+  cursor: pointer;
+}
+
+.category-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50px;
+  height: 50px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  box-shadow: 0 2px 6px var(--shadow);
+  transition: all 0.2s ease;
+}
+
+.product-card:hover .category-icon {
+  transform: scale(1.1);
+  background-color: var(--accent-blue);
+  color: white;
+}
+
+.add-to-cart-btn:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Mejorar barra de desplazamiento */
+.product-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.product-grid::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+.product-grid::-webkit-scrollbar-thumb {
+  background: var(--accent-blue);
+  border-radius: 4px;
+}
+
+.product-grid::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-blue-hover);
+}
+
+/* Textos de stock */
+.text-success {
+  color: #28a745 !important;
+}
+
+.text-warning {
+  color: #ffc107 !important;
+  font-weight: bold;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+  font-weight: bold;
+}
+
+/* Mejorar la búsqueda */
+.search-input {
+  font-size: 1.1rem;
+  padding: 10px 15px;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.search-input:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+}
+
+/* Contenedor para la animación del escáner */
+.scanner-animation {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Contenedor del icono del escáner */
+.scanner-icon-container {
+  position: relative;
+  height: 120px;
+  width: 80%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Icono de código de barras */
+.scanner-barcode-icon {
+  font-size: 6rem;
+  color: var(--text-secondary);
+  opacity: 0.8;
+  position: absolute;
+  z-index: 1;
+}
+
+/* Icono de producto */
+.scanner-product-icon {
+  font-size: 3.5rem;
+  color: var(--accent-blue);
+  position: relative;
+  z-index: 2;
+}
+
+/* Línea de escaneo */
+.scanner-line {
+  position: absolute;
+  height: 2px;
+  width: 100%;
+  background-color: var(--accent-blue);
+  z-index: 3;
+  box-shadow: 0px 0px 8px 2px rgba(0, 123, 255, 0.8);
+  left: 0;
+}
+
+/* POS VIEW CONTAINER */
+.pos-view {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  min-height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+}
+
+.pos-container {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+/* FORZAR QUE NO HAY BORDES BLANCOS EN POS */
+.pos-layout {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100vw !important;
+  overflow-x: hidden;
+}
+
+.pos-layout {
+  background-color: var(--bg-primary) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.pos-content {
+  margin: 0 !important;
+  width: 100% !important;
+  background-color: var(--bg-primary) !important;
+}
+
+/* ASEGURAR QUE EL BODY Y HTML NO TENGAN BORDES BLANCOS CUANDO ESTEMOS EN POS */
+body.pos-active {
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: var(--bg-primary) !important;
+}
+
+html.pos-active {
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: var(--bg-primary) !important;
+}
+
+/* FORZAR FONDO NEGRO EN TODO EL POS - SIN ALTERAR LAYOUT */
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+html {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Cuando estamos en POS, forzar el fondo del tema */
+.pos-layout {
+  background-color: var(--bg-primary) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.pos-view {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.pos-container {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* FORZAR QUE BOOTSTRAP CONTAINERS RESPETEN EL TEMA EN POS */
+.pos-layout .container-fluid {
+  background-color: transparent !important;
+}
+
+/* ELIMINAR CUALQUIER FONDO BLANCO DE BOOTSTRAP EN EL POS */
+.pos-view .container-fluid,
+.pos-view .container,
+.pos-view .row,
+.pos-view .col,
+.pos-view .col-md-5,
+.pos-view .col-md-7,
+.pos-view .col-md-12 {
+  background-color: transparent !important;
+}
+
+/* PANELES DEL POS */
+.detection-panel {
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.cart-panel {
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+/* ÚLTIMA DETECCIÓN */
+.last-detection {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* ESTILOS PARA EL SELECTOR DE ACCESO */
+.pos-access-selector {
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  min-height: 100vh;
+}
+
+.access-card {
+  transition: all 0.3s ease;
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.access-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
+  border-color: var(--accent-blue) !important;
+}
+
+.access-card .card-body {
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+/* MEJORAR EL TEMA DEL SELECTOR */
+.pos-access-selector h1 {
+  color: var(--accent-blue) !important;
+}
+
+.pos-access-selector .text-primary {
+  color: var(--accent-blue) !important;
+}
+
+.pos-access-selector .text-danger {
+  color: #dc3545 !important;
+}
+
+/* BOTONES DEL SELECTOR */
+.access-card .btn-primary {
+  background-color: var(--accent-blue) !important;
+  border-color: var(--accent-blue) !important;
+  transition: all 0.3s ease;
+}
+
+.access-card .btn-primary:hover {
+  background-color: var(--accent-blue-hover) !important;
+  border-color: var(--accent-blue-hover) !important;
+  transform: translateY(-2px);
+}
+
+.access-card .btn-danger {
+  background-color: #dc3545 !important;
+  border-color: #dc3545 !important;
+  transition: all 0.3s ease;
+}
+
+.access-card .btn-danger:hover {
+  background-color: #c82333 !important;
+  border-color: #c82333 !important;
+  transform: translateY(-2px);
+}
+
+/* Mejoras para dispositivos móviles */
+@media (max-width: 576px) {
+  .scanner-icon-container {
+    height: 90px;
+  }
+  
+  .scanner-barcode-icon {
+    font-size: 4.5rem;
+  }
+  
+  .scanner-product-icon {
+    font-size: 2.5rem;
+  }
+}
+
+/* ============================================
+   ESTILOS PARA STRIPE CARD PAYMENT - PROFESIONAL
+   ============================================ */
+
+.stripe-payment-container {
+  max-width: 450px;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 0;
+  overflow: hidden;
+}
+
+.payment-header {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  padding: 24px;
+  text-align: center;
+}
+
+.payment-header h5 {
+  color: #2c3e50;
+  font-weight: 600;
+  margin: 0;
+  font-size: 18px;
+}
+
+.payment-header p {
+  color: #6c757d;
+  margin: 8px 0 0 0;
+  font-size: 14px;
+}
+
+.payment-body {
+  padding: 24px;
+}
+
+.payment-summary {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.payment-amount {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.payment-currency {
+  font-size: 14px;
+  color: #6c757d;
+  font-weight: 400;
+}
+
+.payment-id {
+  font-size: 12px;
+  color: #6c757d;
+  font-family: 'Monaco', 'Menlo', monospace;
+}
+
+.card-input-section {
+  margin-bottom: 24px;
+}
+
+.card-input-label {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+.card-input-label i {
+  color: #007bff;
+  margin-right: 8px;
+}
+
+.card-input-container {
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 16px;
+  background: #ffffff;
+  transition: border-color 0.2s ease;
+}
+
+.card-input-container:hover {
+  border-color: #ced4da;
+}
+
+.card-input-container.focused {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.card-logos-section {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 16px 0;
+  padding: 16px 0;
+  border-top: 1px solid #e9ecef;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.card-logo {
+  width: 40px;
+  height: 25px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.4;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+  padding: 2px;
+}
+
+.card-logo:hover {
+  opacity: 0.7;
+}
+
+.card-logo.active {
+  opacity: 1;
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.visa-logo {
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCA0MCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iIzAwNTFBNSIvPgo8cGF0aCBkPSJNMTYuNzMgMTUuODhIMTQuOTJMMTUuOTggNy44OEgxNy43OUwxNi43MyAxNS44OFoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0yNC4zNyA4LjA1QzIzLjkzIDcuODkgMjMuMTkgNy43MSAyMi4yMyA3LjcxQzIwLjMzIDcuNzEgMTguOTcgOC42NyAxOC45NiA5LjkzQzE4Ljk1IDEwLjg1IDE5Ljg5IDExLjM2IDIwLjU5IDExLjY4QzIxLjMxIDEyIDIxLjU3IDEyLjIxIDIxLjU3IDEyLjUxQzIxLjU3IDEyLjk1IDIxIDEzLjE2IDIwLjQ5IDEzLjE2QzE5LjcyIDEzLjE2IDE5LjMxIDEzIDIzIDEyLjcyTDI0LjM3IDguMDVaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K');
+  background-color: #f0f0f0;
+}
+
+.mastercard-logo {
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCA0MCAyNCIgZmlsbD0ibm9uZSIgeG1zbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iI0VCMDAxQiIvPgo8Y2lyY2xlIGN4PSIxNSIgY3k9IjEyIiByPSI3IiBmaWxsPSIjRkY1RjAwIi8+CjxjaXJjbGUgY3g9IjI1IiBjeT0iMTIiIHI9IjciIGZpbGw9IiNGRkY1RjAiLz4KPC9zdmc+');
+  background-color: #f0f0f0;
+}
+
+.amex-logo {
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCA0MCAyNCIgZmlsbD0ibm9uZSIgeG1zbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjI0IiByeD0iNCIgZmlsbD0iIzAwNzlDMSIvPgo8dGV4dCB4PSI1IiB5PSIxNSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjgiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSJ3aGl0ZSI+QU1FWDwvdGV4dD4KPC9zdmc+');
+  background-color: #f0f0f0;
+}
+
+.security-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f9ff;
+  color: #0369a1;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin: 16px 0;
+  border: 1px solid #e0f2fe;
+}
+
+.security-badge i {
+  margin-right: 6px;
+}
+
+.payment-button {
+  width: 100%;
+  background: #007bff;
+  border: none;
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  transition: all 0.2s ease;
+  margin-top: 8px;
+}
+
+.payment-button:hover:not(:disabled) {
+  background: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.payment-button:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.payment-footer {
+  text-align: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e9ecef;
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+}
+
+.loading-state .spinner-border {
+  width: 2rem;
+  height: 2rem;
+  margin-bottom: 12px;
+}
+
+.error-alert {
+  border-radius: 8px;
+  border: none;
+  background: #fef2f2;
+  color: #991b1b;
+  border-left: 4px solid #dc2626;
+}
+
+/* Responsive design */
+@media (max-width: 576px) {
+  .stripe-payment-container {
+    margin: 0 12px;
+    max-width: none;
+  }
+  
+  .payment-header,
+  .payment-body {
+    padding: 20px;
+  }
+  
+  .payment-amount {
+    font-size: 20px;
+  }
+  
+  .card-logos-section {
+    gap: 8px;
+  }
+  
+  .card-logo {
+    width: 35px;
+    height: 22px;
+  }
+}

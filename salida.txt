@@ -1,0 +1,229 @@
+.dockerignore
+.env
+.eslintrc.js
+.gitignore
+README.md
+backend/Dockerfile
+backend/config/config.js
+backend/config/firebase.js
+backend/controllers/detectionControllers.js
+backend/models/metadata.json
+backend/models/model.json
+backend/models/weights.bin
+backend/package-lock.json
+backend/package.json
+backend/routes/detectionRoutes.js
+backend/routes/inventoryRoutes.js
+backend/routes/productRoutes.js
+backend/routes/salesRoutes.js
+backend/routes/transactionsRoutes.js
+backend/server.js
+backend/services/detectionService.js
+backend/services/inventoryService.js
+backend/services/productService.js
+backend/services/salesService.js
+backend/services/storageService.js
+backend/services/transactionsService.js
+backend/services/webcamService.js
+backend/utils/firebaseUtils.js
+backend/utils/helpers.js
+docker-compose.yml
+estructura.txt
+frontend/Dockerfile
+frontend/nginx.conf
+frontend/package-lock.json
+frontend/package.json
+frontend/public/favicon.ico
+frontend/public/index.html
+frontend/public/manifest.json
+frontend/src/App.css
+frontend/src/App.js
+frontend/src/App.jsx
+frontend/src/components/ObjectDetection.jsx
+frontend/src/components/SalesHistory/InvoiceModal.jsx
+frontend/src/components/SalesHistory/SalesHistory.jsx
+frontend/src/components/camera/Camera.jsx
+frontend/src/components/camera/CameraView.jsx
+frontend/src/components/camera/PredictionDisplay.jsx
+frontend/src/components/inventory/AIDetectionRegistration.jsx
+frontend/src/components/inventory/AutomaticRegistration.jsx
+frontend/src/components/inventory/BarcodeScanner.jsx
+frontend/src/components/inventory/BatchProductForm.jsx
+frontend/src/components/inventory/BatchProductList.jsx
+frontend/src/components/inventory/CamaraDetector.jsx
+frontend/src/components/inventory/Inventory.jsx
+frontend/src/components/inventory/InventoryView.jsx
+frontend/src/components/inventory/RegisteredProducts.jsx
+frontend/src/components/inventory/UpdateModal.jsx
+frontend/src/components/inventory/inventory.css
+frontend/src/components/layout/Footer.jsx
+frontend/src/components/layout/Navigation.jsx
+frontend/src/components/pos/DebugPanel.jsx
+frontend/src/components/pos/LastAddedProductAlert.jsx
+frontend/src/components/pos/POSView.jsx
+frontend/src/components/pos/PaymentModal.jsx
+frontend/src/components/pos/ProductDetectionPanel.jsx
+frontend/src/components/pos/ProductList.jsx
+frontend/src/components/pos/ShoppingCart.jsx
+frontend/src/components/pos/hooks/useCart.js
+frontend/src/components/pos/hooks/useDetection.js
+frontend/src/components/pos/hooks/usePayment.js
+frontend/src/components/pos/hooks/useProductData.js
+frontend/src/components/pos/styles.css
+frontend/src/components/products/ProductDetailForm.jsx
+frontend/src/components/products/ProductGrid.jsx
+frontend/src/components/products/ProductItem.jsx
+frontend/src/components/products/ProductList.jsx
+frontend/src/components/shared/Camera.js
+frontend/src/components/shared/ModelDiagnostic.jsx
+frontend/src/hooks/useInventory.js
+frontend/src/index.css
+frontend/src/index.js
+frontend/src/pages/CameraPage.jsx
+frontend/src/pages/POSPage.jsx
+frontend/src/pages/ProductFormPage.jsx
+frontend/src/pages/ProductsPage.jsx
+frontend/src/pages/SalesPage.jsx
+frontend/src/services/apiService.js
+frontend/src/services/bodegaService.js
+frontend/src/services/detectionService.js
+frontend/src/services/firebase.js
+frontend/src/services/storageService.js
+frontend/src/utils/helpers.js
+frontend/src/utils/pdfGenerator.js
+reset.sh
+salida.txt
+
+
+
+version: '3.8'
+
+services:
+  traefik:
+    image: "traefik:v2.10"
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.myresolver.acme.email=osirisrivera12345@gmail.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./letsencrypt:/letsencrypt"
+
+  backend_1:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: productos-backend-1
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      - PORT=5000
+      - NODE_ENV=development
+      - CORS_ORIGIN=https://api1.pruebalibre.xyz
+      - FIREBASE_API_KEY=${FIREBASE_API_KEY}
+      - FIREBASE_AUTH_DOMAIN=${FIREBASE_AUTH_DOMAIN}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_STORAGE_BUCKET=${FIREBASE_STORAGE_BUCKET}
+      - FIREBASE_MESSAGING_SENDER_ID=${FIREBASE_MESSAGING_SENDER_ID}
+      - FIREBASE_APP_ID=${FIREBASE_APP_ID}
+    ports:
+      - "5001:5000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend_1.rule=Host(`api1.pruebalibre.xyz`)"
+      - "traefik.http.routers.backend_1.entrypoints=websecure"
+      - "traefik.http.routers.backend_1.tls.certresolver=myresolver"
+      - "traefik.http.services.backend_1.loadbalancer.server.port=5000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  backend_2:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: productos-backend-2
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      - PORT=5000
+      - NODE_ENV=development
+      - CORS_ORIGIN=https://api2.pruebalibre.xyz
+      - FIREBASE_API_KEY=${FIREBASE_API_KEY}
+      - FIREBASE_AUTH_DOMAIN=${FIREBASE_AUTH_DOMAIN}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_STORAGE_BUCKET=${FIREBASE_STORAGE_BUCKET}
+      - FIREBASE_MESSAGING_SENDER_ID=${FIREBASE_MESSAGING_SENDER_ID}
+      - FIREBASE_APP_ID=${FIREBASE_APP_ID}
+    ports:
+      - "5002:5000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend_2.rule=Host(`api2.pruebalibre.xyz`)"
+      - "traefik.http.routers.backend_2.entrypoints=websecure"
+      - "traefik.http.routers.backend_2.tls.certresolver=myresolver"
+      - "traefik.http.services.backend_2.loadbalancer.server.port=5000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  frontend_1:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: productos-frontend-1
+    restart: unless-stopped
+    depends_on:
+      - backend_1
+    environment:
+      - REACT_APP_API_URL=https://api1.pruebalibre.xyz/api
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend_1.rule=Host(`pruebalibre.xyz`)"
+      - "traefik.http.routers.frontend_1.entrypoints=websecure"
+      - "traefik.http.routers.frontend_1.tls.certresolver=myresolver"
+      - "traefik.http.services.frontend_1.loadbalancer.server.port=80"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+  frontend_2:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: productos-frontend-2
+    restart: unless-stopped
+    depends_on:
+      - backend_2
+    environment:
+      - REACT_APP_API_URL=https://api2.pruebalibre.xyz/api
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend_2.rule=Host(`www.pruebalibre.xyz`)"
+      - "traefik.http.routers.frontend_2.entrypoints=websecure"
+      - "traefik.http.routers.frontend_2.tls.certresolver=myresolver"
+      - "traefik.http.services.frontend_2.loadbalancer.server.port=80"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+networks:
+  default:
+    name: productos-network

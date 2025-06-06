@@ -1,0 +1,657 @@
+/* ========== ESTILOS GENERALES ========== */
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  padding-bottom: 40px;
+}
+
+body {
+  background-color: #f8f9fa;
+}
+
+/* ========== ESTILOS DE NAVEGACIÓN ========== */
+.navbar {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* ========== ESTILOS DE LA CÁMARA ========== */
+.camera-container {
+  position: relative;
+  margin-bottom: 20px;
+  overflow: hidden;
+  border-radius: 8px;
+  background-color: #000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.prediction-display {
+  background-color: #f8f9fa;
+  padding: 15px;
+  margin-top: 15px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.prediction-display:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* ========== ESTILOS DE TARJETAS ========== */
+.card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  background-color: rgba(0, 0, 0, 0.03);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  font-weight: 600;
+}
+
+.card-footer {
+  background-color: rgba(0, 0, 0, 0.02);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* ========== ESTILOS DE TABLA DE PRODUCTOS ========== */
+.table {
+  vertical-align: middle;
+}
+
+.table thead th {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  border-top: none;
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background-color: rgba(0, 123, 255, 0.03);
+}
+
+/* ========== ESTILOS VISTA GRID DE PRODUCTOS ========== */
+.product-card {
+  background-color: white !important; /* Forzar fondo blanco */
+  color: #333 !important; /* Color de texto oscuro */
+  border: 1px solid #dee2e6;
+  transition: all 0.3s ease;
+  border-radius: 10px;
+  overflow: hidden;
+  height: 100%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.product-card .card-title {
+  color: #212529 !important; /* Título oscuro */
+}
+
+.product-card .text-muted {
+  color: #6c757d !important; /* Texto secundario visible */
+}
+
+.card-footer {
+  background-color: white !important;
+  border-top: 1px solid #f8f9fa !important;
+}
+
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.product-card .card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-icon {
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.category-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+}
+
+/* Eliminar media query para modo oscuro que está causando problemas */
+@media (prefers-color-scheme: dark) {
+  .product-card {
+    background-color: white !important;
+    border-color: #dee2e6 !important;
+  }
+  
+  .category-header {
+    color: #212529 !important;
+  }
+}
+
+/* Estilos para la lista */
+.list-group-item {
+  background-color: white !important;
+  color: #212529 !important;
+  border-left: 4px solid transparent;
+}
+
+/* Asegurar que las cabeceras de categoría sean visibles */
+h4, h5, h3, h2, h1 {
+  color: #212529 !important;
+}
+  
+  .category-header {
+    color: #e0e0e0;
+  }
+
+/* Estilo lista categorizada */
+.list-group-item {
+  transition: all 0.2s ease;
+  border-left: 4px solid transparent;
+}
+
+.list-group-item:hover {
+  border-left-color: var(--bs-primary);
+  background-color: rgba(var(--bs-primary-rgb), 0.05);
+}
+
+/* ========== ESTILOS DE BADGES Y ALERTAS ========== */
+.badge {
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  padding: 0.4em 0.6em;
+}
+
+.alert {
+  border-radius: 8px;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* ========== ESTILOS DE FORMULARIOS ========== */
+.form-control, .form-select {
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  padding: 0.6rem 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+}
+
+.form-label {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.input-group {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.input-group .input-group-text {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+}
+
+/* ========== ESTILOS DE BOTONES ========== */
+.btn {
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+}
+
+.btn-success {
+  background-color: #198754;
+  border-color: #198754;
+}
+
+.btn-success:hover {
+  background-color: #157347;
+  border-color: #146c43;
+}
+
+.btn-outline-primary {
+  color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.btn-outline-primary:hover {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  color: white;
+}
+
+/* ========== ESTILOS DE TABS ========== */
+.nav-tabs {
+  border-bottom: 1px solid #dee2e6;
+  margin-bottom: 1rem;
+}
+
+.nav-tabs .nav-link {
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  padding: 0.75rem 1rem;
+  margin-bottom: -1px;
+  font-weight: 500;
+  color: #6c757d;
+  transition: all 0.2s ease;
+}
+
+.nav-tabs .nav-link:hover {
+  border-color: transparent;
+  isolation: isolate;
+  color: #0d6efd;
+}
+
+.nav-tabs .nav-link.active {
+  color: #0d6efd;
+  background-color: transparent;
+  border-bottom: 2px solid #0d6efd;
+}
+
+/* ========== ESTILOS DE FOOTER ========== */
+footer {
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  padding: 1.5rem 0;
+  margin-top: auto;
+}
+
+footer a {
+  color: #0d6efd;
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
+/* ========== ESTILOS RESPONSIVOS ========== */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .btn {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  h1 {
+    font-size: 1.75rem;
+  }
+  
+  .category-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+  
+  h4 {
+    font-size: 1.25rem;
+  }
+  
+  .table thead th {
+    font-size: 0.75rem;
+  }
+}
+
+/* ========== ANIMACIONES ========== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+/* ========== UTILIDADES ADICIONALES ========== */
+.text-capitalize-first::first-letter {
+  text-transform: uppercase;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.object-fit-cover {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shadow-hover {
+  transition: box-shadow 0.3s ease;
+}
+
+.shadow-hover:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Añade estos estilos a tu archivo App.css */
+
+.fade-out {
+  animation: fadeOut 2s forwards;
+  z-index: 1050;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Estilo para destacar el último producto escaneado */
+.last-scanned {
+  animation: highlight 2s;
+}
+
+@keyframes highlight {
+  0% { background-color: rgba(40, 167, 69, 0.3); }
+  100% { background-color: transparent; }
+}
+
+/* Animaciones para el POS */
+.fade-out {
+  animation: fadeOut 2s forwards;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Estilo para destacar el último producto escaneado */
+.last-scanned {
+  animation: highlight 2s;
+}
+
+@keyframes highlight {
+  0% { background-color: rgba(40, 167, 69, 0.3); }
+  100% { background-color: transparent; }
+}
+
+/* Mejoras de scroll para el carrito */
+.overflow-auto {
+  max-height: 400px;
+}
+
+/* Responsividad para pantallas pequeñas */
+@media (max-width: 768px) {
+  .overflow-auto {
+    max-height: 300px;
+  }
+}
+
+/* Animaciones para el POS */
+.fade-out {
+  animation: fadeOut 2s forwards;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Estilo para destacar el último producto escaneado */
+.last-scanned {
+  animation: highlight 2s;
+}
+
+@keyframes highlight {
+  0% { background-color: rgba(40, 167, 69, 0.3); }
+  100% { background-color: transparent; }
+}
+
+/* Mejoras de scroll para el carrito */
+.overflow-auto {
+  max-height: 400px;
+}
+
+/* Responsividad para pantallas pequeñas */
+@media (max-width: 768px) {
+  .overflow-auto {
+    max-height: 300px;
+  }
+}
+
+/* Estilos para el escáner de código de barras */
+.scanner-container {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.scanner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid #ff0000;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.scanner-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #ff0000;
+  animation: scan 2s linear infinite;
+  z-index: 2;
+}
+
+@keyframes scan {
+  0% {
+    top: 0;
+  }
+  50% {
+    top: 100%;
+  }
+  100% {
+    top: 0;
+  }
+}
+
+/* Estilos adicionales para el componente de escáner */
+.barcode-scanner-modal .modal-content {
+  background-color: #f8f9fa;
+  border-radius: 12px;
+}
+
+.barcode-scanner-modal video {
+  border-radius: 8px;
+  margin: 0 auto;
+}
+
+.scanner-instructions {
+  text-align: center;
+  margin-top: 1rem;
+  color: #6c757d;
+}
+
+/* Estilos para los botones del escáner */
+.scanner-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.scanner-btn {
+  padding: 0.5rem 1.5rem;
+  border-radius: 20px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.scanner-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Estilos para las alertas del escáner */
+.scanner-alert {
+  margin-top: 1rem;
+  border-radius: 8px;
+  padding: 1rem;
+}
+/* Estilos para el banner de productos */
+.product-banner {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.product-banner h2 {
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #212529;
+}
+
+.product-banner p {
+  color: #6c757d;
+  margin-bottom: 0;
+}
+
+/* Estilos para las instrucciones */
+ol li::marker {
+  color: #007bff;
+  font-weight: bold;
+}
+
+ol li:hover {
+  background-color: rgba(0, 123, 255, 0.05);
+  border-radius: 4px;
+  padding-left: 4px;
+  transition: all 0.2s ease;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .alert.h-100 {
+    height: auto !important;
+    margin-top: 1rem;
+  }
+}
+
+/* Badges para categorías de productos */
+.badge-category {
+  font-size: 0.85rem;
+  padding: 0.35em 0.65em;
+}
+
+/* Tarjetas de producto en la vista de cuadrícula */
+.product-card {
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.product-image-container {
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.product-image {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.product-card .card-footer {
+  background-color: white;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Indicador de detección automática */
+.ai-detected-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .product-banner .btn {
+    margin-bottom: 0.5rem;
+    width: 100%;
+  }
+}
