@@ -1,5 +1,12 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# Archivos de entorno - NUNCA subir al repositorio
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
 # dependencies
 /node_modules
 /.pnp
@@ -55,3 +62,38 @@ Thumbs.db
 # Temporary files
 /temp
 backend/temp/
+
+# Expo
+.expo/
+dist/
+web-build/
+
+# React Native
+.expo-shared/
+
+# Build outputs
+build/
+dist/
+
+# Logs
+logs
+*.log
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+
+# Secrets y credenciales
+*.pem
+*.key
+secrets/
+credentials/
+
+# Cache
+.cache/
+.parcel-cache/
+
+# Temporary files
+*.tmp
+*.temp

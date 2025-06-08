@@ -10,7 +10,10 @@ import './styles/themes.css';
 
 // Importar el contexto de tema
 import { ThemeProvider } from './contexts/ThemeContext';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+
+// Importar componentes de autenticación
+import { AuthenticationPage, ProtectedRoute } from './components/auth';
 
 // Importar pantalla de carga y hook
 import LoadingScreen from './components/shared/LoadingScreen';
@@ -30,85 +33,110 @@ import POSMainPage from './pages/POSMainPage';
 
 import { ToastContainer } from 'react-toastify';
 
-// Componente para manejar layouts condicionales
-const AppContent = () => {
-  const isRouteLoading = useRouteLoading(2000); // 2 segundos de carga
+// Componente para manejar las rutas principales
+const AppRoutes = () => {
+  const { user, loading } = useAuth();
+  const isRouteLoading = useRouteLoading(1000); // Reducir tiempo de carga
 
-  // Mostrar pantalla de carga cuando cambien las rutas
-  if (isRouteLoading) {
+  // Mostrar pantalla de carga durante verificación inicial
+  if (loading || isRouteLoading) {
     return <LoadingScreen />;
   }
 
   return (
     <Routes>
-      {/* Ruta principal que redirige al selector POS/Admin */}
-      <Route path="/" element={<Navigate to="/pos" replace />} />
+      {/* Ruta de autenticación - Solo si NO está autenticado */}
+      <Route path="/login" element={
+        user ? <Navigate to="/products" replace /> : <AuthenticationPage />
+      } />
       
-      {/* Rutas POS - Sin navegación */}
-      <Route path="/pos" element={<POSMainPage />} />
-      <Route path="/pos/*" element={<Navigate to="/pos" replace />} />
+      {/* Ruta principal que redirige según estado de autenticación */}
+      <Route path="/" element={
+        user ? <Navigate to="/products" replace /> : <Navigate to="/login" replace />
+      } />
       
-      {/* Rutas del sistema principal - Con navegación */}
+      {/* Rutas POS - Protegidas */}
+      <Route path="/pos" element={
+        <ProtectedRoute requireAuth={true}>
+          <POSMainPage />
+        </ProtectedRoute>
+      } />
+      
+      {/* Rutas del sistema principal - Protegidas y con navegación */}
       <Route path="/products" element={
-        <div className="App d-flex flex-column min-vh-100">
-          <Navigation />
-          <Container fluid className="main-content py-4 flex-grow-1">
-            <ProductsPage />
-          </Container>
-          <Footer />
-        </div>
+        <ProtectedRoute requireAuth={true}>
+          <div className="App d-flex flex-column min-vh-100">
+            <Navigation />
+            <Container fluid className="main-content py-4 flex-grow-1">
+              <ProductsPage />
+            </Container>
+            <Footer />
+          </div>
+        </ProtectedRoute>
       } />
       <Route path="/products/new" element={
-        <div className="App d-flex flex-column min-vh-100">
-          <Navigation />
-          <Container fluid className="main-content py-4 flex-grow-1">
-            <ProductFormPage />
-          </Container>
-          <Footer />
-        </div>
+        <ProtectedRoute requireAuth={true}>
+          <div className="App d-flex flex-column min-vh-100">
+            <Navigation />
+            <Container fluid className="main-content py-4 flex-grow-1">
+              <ProductFormPage />
+            </Container>
+            <Footer />
+          </div>
+        </ProtectedRoute>
       } />
       <Route path="/products/edit/:id" element={
-        <div className="App d-flex flex-column min-vh-100">
-          <Navigation />
-          <Container fluid className="main-content py-4 flex-grow-1">
-            <ProductFormPage />
-          </Container>
-          <Footer />
-        </div>
+        <ProtectedRoute requireAuth={true}>
+          <div className="App d-flex flex-column min-vh-100">
+            <Navigation />
+            <Container fluid className="main-content py-4 flex-grow-1">
+              <ProductFormPage />
+            </Container>
+            <Footer />
+          </div>
+        </ProtectedRoute>
       } />
       <Route path="/proveedores" element={
-        <div className="App d-flex flex-column min-vh-100">
-          <Navigation />
-          <Container fluid className="main-content py-4 flex-grow-1">
-            <ProveedorView />
-          </Container>
-          <Footer />
-        </div>
+        <ProtectedRoute requireAuth={true}>
+          <div className="App d-flex flex-column min-vh-100">
+            <Navigation />
+            <Container fluid className="main-content py-4 flex-grow-1">
+              <ProveedorView />
+            </Container>
+            <Footer />
+          </div>
+        </ProtectedRoute>
       } />
       <Route path="/sales" element={
-        <div className="App d-flex flex-column min-vh-100">
-          <Navigation />
-          <Container fluid className="main-content py-4 flex-grow-1">
-            <SalesPage />
-          </Container>
-          <Footer />
-        </div>
+        <ProtectedRoute requireAuth={true}>
+          <div className="App d-flex flex-column min-vh-100">
+            <Navigation />
+            <Container fluid className="main-content py-4 flex-grow-1">
+              <SalesPage />
+            </Container>
+            <Footer />
+          </div>
+        </ProtectedRoute>
       } />
       <Route path="/camera" element={
-        <div className="App d-flex flex-column min-vh-100">
-          <Navigation />
-          <Container fluid className="main-content py-4 flex-grow-1">
-            <CameraPage />
-          </Container>
-          <Footer />
-        </div>
+        <ProtectedRoute requireAuth={true}>
+          <div className="App d-flex flex-column min-vh-100">
+            <Navigation />
+            <Container fluid className="main-content py-4 flex-grow-1">
+              <CameraPage />
+            </Container>
+            <Footer />
+          </div>
+        </ProtectedRoute>
       } />
       
       {/* Ruta de admin que redirige a products */}
       <Route path="/admin" element={<Navigate to="/products" replace />} />
       
-      {/* Cualquier otra ruta redirige al selector */}
-      <Route path="*" element={<Navigate to="/pos" replace />} />
+      {/* Cualquier otra ruta redirige según estado de autenticación */}
+      <Route path="*" element={
+        user ? <Navigate to="/products" replace /> : <Navigate to="/login" replace />
+      } />
     </Routes>
   );
 };
@@ -167,7 +195,7 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <Router>
-          <AppContent />
+          <AppRoutes />
           <ToastContainer 
             position="top-right"
             autoClose={3000}

@@ -55,7 +55,8 @@ const usePayment = ({ cartItems, calculateTotal, setError }) => {
       // Enviar la venta al servidor
       const response = await apiService.createSale(saleData);
       
-      if (response && response.success) {
+      // El API devuelve directamente el objeto de la venta, no un wrapper con success
+      if (response && response.id) {
         toast.success('Venta procesada correctamente');
         setShowPaymentModal(false);
         
@@ -68,7 +69,7 @@ const usePayment = ({ cartItems, calculateTotal, setError }) => {
         
         return true;
       } else {
-        throw new Error(response?.message || 'Error al procesar la venta');
+        throw new Error('Error al procesar la venta');
       }
     } catch (error) {
       console.log("Error al procesar la venta:", error);

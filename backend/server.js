@@ -2,6 +2,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
+const jwt = require('jsonwebtoken');
+const { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } = require('firebase/auth');
+const { initializeApp } = require('firebase/app');
 const { initializeInventory } = require('./services/inventoryService');
 const config = require('./config/config');
 
@@ -16,19 +19,39 @@ const stripeRoutes = require('./routes/stripeRoutes');
 // Configurar express
 const app = express();
 
-// Configuración CORS unificada
-const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL 
-    : ['http://localhost', 'http://localhost:80'],
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-  credentials: true,
-  optionsSuccessStatus: 204
+// Configuración Firebase para autenticación
+const firebaseConfig = {
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID,
 };
 
-// Aplicar CORS una sola vez
-app.use(cors(corsOptions));
+// Inicializar Firebase para auth
+const firebaseApp = initializeApp(firebaseConfig, 'auth-app');
+const auth = getAuth(firebaseApp);
 
+// JWT Secret
+const JWT_SECRET = process.env.JWT_SECRET || 'mmm-aguachile-super-secret-key-2025';
+
+// Middleware para verificar JWT
+const verifyToken = (req, res, next) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  
+  if (!token) {
+    return res.status(401).json({ error: 'Token requerido' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Token inválido' });
+  }
+};
 
 // Middleware de logging
 app.use((req, res, next) => {
@@ -82,6 +105,159 @@ apiRouter.get('/firebase-config', (req, res) => {
   });
 });
 
+// ENDPOINTS DE AUTENTICACIÓN
+// Login endpoint
+apiRouter.post('/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email y contraseña son requeridos' });
+    }
+
+    console.log('🔑 Intento de login para:', email);
+
+    // Autenticar con Firebase
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    // Generar JWT token
+    const token = jwt.sign(
+      { 
+        uid: user.uid, 
+        email: user.email,
+        emailVerified: user.emailVerified
+      },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    console.log('✅ Login exitoso para:', email);
+
+    res.json({
+      success: true,
+      message: 'Login exitoso',
+      token,
+      user: {
+        uid: user.uid,
+        email: user.email,
+        emailVerified: user.emailVerified,
+        displayName: user.displayName
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error en login:', error.message);
+    
+    let errorMessage = 'Error al iniciar sesión';
+    
+    switch (error.code) {
+      case 'auth/user-not-found':
+        errorMessage = 'Usuario no encontrado';
+        break;
+      case 'auth/wrong-password':
+        errorMessage = 'Contraseña incorrecta';
+        break;
+      case 'auth/invalid-email':
+        errorMessage = 'Email inválido';
+        break;
+      case 'auth/too-many-requests':
+        errorMessage = 'Demasiados intentos. Intenta más tarde';
+        break;
+      default:
+        errorMessage = error.message;
+    }
+
+    res.status(400).json({ 
+      success: false,
+      error: errorMessage 
+    });
+  }
+});
+
+// Register endpoint
+apiRouter.post('/auth/register', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email y contraseña son requeridos' });
+    }
+
+    console.log('📝 Intento de registro para:', email);
+
+    // Crear usuario en Firebase
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    // Generar JWT token
+    const token = jwt.sign(
+      { 
+        uid: user.uid, 
+        email: user.email,
+        emailVerified: user.emailVerified
+      },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    console.log('✅ Registro exitoso para:', email);
+
+    res.json({
+      success: true,
+      message: 'Usuario creado exitosamente',
+      token,
+      user: {
+        uid: user.uid,
+        email: user.email,
+        emailVerified: user.emailVerified,
+        displayName: user.displayName
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error en registro:', error.message);
+    
+    let errorMessage = 'Error al crear usuario';
+    
+    switch (error.code) {
+      case 'auth/email-already-in-use':
+        errorMessage = 'El email ya está en uso';
+        break;
+      case 'auth/invalid-email':
+        errorMessage = 'Email inválido';
+        break;
+      case 'auth/weak-password':
+        errorMessage = 'La contraseña debe tener al menos 6 caracteres';
+        break;
+      default:
+        errorMessage = error.message;
+    }
+
+    res.status(400).json({ 
+      success: false,
+      error: errorMessage 
+    });
+  }
+});
+
+// Verify token endpoint
+apiRouter.get('/auth/verify', verifyToken, (req, res) => {
+  res.json({
+    success: true,
+    message: 'Token válido',
+    user: req.user
+  });
+});
+
+// Logout endpoint
+apiRouter.post('/auth/logout', verifyToken, (req, res) => {
+  res.json({
+    success: true,
+    message: 'Logout exitoso'
+  });
+});
+
 // Registrar sub-rutas en el router principal
 apiRouter.use('/products', productRoutes);
 apiRouter.use('/inventory', inventoryRoutes); // Ruta unificada de inventario
@@ -93,6 +269,29 @@ apiRouter.use('/stripe', stripeRoutes);
 // Montar el router principal en /api
 app.use('/api', apiRouter);
 app.use('/api', detectionRoutes);
+
+// Configuración CORS mejorada para red mixta
+const corsOptions = {
+  origin: [
+    'http://localhost',
+    'http://localhost:80',
+    'http://localhost:3000',
+    'http://154.0.0.5:19000', // Expo DevTools
+    'http://154.0.0.5:19001', // Metro bundler
+    'http://154.0.0.5:19002', // Expo
+    'http://154.0.0.9:5000',  // Servidor ethernet
+    'http://154.0.0.5:5000',  // Servidor WiFi
+    /^exp:\/\/.*\.exp\.direct$/, // Túneles de Expo
+    /^http:\/\/154\.0\.0\.\d+:.*/, // Cualquier IP en tu red
+  ],
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  credentials: true,
+  optionsSuccessStatus: 204,
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+};
+
+// Aplicar CORS
+app.use(cors(corsOptions));
 
 // Ruta para servir archivos estáticos en producción
 if (config.env === 'production') {
@@ -124,12 +323,23 @@ app.use((err, req, res, next) => {
   }
 })();
 
-// Puerto de escucha
+// Puerto de escucha - MODIFICADO para escuchar en todas las interfaces
 const PORT = config.port;
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en puerto ${PORT}`);
+const HOST = '0.0.0.0'; // Escuchar en todas las interfaces de red
+
+app.listen(PORT, HOST, () => {
+  console.log(`🚀 Servidor corriendo en http://0.0.0.0:${PORT}`);
+  console.log(`📡 Accesible desde:`);
+  console.log(`   - Ethernet: http://154.0.0.9:${PORT}`);
+  console.log(`   - WiFi: http://154.0.0.5:${PORT}`);
+  console.log(`   - Localhost: http://localhost:${PORT}`);
   console.log(`Modo: ${config.env}`);
-  console.log('Endpoints disponibles:');
+  console.log('🔗 Endpoints de autenticación:');
+  console.log('- POST /api/auth/login - Iniciar sesión');
+  console.log('- POST /api/auth/register - Registrar usuario');
+  console.log('- GET /api/auth/verify - Verificar token');
+  console.log('- POST /api/auth/logout - Cerrar sesión');
+  console.log('📊 Otros endpoints:');
   console.log('- GET /api/health');
   console.log('- GET /api/status');
   console.log('- GET /api/firebase-config');
