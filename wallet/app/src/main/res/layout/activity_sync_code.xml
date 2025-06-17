@@ -1,160 +1,195 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
     android:background="#F5F5F5">
 
-    <!-- Header -->
-    <LinearLayout
+    <!-- Contenido principal en scroll -->
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingVertical="16dp">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Sincronizar Carrito"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:textColor="@android:color/black" />
-
-    </LinearLayout>
-
-    <!-- Sync Code Section -->
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="4dp">
+        android:layout_height="0dp"
+        android:padding="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/confirmPurchaseButton"
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="24dp">
+            android:orientation="vertical">
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Ingresa el código de sincronización mostrado en la pantalla de pago"
-                android:textSize="16sp"
-                android:gravity="center"
-                android:layout_marginBottom="24dp"
-                android:textColor="@android:color/black" />
-
-            <EditText
-                android:id="@+id/syncCodeInput"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:hint="Código de 6 caracteres"
-                android:inputType="textCapCharacters"
-                android:maxLength="6"
-                android:textSize="18sp"
-                android:gravity="center"
-                android:background="@android:drawable/edit_text"
-                android:padding="12dp"
-                android:layout_marginBottom="16dp" />
-
-            <TextView
-                android:id="@+id/errorText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@android:color/holo_red_dark"
-                android:visibility="gone"
-                android:layout_marginBottom="16dp"
-                android:text="Error de prueba" />
-
-            <Button
-                android:id="@+id/syncButton"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:text="Sincronizar Carrito"
-                android:textSize="16sp" />
-
-            <ProgressBar
-                android:id="@+id/progressBar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="16dp"
-                android:visibility="gone" />
-
-        </LinearLayout>
-
-    </androidx.cardview.widget.CardView>
-
-    <!-- Cart Container -->
-    <LinearLayout
-        android:id="@+id/cartContainer"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp">
-
+            <!-- Header -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingVertical="16dp">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Carrito Sincronizado"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="16dp"
-                    android:textColor="@android:color/black" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/cartRecyclerView"
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:layout_marginBottom="16dp" />
-
-                <TextView
-                    android:id="@+id/totalText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Total: $0.00"
+                    android:text="Sincronizar Carrito"
                     android:textSize="20sp"
                     android:textStyle="bold"
                     android:gravity="center"
-                    android:padding="16dp"
-                    android:background="@android:color/holo_green_light"
-                    android:textColor="@android:color/white"
-                    android:layout_marginBottom="16dp" />
-
-                <Button
-                    android:id="@+id/payButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="60dp"
-                    android:text="💳 Realizar Compra"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:background="@android:color/holo_green_dark"
-                    android:textColor="@android:color/white"
-                    android:layout_marginTop="8dp"
-                    android:elevation="8dp" />
+                    android:textColor="@android:color/black" />
 
             </LinearLayout>
 
-        </androidx.cardview.widget.CardView>
+            <!-- Sync Code Section -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
 
-    </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="24dp">
 
-</LinearLayout>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Ingresa el código de sincronización mostrado en la pantalla de pago"
+                        android:textSize="16sp"
+                        android:gravity="center"
+                        android:layout_marginBottom="24dp"
+                        android:textColor="@android:color/black" />
+
+                    <EditText
+                        android:id="@+id/syncCodeInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="60dp"
+                        android:hint="Código de 6 caracteres"
+                        android:inputType="textCapCharacters"
+                        android:maxLength="6"
+                        android:textSize="18sp"
+                        android:gravity="center"
+                        android:background="@android:drawable/edit_text"
+                        android:padding="12dp"
+                        android:layout_marginBottom="16dp" />
+
+                    <TextView
+                        android:id="@+id/errorText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@android:color/holo_red_dark"
+                        android:visibility="gone"
+                        android:layout_marginBottom="16dp"
+                        android:text="Error de prueba" />
+
+                    <Button
+                        android:id="@+id/syncButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:text="Sincronizar Carrito"
+                        android:textSize="16sp" />
+
+                    <ProgressBar
+                        android:id="@+id/progressBar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="16dp"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Cart Container -->
+            <LinearLayout
+                android:id="@+id/cartContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="visible">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="4dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Carrito Sincronizado"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="16dp"
+                            android:textColor="@android:color/black" />
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/cartRecyclerView"
+                            android:layout_width="match_parent"
+                            android:layout_height="200dp"
+                            android:layout_marginBottom="16dp" />
+
+                        <TextView
+                            android:id="@+id/totalText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Total: $0.00"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:gravity="center"
+                            android:padding="16dp"
+                            android:background="@android:color/holo_green_light"
+                            android:textColor="@android:color/white"
+                            android:layout_marginBottom="16dp" />
+
+                        <!-- El botón original lo mantenemos pero invisibiliado -->
+                        <Button
+                            android:id="@+id/payButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="70dp"
+                            android:text="💳 CONFIRMAR COMPRA"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:background="@android:color/holo_green_dark"
+                            android:textColor="@android:color/white"
+                            android:layout_marginTop="8dp"
+                            android:layout_marginBottom="8dp"
+                            android:elevation="8dp"
+                            android:visibility="invisible" />
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- BOTÓN FLOTANTE DE CONFIRMACIÓN DE COMPRA - SIEMPRE VISIBLE EN LA PARTE INFERIOR -->
+    <Button
+        android:id="@+id/confirmPurchaseButton"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:text="💳 CONFIRMAR COMPRA"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:background="@android:color/holo_green_dark"
+        android:textColor="@android:color/white"
+        android:elevation="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

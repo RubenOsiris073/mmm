@@ -12,15 +12,22 @@ import { generateInvoicePDF } from '../../utils/pdfGenerator';
 const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }) => {
   const [sales, setSales] = useState([]);
   const [filteredSales, setFilteredSales] = useState([]);
+  const [displayedSales, setDisplayedSales] = useState([]); // Nuevas ventas mostradas
   const [selectedSale, setSelectedSale] = useState(null);
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [showClientNameModal, setShowClientNameModal] = useState(false);
   const [showProductModal, setShowProductModal] = useState(false);
   const [saleForInvoice, setSaleForInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false); // Loading para cargar más
   const [error, setError] = useState(null);
   const [isComponentMounted, setIsComponentMounted] = useState(false);
   const [generatingPDF, setGeneratingPDF] = useState(false);
+  
+  // Estados para paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(100);
+  const [hasMoreData, setHasMoreData] = useState(true);
   
   // Usar useRef para mantener una referencia estable a onSalesDataUpdate
   const onSalesDataUpdateRef = useRef(onSalesDataUpdate);
@@ -56,6 +63,7 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
         console.log('Ventas cargadas correctamente:', salesData.length);
         setSales(salesData);
         setFilteredSales(salesData);
+        setDisplayedSales(salesData.slice(0, itemsPerPage)); // Mostrar solo las primeras ventas por página
         
         // Enviar los datos al componente padre usando la referencia estable
         if (typeof onSalesDataUpdateRef.current === 'function') {
@@ -131,7 +139,31 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
     });
     
     setFilteredSales(filtered);
-  }, [sales, filters.clientName, filters.minAmount, filters.maxAmount, filters.startDate, filters.endDate]);
+    setDisplayedSales(filtered.slice(0, itemsPerPage)); // Actualizar ventas mostradas
+    setHasMoreData(filtered.length > itemsPerPage); // Verificar si hay más datos para cargar
+  }, [sales, filters.clientName, filters.minAmount, filters.maxAmount, filters.startDate, filters.endDate, itemsPerPage]);
+
+  // Función para cargar más ventas
+  const loadMoreSales = async () => {
+    if (loadingMore || !hasMoreData) return;
+    
+    setLoadingMore(true);
+    
+    // Simular carga de más datos
+    setTimeout(() => {
+      setDisplayedSales(prev => [
+        ...prev,
+        ...filteredSales.slice(prev.length, prev.length + itemsPerPage)
+      ]);
+      
+      // Verificar si hay más datos
+      if (displayedSales.length + itemsPerPage >= filteredSales.length) {
+        setHasMoreData(false);
+      }
+      
+      setLoadingMore(false);
+    }, 1000);
+  };
 
   // useEffect para cargar ventas al montar el componente
   useEffect(() => {
@@ -403,7 +435,7 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
               <p className="mt-3">Cargando ventas...</p>
             </div>
           ) : (
-            Array.isArray(filteredSales) && filteredSales.length > 0 ? (
+            Array.isArray(displayedSales) && displayedSales.length > 0 ? (
               <Table responsive striped hover className="mb-0">
                 <thead>
                   <tr>
@@ -417,7 +449,7 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredSales.map((sale) => (
+                  {displayedSales.map((sale) => (
                     <tr key={sale.id || sale._id || `sale-${Math.random()}`}>
                       <td>
                         <Badge bg="primary">{sale.id}</Badge>
@@ -488,6 +520,18 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
               <small className="text-muted">
                 Total de ventas: <strong>{filteredSales.length}</strong>
               </small>
+            </div>
+            <div>
+              {hasMoreData && (
+                <Button 
+                  variant="link" 
+                  size="sm"
+                  onClick={loadMoreSales}
+                  disabled={loadingMore}
+                >
+                  {loadingMore ? 'Cargando más...' : 'Cargar más ventas'}
+                </Button>
+              )}
             </div>
           </div>
         </Card.Footer>

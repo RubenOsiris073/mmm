@@ -1,7 +1,7 @@
 // cartSyncService.js - Servicio para sincronización entre POS web y aplicación móvil
 const crypto = require('crypto');
 const cartService = require('./cartService');
-const transactionsService = require('./transactionsService');
+const salesService = require('./salesService'); // Cambiado de transactionsService a salesService
 
 // Almacén en memoria de carritos sincronizados (en producción usar Redis o similar)
 const syncedCarts = new Map();
@@ -114,20 +114,39 @@ const processPayment = async (identifier, paymentInfo) => {
   }
   
   try {
-    // Crear una transacción utilizando el servicio de transacciones existente
-    const orderData = {
-      items: syncData.items,
+    // Preparar datos para la venta en el formato que espera salesService
+    const formattedItems = syncData.items.map(item => {
+      // Asegurar que todos los campos necesarios existen
+      const cantidad = parseInt(item.quantity || 1, 10);
+      return {
+        id: item.id, // Mantener id original
+        productId: item.id || item.productId, // Asegurar que productId esté presente
+        nombre: item.nombre,
+        precio: parseFloat(item.precio),
+        cantidad: cantidad, // Convertir explícitamente quantity a cantidad
+        subtotal: parseFloat(item.precio) * cantidad
+      };
+    });
+    
+    console.log("Items formateados:", JSON.stringify(formattedItems, null, 2));
+    
+    const saleData = {
+      items: formattedItems,
       total: syncData.total,
-      paymentMethod: paymentInfo.method,
-      paymentInfo: paymentInfo
+      paymentMethod: paymentInfo.method || 'wallet',
+      amountReceived: syncData.total,  // En wallet, lo recibido siempre equivale al total
+      change: 0,  // En wallet, no hay cambio
+      clientName: paymentInfo.userId ? `Usuario Wallet: ${paymentInfo.userId}` : "Cliente General"
     };
     
-    // Registrar la transacción
-    const transaction = await transactionsService.createTransaction(orderData);
+    console.log("Datos de venta preparados:", saleData);
+    
+    // Usar salesService para crear la venta en la colección "sales"
+    const sale = await salesService.createSale(saleData);
     
     // Actualizar el estado del carrito sincronizado
     syncData.status = 'paid';
-    syncData.transactionId = transaction.id || transaction._id;
+    syncData.transactionId = sale.id;
     syncData.paidAt = new Date().toISOString();
     syncedCarts.set(sessionId, syncData);
     
@@ -135,7 +154,7 @@ const processPayment = async (identifier, paymentInfo) => {
       success: true,
       message: 'Pago procesado con éxito',
       paymentInfo: paymentInfo,
-      orderId: transaction.id || transaction._id,
+      orderId: sale.id,
       sessionId: sessionId
     };
   } catch (error) {

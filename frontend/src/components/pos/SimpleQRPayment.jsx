@@ -70,57 +70,6 @@ const SimpleQRPayment = ({ amount, concept = "Compra POS", onPaymentConfirmed })
 
   return (
     <div className="simple-qr-payment">
-      {/* Configuración rápida */}
-      <Card className="mb-3">
-        <Card.Header className="bg-info text-white">
-          <h6 className="mb-0">
-            <FaInfoCircle className="me-2" />
-            Configuración de tu cuenta (hazlo una vez)
-          </h6>
-        </Card.Header>
-        <Card.Body>
-          <Row>
-            <Col md={6}>
-              <Form.Group className="mb-2">
-                <Form.Label>Tu CLABE bancaria:</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={paymentData.clabe}
-                  onChange={(e) => updatePaymentData('clabe', e.target.value)}
-                  placeholder="18 dígitos de tu CLABE"
-                  maxLength={18}
-                />
-                <Form.Text className="text-muted">
-                  La encuentras en tu app bancaria o estado de cuenta
-                </Form.Text>
-              </Form.Group>
-            </Col>
-            <Col md={3}>
-              <Form.Group className="mb-2">
-                <Form.Label>Banco:</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={paymentData.bank}
-                  onChange={(e) => updatePaymentData('bank', e.target.value)}
-                  placeholder="Nombre del banco"
-                />
-              </Form.Group>
-            </Col>
-            <Col md={3}>
-              <Form.Group className="mb-2">
-                <Form.Label>Titular:</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={paymentData.account}
-                  onChange={(e) => updatePaymentData('account', e.target.value)}
-                  placeholder="Tu nombre/negocio"
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
-
       {/* QR Code y datos para pago */}
       <Row>
         <Col md={6}>
@@ -247,14 +196,6 @@ const SimpleQRPayment = ({ amount, concept = "Compra POS", onPaymentConfirmed })
           <li><strong>Cualquier banco</strong> - Todos soportan SPEI</li>
           <li><strong>Seguro</strong> - Dinero directo a tu cuenta</li>
         </ul>
-      </Alert>
-
-      <Alert variant="info" className="mt-2">
-        <h6>Para mejorarlo después:</h6>
-        <p className="mb-0">
-          Más adelante puedes integrar <strong>Mercado Pago</strong> o <strong>CoDi oficial</strong> 
-          para confirmación automática de pagos.
-        </p>
       </Alert>
     </div>
   );

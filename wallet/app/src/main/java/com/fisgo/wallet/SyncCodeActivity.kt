@@ -34,6 +34,7 @@ class SyncCodeActivity : AppCompatActivity() {
     private lateinit var cartRecyclerView: RecyclerView
     private lateinit var totalText: TextView
     private lateinit var payButton: Button
+    private lateinit var confirmPurchaseButton: Button  // Nuevo botón flotante
     private lateinit var auth: FirebaseAuth
     
     private var cartItems = mutableListOf<CartItem>()
@@ -60,8 +61,19 @@ class SyncCodeActivity : AppCompatActivity() {
         cartRecyclerView = findViewById(R.id.cartRecyclerView)
         totalText = findViewById(R.id.totalText)
         payButton = findViewById(R.id.payButton)
+        confirmPurchaseButton = findViewById(R.id.confirmPurchaseButton)  // Inicializar el nuevo botón
         
+        // Configuración inicial
         cartRecyclerView.layoutManager = LinearLayoutManager(this)
+        
+        // Asegurar que el botón de confirmación sea visible y llamativo
+        confirmPurchaseButton.visibility = View.VISIBLE
+        confirmPurchaseButton.text = "💳 CONFIRMAR COMPRA"
+        confirmPurchaseButton.setBackgroundResource(android.R.color.holo_green_dark)
+        confirmPurchaseButton.setTextColor(getColor(android.R.color.white))
+        
+        // Aplicar elevación para efecto 3D
+        confirmPurchaseButton.elevation = 12f
     }
     
     private fun setupListeners() {
@@ -69,7 +81,7 @@ class SyncCodeActivity : AppCompatActivity() {
             handleSyncCart()
         }
         
-        payButton.setOnClickListener {
+        confirmPurchaseButton.setOnClickListener {
             handleProcessPayment()
         }
     }
@@ -129,8 +141,8 @@ class SyncCodeActivity : AppCompatActivity() {
         }
         
         // Mejorar feedback visual durante el proceso
-        payButton.text = "⏳ Procesando pago..."
-        payButton.isEnabled = false
+        confirmPurchaseButton.text = "⏳ Procesando pago..."
+        confirmPurchaseButton.isEnabled = false
         showLoading(true)
         
         scope.launch {
@@ -144,7 +156,7 @@ class SyncCodeActivity : AppCompatActivity() {
                     WalletManager.deductAmount(this@SyncCodeActivity, cartTotal)
                     
                     // Mostrar feedback de éxito
-                    payButton.text = "✅ ¡Pago exitoso!"
+                    confirmPurchaseButton.text = "✅ ¡Pago exitoso!"
                     showMessage("¡Compra realizada exitosamente!")
                     
                     val intent = Intent(this@SyncCodeActivity, PaymentSuccessActivity::class.java)
@@ -154,13 +166,13 @@ class SyncCodeActivity : AppCompatActivity() {
                     finish()
                 } else {
                     showError(result.error ?: "Error al procesar el pago")
-                    payButton.text = "💳 Realizar Compra - $${String.format("%.2f", cartTotal)}"
-                    payButton.isEnabled = true
+                    confirmPurchaseButton.text = "💳 Realizar Compra - $${String.format("%.2f", cartTotal)}"
+                    confirmPurchaseButton.isEnabled = true
                 }
             } catch (e: Exception) {
                 showError("Error de conexión: ${e.message}")
-                payButton.text = "💳 Realizar Compra - $${String.format("%.2f", cartTotal)}"
-                payButton.isEnabled = true
+                confirmPurchaseButton.text = "💳 Realizar Compra - $${String.format("%.2f", cartTotal)}"
+                confirmPurchaseButton.isEnabled = true
             } finally {
                 showLoading(false)
             }
@@ -300,7 +312,7 @@ class SyncCodeActivity : AppCompatActivity() {
     
     private fun showCartItems() {
         // Asegurar que el contenedor del carrito sea visible
-        cartContainer.visibility = View.VISIBLE  // Usar View en lugar de android.view.View
+        cartContainer.visibility = View.VISIBLE
         syncButton.visibility = View.GONE
         
         val adapter = CartAdapter(cartItems)
@@ -308,18 +320,22 @@ class SyncCodeActivity : AppCompatActivity() {
         
         totalText.text = "Total: $${String.format("%.2f", cartTotal)}"
         
-        // Asegurar que el botón de pago sea visible y habilitado
-        payButton.visibility = View.VISIBLE
-        payButton.isEnabled = true
-        payButton.text = "💳 Realizar Compra - $${String.format("%.2f", cartTotal)}"
+        // Asegurar que el botón de pago sea completamente visible y llamativo
+        confirmPurchaseButton.visibility = View.VISIBLE
+        confirmPurchaseButton.isEnabled = true
+        confirmPurchaseButton.text = "💳 CONFIRMAR COMPRA - $${String.format("%.2f", cartTotal)}"
+        
+        // Aplicar estilos adicionales para llamar la atención
+        confirmPurchaseButton.setBackgroundResource(android.R.color.holo_green_dark)
+        confirmPurchaseButton.setTextColor(getColor(android.R.color.white))
         
         // Animar el botón para que sea más visible
-        payButton.animate()
-            .scaleX(1.05f)
-            .scaleY(1.05f)
+        confirmPurchaseButton.animate()
+            .scaleX(1.1f)
+            .scaleY(1.1f)
             .setDuration(300)
             .withEndAction {
-                payButton.animate()
+                confirmPurchaseButton.animate()
                     .scaleX(1.0f)
                     .scaleY(1.0f)
                     .setDuration(200)
@@ -329,14 +345,21 @@ class SyncCodeActivity : AppCompatActivity() {
             
         // Para depuración
         Log.d("SyncCodeActivity", "Contenedor de carrito visible: ${cartContainer.visibility == View.VISIBLE}")
-        Log.d("SyncCodeActivity", "Botón de pago visible: ${payButton.visibility == View.VISIBLE}")
+        Log.d("SyncCodeActivity", "Botón de pago visible: ${confirmPurchaseButton.visibility == View.VISIBLE}")
+        
+        // Mostrar un mensaje para guiar al usuario
+        Toast.makeText(
+            this,
+            "Carrito sincronizado. Haz clic en CONFIRMAR COMPRA para completar la transacción",
+            Toast.LENGTH_LONG
+        ).show()
     }
     
     private fun showLoading(show: Boolean) {
         progressBar.visibility = if (show) android.view.View.VISIBLE else android.view.View.GONE
         syncButton.isEnabled = !show
         if (!show || sessionId == null) {
-            payButton.isEnabled = !show && sessionId != null
+            confirmPurchaseButton.isEnabled = !show && sessionId != null
         }
     }
     

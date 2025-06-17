@@ -126,14 +126,14 @@ const PaymentModal = ({
               onChange={(e) => safeSetPaymentMethod(e.target.value)}
               disabled={loading}
             >
-              <option value="efectivo">Efectivo</option>
+              {/* <option value="efectivo">Efectivo</option> */}
               <option value="tarjeta">Tarjeta</option>
               <option value="qr-spei">QR mediante SPEI</option>
               <option value="mobile-wallet">App Móvil Wallet</option>
             </Form.Select>
           </Form.Group>
 
-          {paymentMethod === 'efectivo' && (
+          {/* {paymentMethod === 'efectivo' && (
             <>
               <Form.Group className="mb-3">
                 <Form.Label>Monto Recibido</Form.Label>
@@ -164,7 +164,7 @@ const PaymentModal = ({
                 </InputGroup>
               </Form.Group>
             </>
-          )}
+          )} */}
 
           {paymentMethod === 'tarjeta' && (
             <StripeCardPayment

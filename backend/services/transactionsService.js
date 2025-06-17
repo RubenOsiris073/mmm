@@ -1,5 +1,5 @@
 const { db } = require('../config/firebase');
-const { collection, query, orderBy, limit, getDocs } = require('firebase/firestore');
+const { collection, query, orderBy, limit, getDocs, addDoc, serverTimestamp } = require('firebase/firestore');
 
 // Obtener transacciones con un límite
 const getTransactions = async (limitVal) => {
@@ -24,6 +24,56 @@ const getTransactions = async (limitVal) => {
   }
 };
 
+/**
+ * Crear una nueva transacción de pago
+ * @param {Object} transactionData - Datos de la transacción
+ * @param {string} transactionData.userId - ID del usuario que realiza la transacción
+ * @param {number} transactionData.amount - Monto de la transacción
+ * @param {string} transactionData.type - Tipo de transacción (payment, refund, etc)
+ * @param {string} transactionData.description - Descripción de la transacción
+ * @param {string} transactionData.sessionId - ID de la sesión asociada (opcional)
+ * @returns {Object} - La transacción creada con su ID
+ */
+const createTransaction = async (transactionData) => {
+  try {
+    console.log("Creando nueva transacción:", transactionData);
+    
+    const { userId, amount, type = 'payment', description, sessionId } = transactionData;
+    
+    if (!userId) {
+      throw new Error("userId es requerido para crear una transacción");
+    }
+    
+    if (!amount || isNaN(amount) || amount <= 0) {
+      throw new Error("Se requiere un monto válido mayor que cero");
+    }
+    
+    const transactionsRef = collection(db, 'transactions');
+    const newTransaction = {
+      userId,
+      amount: parseFloat(amount),
+      type,
+      description: description || `${type} de $${amount}`,
+      sessionId,
+      timestamp: serverTimestamp(),
+      status: 'completed'
+    };
+    
+    const docRef = await addDoc(transactionsRef, newTransaction);
+    console.log(`Transacción creada con ID: ${docRef.id}`);
+    
+    return {
+      id: docRef.id,
+      ...newTransaction,
+      timestamp: new Date().toISOString() // Convertir serverTimestamp a string ISO para la respuesta
+    };
+  } catch (error) {
+    console.error("Error al crear transacción:", error);
+    throw new Error(`Error al crear transacción: ${error.message}`);
+  }
+};
+
 module.exports = {
-  getTransactions
+  getTransactions,
+  createTransaction
 };

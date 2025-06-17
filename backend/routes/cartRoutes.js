@@ -27,20 +27,39 @@ router.post('/', async (req, res) => {
 
 /**
  * @route GET /api/cart/:sessionId
- * @desc Obtiene un carrito por ID de sesión
+ * @desc Obtiene un carrito por ID de sesión (tanto de cartService como de cartSyncService)
  */
 router.get('/:sessionId', async (req, res) => {
   try {
     const { sessionId } = req.params;
+    
+    console.log(`🔍 Consultando carrito con sessionId: ${sessionId}`);
+    
+    // Primero intentar obtener del servicio de sincronización (carritos temporales)
+    const syncedCart = cartSyncService.getSyncedCart(sessionId);
+    
+    if (syncedCart) {
+      console.log(`✅ Carrito encontrado en cartSyncService - Estado: ${syncedCart.status}`);
+      return res.status(200).json({
+        success: true,
+        data: syncedCart
+      });
+    }
+    
+    console.log(`⚠️ Carrito NO encontrado en cartSyncService, buscando en cartService...`);
+    
+    // Si no se encuentra en sync, buscar en el servicio persistente
     const cart = await cartService.getCartBySessionId(sessionId);
     
     if (!cart) {
+      console.log(`❌ Carrito NO encontrado en ningún servicio`);
       return res.status(404).json({
         success: false,
         error: `No se encontró un carrito con sessionId: ${sessionId}`
       });
     }
     
+    console.log(`✅ Carrito encontrado en cartService`);
     res.status(200).json({
       success: true,
       data: cart

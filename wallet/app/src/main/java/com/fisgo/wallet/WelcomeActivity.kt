@@ -60,6 +60,10 @@ class WelcomeActivity : AppCompatActivity() {
         setupCartBottomSheet()
         setupListeners()
         loadSampleCartItems() // Cargar algunos productos de ejemplo
+        
+        // Mostrar automáticamente el carrito al iniciar la actividad
+        // Esto hará que el botón de confirmación de compra sea visible inmediatamente
+        showCartBottomSheet()
     }
     
     private fun setupUI() {
