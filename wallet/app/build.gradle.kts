@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("com.google.gms.google-services")
+    id("kotlin-parcelize") // Agregar plugin para Parcelize
 }
 
 android {
@@ -70,6 +71,14 @@ dependencies {
     
     // Material Design components for attractive UI
     implementation("com.google.android.material:material:1.11.0")
+    
+    // Stripe SDK para pagos con tarjeta - NUEVO
+    implementation("com.stripe:stripe-android:20.37.0")
+    
+    // Networking para API calls
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("com.google.code.gson:gson:2.10.1")
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

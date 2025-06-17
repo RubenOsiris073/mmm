@@ -44,8 +44,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         balanceCard.setOnClickListener {
-            // Navegar a WelcomeActivity para ver funcionalidad completa del carrito
-            val intent = Intent(this, WelcomeActivity::class.java)
+            // Navegar a SyncCodeActivity para sincronizar con el POS
+            val intent = Intent(this, SyncCodeActivity::class.java)
             startActivity(intent)
         }
     }

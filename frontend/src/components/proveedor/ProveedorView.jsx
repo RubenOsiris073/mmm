@@ -169,27 +169,26 @@ const ProveedorView = () => {
       <Row className="mb-4">
         <Col>
           <Card className="shadow-sm">
-            <Card.Header className={isDark ? "bg-dark text-white" : "bg-primary text-white"}>
-              <Row className="align-items-center">
-                <Col>
-                  <h4 className="mb-0">
+            <Card.Body>
+              <div className="d-flex justify-content-between align-items-center">
+                <div>
+                  <h1 className="mb-0">
                     <FaBuilding className="me-2" />
                     Gestión de Proveedores
-                  </h4>
-                  <small>Administra la información de tus proveedores</small>
-                </Col>
-                <Col xs="auto">
-                  <Button 
-                    variant={isDark ? "outline-light" : "light"} 
-                    onClick={handleCreate}
-                    className={isDark ? "border-light" : ""}
-                  >
-                    <FaPlus className="me-1" />
-                    Nuevo Proveedor
-                  </Button>
-                </Col>
-              </Row>
-            </Card.Header>
+                  </h1>
+                  <p className="text-muted">
+                    Administra la información de tus proveedores y mantén un registro actualizado
+                  </p>
+                </div>
+                <Button 
+                  variant="primary"
+                  onClick={handleCreate}
+                >
+                  <FaPlus className="me-1" />
+                  Nuevo Proveedor
+                </Button>
+              </div>
+            </Card.Body>
           </Card>
         </Col>
       </Row>

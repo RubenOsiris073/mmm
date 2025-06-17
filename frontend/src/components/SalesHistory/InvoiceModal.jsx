@@ -127,8 +127,8 @@ const InvoiceModal = ({ show, onHide, sale }) => {
                       <td>{index + 1}</td>
                       <td>{item.nombre || item.name || 'Producto sin nombre'}</td>
                       <td className="text-center">{item.cantidad || item.quantity || 1}</td>
-                      <td className="text-end">${(item.precioUnitario || item.price || 0).toFixed(2)}</td>
-                      <td className="text-end">${(item.total || (item.precioUnitario * item.cantidad) || 0).toFixed(2)}</td>
+                      <td className="text-end">${(item.precio || item.precioUnitario || item.price || 0).toFixed(2)}</td>
+                      <td className="text-end">${(item.subtotal || item.total || ((item.precio || item.precioUnitario || item.price || 0) * (item.cantidad || item.quantity || 1)) || 0).toFixed(2)}</td>
                     </tr>
                   ))
                 ) : (

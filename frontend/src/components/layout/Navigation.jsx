@@ -34,10 +34,6 @@ const Navigation = () => {
                 <FaPlus className="me-2" />
                 Nuevo Producto
               </NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/proveedores">
-                <FaBuilding className="me-2" />
-                Gestión de Proveedores
-              </NavDropdown.Item>
             </NavDropdown>
             
             <Nav.Link as={Link} to="/pos">

@@ -57,6 +57,183 @@ const OrderProductManagementModal = ({
 
   const { subtotal, tax, total } = calculateTotals();
 
+  // Función para obtener el icono del producto según su categoría
+  const getProductIcon = (product) => {
+    const categoria = (product.categoria || product.category || '').toLowerCase();
+    const nombre = (product.nombre || product.name || '').toLowerCase();
+    
+    // Iconos específicos por categoría REAL de tu sistema
+    if (categoria.includes('bebidas')) {
+      if (nombre.includes('refresco') || nombre.includes('coca') || nombre.includes('pepsi')) {
+        return '🥤';
+      }
+      if (nombre.includes('agua') || nombre.includes('jamaica')) {
+        return '💧';
+      }
+      if (nombre.includes('leche')) {
+        return '🥛';
+      }
+      if (nombre.includes('horchata') || nombre.includes('coco')) {
+        return '🥥';
+      }
+      return '🧃'; // Bebidas en general
+    }
+    
+    if (categoria.includes('snacks') || categoria.includes('botanas')) {
+      if (nombre.includes('papa') || nombre.includes('sabritas')) {
+        return '🍟';
+      }
+      if (nombre.includes('cacahuate') || nombre.includes('japoneses')) {
+        return '🥜';
+      }
+      if (nombre.includes('churrito') || nombre.includes('cheetos')) {
+        return '🌽';
+      }
+      if (nombre.includes('palomita') || nombre.includes('totis')) {
+        return '🍿';
+      }
+      return '🥨'; // Snacks en general
+    }
+    
+    if (categoria.includes('panadería') || categoria.includes('galletas')) {
+      if (nombre.includes('galleta')) {
+        return '🍪';
+      }
+      if (nombre.includes('pan') || nombre.includes('bimbo')) {
+        return '🍞';
+      }
+      if (nombre.includes('dona') || nombre.includes('roles')) {
+        return '🍩';
+      }
+      if (nombre.includes('concha')) {
+        return '🧁';
+      }
+      return '🥖'; // Panadería en general
+    }
+    
+    if (categoria.includes('dulces') || categoria.includes('chocolates')) {
+      if (nombre.includes('chocolate')) {
+        return '🍫';
+      }
+      if (nombre.includes('paleta') || nombre.includes('vero')) {
+        return '🍭';
+      }
+      if (nombre.includes('tamarindo') || nombre.includes('pulparindo')) {
+        return '🌶️';
+      }
+      if (nombre.includes('mazapán') || nombre.includes('rosa')) {
+        return '🥜';
+      }
+      if (nombre.includes('chamoy') || nombre.includes('miguelito')) {
+        return '🍯';
+      }
+      return '🍬'; // Dulces en general
+    }
+    
+    if (categoria.includes('abarrotes básicos')) {
+      if (nombre.includes('tortilla')) {
+        return '🫓';
+      }
+      if (nombre.includes('arroz')) {
+        return '🍚';
+      }
+      if (nombre.includes('frijol') || nombre.includes('lenteja')) {
+        return '🫘';
+      }
+      if (nombre.includes('azúcar') || nombre.includes('sal')) {
+        return '🧂';
+      }
+      if (nombre.includes('harina') || nombre.includes('masa')) {
+        return '🌾';
+      }
+      return '🛒'; // Abarrotes en general
+    }
+    
+    if (categoria.includes('enlatados') || categoria.includes('conservas')) {
+      if (nombre.includes('atún') || nombre.includes('sardina')) {
+        return '🐟';
+      }
+      if (nombre.includes('frijol') || nombre.includes('elote')) {
+        return '🥫';
+      }
+      if (nombre.includes('chile') || nombre.includes('jalapeño')) {
+        return '🌶️';
+      }
+      return '🥫'; // Enlatados en general
+    }
+    
+    if (categoria.includes('aceites') || categoria.includes('condimentos')) {
+      if (nombre.includes('aceite')) {
+        return '🫒';
+      }
+      if (nombre.includes('salsa') || nombre.includes('valentina')) {
+        return '🌶️';
+      }
+      if (nombre.includes('vinagre')) {
+        return '🍾';
+      }
+      if (nombre.includes('consomé') || nombre.includes('knorr')) {
+        return '🧊';
+      }
+      return '🧂'; // Condimentos en general
+    }
+    
+    if (categoria.includes('alimentos instantáneos')) {
+      if (nombre.includes('sopa') || nombre.includes('maruchan')) {
+        return '🍜';
+      }
+      if (nombre.includes('avena') || nombre.includes('quaker')) {
+        return '🥣';
+      }
+      if (nombre.includes('puré') || nombre.includes('papa')) {
+        return '🥔';
+      }
+      return '⚡'; // Instantáneos en general
+    }
+    
+    if (categoria.includes('bebidas calientes')) {
+      if (nombre.includes('chocolate') || nombre.includes('abuelita')) {
+        return '☕';
+      }
+      if (nombre.includes('té') || nombre.includes('manzanilla')) {
+        return '🍵';
+      }
+      if (nombre.includes('canela')) {
+        return '🥧';
+      }
+      return '♨️'; // Bebidas calientes en general
+    }
+    
+    if (categoria.includes('productos de limpieza')) {
+      if (nombre.includes('jabón') || nombre.includes('trastes')) {
+        return '🧽';
+      }
+      if (nombre.includes('detergente') || nombre.includes('ariel')) {
+        return '🧴';
+      }
+      if (nombre.includes('suavizante')) {
+        return '💧';
+      }
+      return '🧹'; // Limpieza en general
+    }
+    
+    if (categoria.includes('cuidado personal')) {
+      if (nombre.includes('champú') || nombre.includes('head')) {
+        return '🧴';
+      }
+      if (nombre.includes('pasta') || nombre.includes('dental')) {
+        return '🦷';
+      }
+      if (nombre.includes('jabón') || nombre.includes('palmolive')) {
+        return '🧼';
+      }
+      return '🧴'; // Cuidado personal en general
+    }
+    
+    // Icono por defecto para productos no categorizados
+    return '🛒';
+  };
+
   if (!show) return null;
 
   return (
@@ -129,7 +306,7 @@ const OrderProductManagementModal = ({
                       <td>
                         <div className="d-flex align-items-center">
                           <div className="product-icon me-2">
-                            📦
+                            {getProductIcon(product)}
                           </div>
                           <div>
                             <div className="fw-bold text-capitalize">

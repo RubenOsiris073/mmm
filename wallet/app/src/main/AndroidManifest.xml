@@ -26,11 +26,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
-        <activity
-            android:name=".WelcomeActivity"
-            android:exported="false"
-            android:theme="@style/Theme.App.NoActionBar" />
             
         <activity
             android:name=".MainActivity"
@@ -50,6 +45,13 @@
             android:exported="false"
             android:theme="@style/Theme.App.NoActionBar"
             android:launchMode="singleTop" />
+
+        <!-- Nueva actividad para pagos con tarjeta -->
+        <activity
+            android:name=".CardPaymentActivity"
+            android:exported="false"
+            android:theme="@style/Theme.App.NoActionBar"
+            android:parentActivityName=".MainActivity" />
             
     </application>
 

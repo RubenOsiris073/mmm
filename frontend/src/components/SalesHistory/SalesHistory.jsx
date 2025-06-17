@@ -40,10 +40,7 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
   // Estados para filtros
   const [filters, setFilters] = useState({
     startDate: '',
-    endDate: '',
-    clientName: '',
-    minAmount: '',
-    maxAmount: ''
+    paymentMethod: ''
   });
   
   // Estado para controlar el panel de filtros
@@ -111,27 +108,15 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
     if (!Array.isArray(sales)) return;
     
     let filtered = sales.filter(sale => {
-      // Filtro por cliente
-      if (filters.clientName && 
-          !String(sale.client || sale.cliente || '').toLowerCase().includes(filters.clientName.toLowerCase())) {
-        return false;
-      }
-      
-      // Filtro por monto
-      const total = sale.total || 0;
-      if (filters.minAmount && total < parseFloat(filters.minAmount)) {
-        return false;
-      }
-      if (filters.maxAmount && total > parseFloat(filters.maxAmount)) {
+      // Filtro por método de pago
+      if (filters.paymentMethod && 
+          sale.paymentMethod !== filters.paymentMethod) {
         return false;
       }
       
       // Filtro por fecha
       const saleDate = new Date(sale.date || sale.fecha || sale.timestamp);
       if (filters.startDate && new Date(filters.startDate) > saleDate) {
-        return false;
-      }
-      if (filters.endDate && new Date(filters.endDate) < saleDate) {
         return false;
       }
       
@@ -141,7 +126,7 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
     setFilteredSales(filtered);
     setDisplayedSales(filtered.slice(0, itemsPerPage)); // Actualizar ventas mostradas
     setHasMoreData(filtered.length > itemsPerPage); // Verificar si hay más datos para cargar
-  }, [sales, filters.clientName, filters.minAmount, filters.maxAmount, filters.startDate, filters.endDate, itemsPerPage]);
+  }, [sales, filters.startDate, filters.paymentMethod, itemsPerPage]);
 
   // Función para cargar más ventas
   const loadMoreSales = async () => {
@@ -185,9 +170,7 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
   const clearFilters = () => {
     setFilters({
       startDate: '',
-      clientName: '',
-      minAmount: '',
-      maxAmount: ''
+      paymentMethod: ''
     });
   };
 
@@ -363,48 +346,13 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
                 </Col>
                 <Col md={3}>
                   <Form.Group className="mb-3">
-                    <Form.Label>Fecha Fin</Form.Label>
-                    <Form.Control 
-                      type="date" 
-                      name="endDate"
-                      value={filters.endDate}
-                      onChange={handleFilterChange}
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={2}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Monto Mínimo</Form.Label>
-                    <Form.Control 
-                      type="number" 
-                      name="minAmount"
-                      value={filters.minAmount}
-                      onChange={handleFilterChange}
-                      placeholder="$"
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={2}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Monto Máximo</Form.Label>
-                    <Form.Control 
-                      type="number" 
-                      name="maxAmount"
-                      value={filters.maxAmount}
-                      onChange={handleFilterChange}
-                      placeholder="$"
-                    />
-                  </Form.Group>
-                </Col>
-                <Col md={2}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Cliente</Form.Label>
+                    <Form.Label>Método de Pago</Form.Label>
                     <Form.Control 
                       type="text" 
-                      name="clientName"
-                      value={filters.clientName}
+                      name="paymentMethod"
+                      value={filters.paymentMethod}
                       onChange={handleFilterChange}
-                      placeholder="Nombre"
+                      placeholder="Efectivo, Tarjeta, etc."
                     />
                   </Form.Group>
                 </Col>
@@ -502,8 +450,7 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
               <div className="text-center p-5">
                 <i className="bi bi-search fs-1 text-muted"></i>
                 <p className="mt-3 text-muted">No se encontraron ventas</p>
-                {(filters.startDate || filters.endDate || filters.clientName || 
-                  filters.minAmount || filters.maxAmount) && (
+                {(filters.startDate || filters.paymentMethod) && (
                   <Button variant="link" onClick={clearFilters}>
                     Limpiar filtros
                   </Button>

@@ -31,3 +31,35 @@ RESUMEN DE VENTAS GENERADAS:
 
 🎉 ¡Generación de ventas completada exitosamente!
 📊 Se generaron 1000 ventas desde enero hasta junio de 2025
+
+💳 Tarjetas de Prueba de Stripe
+✅ Tarjetas que APRUEBAN el pago:
+Visa:
+
+Número: 4242 4242 4242 4242
+CVV: 123 (cualquier 3 dígitos)
+Fecha: 12/34 (cualquier fecha futura)
+Nombre: Test User (cualquier nombre)
+MasterCard:
+
+Número: 5555 5555 5555 4444
+CVV: 123
+Fecha: 12/34
+Nombre: Test User
+American Express:
+
+Número: 3782 822463 10005
+CVV: 1234 (4 dígitos para AmEx)
+Fecha: 12/34
+Nombre: Test User
+❌ Tarjetas que RECHAZAN el pago (para probar errores):
+Tarjeta declinada:
+
+Número: 4000 0000 0000 0002
+CVV: 123
+Fecha: 12/34
+Fondos insuficientes:
+
+Número: 4000 0000 0000 9995
+CVV: 123
+Fecha: 12/34

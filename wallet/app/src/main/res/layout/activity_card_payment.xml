@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#f8f9fa">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Header Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#f8f9fa"
+                android:orientation="vertical"
+                android:padding="24dp"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pago con Tarjeta"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#2c3e50"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Procesado de forma segura por Stripe"
+                    android:textSize="14sp"
+                    android:textColor="#6c757d" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Main Payment Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <!-- Payment Summary -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#f8f9fa"
+                    android:orientation="horizontal"
+                    android:padding="20dp"
+                    android:layout_marginBottom="24dp"
+                    app:cardCornerRadius="8dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Total a pagar"
+                            android:textSize="14sp"
+                            android:textColor="#6c757d"
+                            android:layout_marginBottom="8dp" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:id="@+id/paymentAmountTextView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="$0.00"
+                                android:textSize="24sp"
+                                android:textStyle="bold"
+                                android:textColor="#2c3e50" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text=" MXN"
+                                android:textSize="14sp"
+                                android:textColor="#6c757d"
+                                android:layout_marginStart="4dp" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="end">
+
+                        <TextView
+                            android:id="@+id/paymentIdTextView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ID: ********"
+                            android:textSize="12sp"
+                            android:textColor="#6c757d"
+                            android:fontFamily="monospace"
+                            android:visibility="gone" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Card Logos -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginBottom="24dp">
+
+                    <ImageView
+                        android:id="@+id/visaLogoImageView"
+                        android:layout_width="40dp"
+                        android:layout_height="25dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/visa_logo"
+                        android:alpha="0.4" />
+
+                    <ImageView
+                        android:id="@+id/mastercardLogoImageView"
+                        android:layout_width="40dp"
+                        android:layout_height="25dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/mastercard_logo"
+                        android:alpha="0.4" />
+
+                    <ImageView
+                        android:id="@+id/amexLogoImageView"
+                        android:layout_width="40dp"
+                        android:layout_height="25dp"
+                        android:background="@drawable/amex_logo"
+                        android:alpha="0.4" />
+
+                </LinearLayout>
+
+                <!-- Card Input Section -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="💳 Información de la tarjeta"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="#2c3e50"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- Stripe Card Input Widget -->
+                <FrameLayout
+                    android:id="@+id/cardInputContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/card_input_background"
+                    android:padding="16dp"
+                    android:layout_marginBottom="24dp" />
+
+                <!-- Security Badge -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginBottom="24dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🔒 Conexión segura SSL • Datos protegidos por Stripe"
+                        android:textSize="12sp"
+                        android:textColor="#28a745"
+                        android:gravity="center" />
+
+                </LinearLayout>
+
+                <!-- Payment Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/payButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="🔒 Pagar $0.00"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="8dp"
+                    android:backgroundTint="#007bff"
+                    android:enabled="false" />
+
+                <!-- Footer Info -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="ℹ️ Tu pago será procesado de forma segura"
+                    android:textSize="12sp"
+                    android:textColor="#6c757d"
+                    android:gravity="center"
+                    android:layout_marginTop="16dp" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Error Message -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/errorCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
+            app:cardCornerRadius="8dp"
+            app:cardBackgroundColor="#f8d7da">
+
+            <TextView
+                android:id="@+id/errorTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:text="⚠️ Error en el pago"
+                android:textColor="#721c24"
+                android:textSize="14sp" />
+
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+
+</ScrollView>
