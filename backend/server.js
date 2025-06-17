@@ -15,6 +15,7 @@ const detectionRoutes = require('./routes/detectionRoutes');
 const salesRoutes = require('./routes/salesRoutes');
 const transactionsRoutes = require('./routes/transactionsRoutes');
 const stripeRoutes = require('./routes/stripeRoutes');
+const cartRoutes = require('./routes/cartRoutes'); // Importar nuevas rutas
 
 // Configurar express
 const app = express();
@@ -265,6 +266,7 @@ apiRouter.use('/detection', detectionRoutes);
 apiRouter.use('/sales', salesRoutes);
 apiRouter.use('/transactions', transactionsRoutes);
 apiRouter.use('/stripe', stripeRoutes);
+apiRouter.use('/cart', cartRoutes); // Registrar nuevas rutas
 
 // Montar el router principal en /api
 app.use('/api', apiRouter);
@@ -276,13 +278,6 @@ const corsOptions = {
     'http://localhost',
     'http://localhost:80',
     'http://localhost:3000',
-    'http://154.0.0.5:19000', // Expo DevTools
-    'http://154.0.0.5:19001', // Metro bundler
-    'http://154.0.0.5:19002', // Expo
-    'http://154.0.0.9:5000',  // Servidor ethernet
-    'http://154.0.0.5:5000',  // Servidor WiFi
-    /^exp:\/\/.*\.exp\.direct$/, // Túneles de Expo
-    /^http:\/\/154\.0\.0\.\d+:.*/, // Cualquier IP en tu red
   ],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
   credentials: true,

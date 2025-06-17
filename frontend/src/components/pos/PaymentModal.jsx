@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form, InputGroup } from 'react-bootstrap';
 import SimpleQRPayment from './SimpleQRPayment';
 import StripeCardPayment from './StripeCardPayment';
+import MobileWalletPayment from './MobileWalletPayment';
 
 const PaymentModal = ({
   show,
@@ -12,12 +13,14 @@ const PaymentModal = ({
   setAmountReceived,
   total,
   handleProcessSale,
-  loading
+  loading,
+  cartItems
 }) => {
   const [change, setChange] = useState(0);
   const [isFormValid, setIsFormValid] = useState(false);
   const [qrPaymentConfirmed, setQrPaymentConfirmed] = useState(false);
   const [cardPaymentData, setCardPaymentData] = useState(null);
+  const [walletPaymentData, setWalletPaymentData] = useState(null);
 
   // Verificamos que todas las funciones sean realmente funciones
   const safeSetPaymentMethod = typeof setPaymentMethod === 'function' 
@@ -27,39 +30,46 @@ const PaymentModal = ({
   const safeSetAmountReceived = typeof setAmountReceived === 'function'
     ? setAmountReceived
     : () => console.error('setAmountReceived no es una función');
-    
+
   const safeHandleProcessSale = typeof handleProcessSale === 'function'
     ? handleProcessSale
     : () => console.error('handleProcessSale no es una función');
   
-  const safeOnHide = typeof onHide === 'function'
-    ? onHide
-    : () => console.error('onHide no es una función');
+  const safeOnHide = () => {
+    if (loading) return;
+    
+    // Limpiar estados
+    setQrPaymentConfirmed(false);
+    setCardPaymentData(null);
+    setWalletPaymentData(null);
+    
+    if (typeof onHide === 'function') {
+      onHide();
+    }
+  };
 
   // Calcular cambio cuando cambia el monto recibido
   useEffect(() => {
-    if (paymentMethod === 'efectivo') {
-      const receivedAmount = parseFloat(amountReceived) || 0;
-      setChange(Math.max(0, receivedAmount - total));
-    } else {
-      setChange(0);
-    }
-  }, [amountReceived, total, paymentMethod]);
+    const receivedAmount = parseFloat(amountReceived || 0);
+    setChange(receivedAmount > total ? receivedAmount - total : 0);
+  }, [amountReceived, total]);
 
-  // Validación del formulario - incluir tarjeta
+  // Validar formulario según método de pago
   useEffect(() => {
-    let valid = true;
+    let valid = false;
     
     if (paymentMethod === 'efectivo') {
-      valid = parseFloat(amountReceived) >= total;
+      valid = parseFloat(amountReceived || 0) >= total;
     } else if (paymentMethod === 'qr-spei') {
       valid = qrPaymentConfirmed;
     } else if (paymentMethod === 'tarjeta') {
       valid = cardPaymentData !== null;
+    } else if (paymentMethod === 'mobile-wallet') {
+      valid = walletPaymentData !== null;
     }
     
     setIsFormValid(valid);
-  }, [amountReceived, total, paymentMethod, qrPaymentConfirmed, cardPaymentData]);
+  }, [amountReceived, total, paymentMethod, qrPaymentConfirmed, cardPaymentData, walletPaymentData]);
 
   // Manejar confirmación de pago QR
   const handleQRPaymentConfirmed = (paymentData) => {
@@ -83,15 +93,27 @@ const PaymentModal = ({
     console.error('Error en pago con tarjeta:', error);
     setCardPaymentData(null);
   };
+  
+  // Manejar pago confirmado desde la wallet móvil
+  const handleWalletPaymentConfirmed = (paymentData) => {
+    console.log('Pago con wallet móvil confirmado:', paymentData);
+    setWalletPaymentData(paymentData);
+    
+    // Procesar la venta automáticamente
+    if (handleProcessSale) {
+      handleProcessSale(paymentData);
+    }
+  };
 
   // Reiniciar estados cuando se cambia el método de pago
   useEffect(() => {
     setQrPaymentConfirmed(false);
     setCardPaymentData(null);
+    setWalletPaymentData(null);
   }, [paymentMethod]);
 
   return (
-    <Modal show={show} onHide={safeOnHide} centered backdrop="static" size={paymentMethod === 'qr-spei' ? 'xl' : 'lg'}>
+    <Modal show={show} onHide={safeOnHide} centered backdrop="static" size={paymentMethod === 'qr-spei' || paymentMethod === 'mobile-wallet' ? 'xl' : 'lg'}>
       <Modal.Header closeButton>
         <Modal.Title>Procesar Pago</Modal.Title>
       </Modal.Header>
@@ -107,9 +129,10 @@ const PaymentModal = ({
               <option value="efectivo">Efectivo</option>
               <option value="tarjeta">Tarjeta</option>
               <option value="qr-spei">QR mediante SPEI</option>
+              <option value="mobile-wallet">App Móvil Wallet</option>
             </Form.Select>
           </Form.Group>
-          
+
           {paymentMethod === 'efectivo' && (
             <>
               <Form.Group className="mb-3">
@@ -160,7 +183,15 @@ const PaymentModal = ({
             />
           )}
           
-          {(paymentMethod !== 'qr-spei' && paymentMethod !== 'tarjeta') && (
+          {paymentMethod === 'mobile-wallet' && (
+            <MobileWalletPayment
+              amount={total}
+              items={cartItems}
+              onPaymentConfirmed={handleWalletPaymentConfirmed}
+            />
+          )}
+          
+          {(paymentMethod !== 'qr-spei' && paymentMethod !== 'tarjeta' && paymentMethod !== 'mobile-wallet') && (
             <div className="d-flex justify-content-between align-items-center mt-4">
               <h5>Total a Pagar: ${total.toFixed(2)}</h5>
             </div>
@@ -171,7 +202,7 @@ const PaymentModal = ({
         <Button variant="secondary" onClick={safeOnHide} disabled={loading}>
           Cancelar
         </Button>
-        {paymentMethod !== 'tarjeta' && (
+        {paymentMethod !== 'tarjeta' && paymentMethod !== 'mobile-wallet' && (
           <Button 
             variant="primary" 
             onClick={safeHandleProcessSale}
@@ -180,12 +211,12 @@ const PaymentModal = ({
             {loading ? 'Procesando...' : 'Confirmar Pago'}
           </Button>
         )}
-        {paymentMethod === 'tarjeta' && cardPaymentData && (
+        {(paymentMethod === 'tarjeta' && cardPaymentData) || (paymentMethod === 'mobile-wallet' && walletPaymentData) ? (
           <div className="text-success">
             <i className="bi bi-check-circle me-2"></i>
             Pago procesado exitosamente
           </div>
-        )}
+        ) : null}
       </Modal.Footer>
     </Modal>
   );

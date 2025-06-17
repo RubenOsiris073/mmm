@@ -101,43 +101,41 @@ const POSView = () => {
       if (webcamRef.current) {
         const frame = await captureFrame();
         if (frame) {
+          console.log("Imagen capturada, iniciando detección...");
           const detection = await detectFromImage(frame);
           
-          if (detection && detection.productInfo) {
+          if (detection && detection.label) {
             addDetectedProductToCart(detection.label, detection.productInfo);
           }
           
           setTimeout(() => setShowWebcam(false), 500);
-        } else {
-          setError("No se pudo capturar la imagen");
-          setTimeout(() => setError(null), 3000);
-          setShowWebcam(false);
         }
       }
     }, 1000);
-  }, [webcamRef, captureFrame, detectFromImage, addDetectedProductToCart, setShowWebcam, setError]);
+  }, [addDetectedProductToCart, detectFromImage, captureFrame, setShowWebcam, webcamRef]);
 
-  // Efecto para detección continua
+  // Detección continua cuando está activada
   useEffect(() => {
-    let detectionInterval;
+    let detectionInterval = null;
     
-    if (continuousDetection) {
+    if (continuousDetection && showWebcam && !detectionLoading) {
+      console.log("Iniciando detección continua...");
+      
       detectionInterval = setInterval(async () => {
-        if (!detectionLoading) {
-          setShowWebcam(true);
-          
-          setTimeout(async () => {
-            const frame = await captureFrame();
-            if (frame) {
-              const detection = await detectFromImage(frame);
-              
-              if (detection && detection.productInfo) {
-                addDetectedProductToCart(detection.label, detection.productInfo);
-              }
+        // Solo proceder si la webcam está lista
+        if (webcamRef.current && isWebcamReady) {
+          const frame = await captureFrame();
+          if (frame) {
+            console.log("Detección continua: imagen capturada");
+            const detection = await detectFromImage(frame);
+            
+            if (detection && detection.label) {
+              console.log("Detección continua: producto detectado", detection.label);
+              addDetectedProductToCart(detection.label, detection.productInfo);
               
               setTimeout(() => setShowWebcam(false), 500);
             }
-          }, 1000);
+          }
         }
       }, 3000);
     }
@@ -145,7 +143,7 @@ const POSView = () => {
     return () => {
       if (detectionInterval) clearInterval(detectionInterval);
     };
-  }, [continuousDetection, detectionLoading, captureFrame, detectFromImage, addDetectedProductToCart, setShowWebcam]);
+  }, [continuousDetection, showWebcam, detectionLoading, captureFrame, detectFromImage, addDetectedProductToCart, setShowWebcam, webcamRef, isWebcamReady]);
 
   return (
     <div className="pos-view">
@@ -240,6 +238,7 @@ const POSView = () => {
         total={calculateTotal()}
         handleProcessSale={processSale}
         loading={paymentLoading}
+        cartItems={cartItems} // Pasamos los items del carrito
       />
     </Container>
     </div>
