@@ -72,7 +72,7 @@ app.post('/auth/login', async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    console.log('✅ Login exitoso para:', email);
+    console.log('Login exitoso para:', email);
 
     res.json({
       success: true,
@@ -87,7 +87,7 @@ app.post('/auth/login', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Error en login:', error.message);
+    console.error('Error en login:', error.message);
     
     let errorMessage = 'Error al iniciar sesión';
     
@@ -141,7 +141,7 @@ app.post('/auth/register', async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    console.log('✅ Registro exitoso para:', email);
+    console.log('Registro exitoso para:', email);
 
     res.json({
       success: true,
@@ -156,7 +156,7 @@ app.post('/auth/register', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Error en registro:', error.message);
+    console.error('Error en registro:', error.message);
     
     let errorMessage = 'Error al crear usuario';
     
@@ -210,9 +210,9 @@ app.get('/health', (req, res) => {
 const PORT = process.env.AUTH_PORT || 3001;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor de autenticación ejecutándose en puerto ${PORT}`);
-  console.log(`📊 Proyecto Firebase: ${firebaseConfig.projectId}`);
-  console.log(`🔗 Endpoints disponibles:`);
+  console.log(`Servidor de autenticación ejecutándose en puerto ${PORT}`);
+  console.log(`Proyecto Firebase: ${firebaseConfig.projectId}`);
+  console.log(`Endpoints disponibles:`);
   console.log(`   POST /auth/login - Iniciar sesión`);
   console.log(`   POST /auth/register - Registrar usuario`);
   console.log(`   GET /auth/verify - Verificar token`);

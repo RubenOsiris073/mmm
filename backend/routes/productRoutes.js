@@ -121,7 +121,7 @@ router.put('/:id/stock', async (req, res) => {
       });
     }
     
-    console.log(`📊 Actualizando stock del producto ${id}: ajuste ${adjustment}`);
+    console.log(`Actualizando stock del producto ${id}: ajuste ${adjustment}`);
     
     // Usar productService unificado
     const updateResult = await productService.updateProductStock(id, adjustment, reason);
@@ -154,13 +154,13 @@ router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
-    console.log(`🗑️ Eliminando producto completo: ${id}`);
+    console.log(`Eliminando producto completo: ${id}`);
     
     // Primero eliminar del inventario si existe
     try {
       await inventoryService.updateStock(id, -999999, 'warehouse', 'Eliminación de producto');
     } catch (inventoryError) {
-      console.log(`📦 Producto ${id} no encontrado en inventario o ya sin stock`);
+      console.log(`Producto ${id} no encontrado en inventario o ya sin stock`);
     }
     
     // Luego eliminar del catálogo de productos
@@ -177,7 +177,7 @@ router.delete('/:id', async (req, res) => {
     const productData = productDoc.data();
     await deleteDoc(productRef);
     
-    console.log(`✅ Producto eliminado: ${productData.nombre || id}`);
+    console.log(`Producto eliminado: ${productData.nombre || id}`);
     
     res.json({
       success: true,

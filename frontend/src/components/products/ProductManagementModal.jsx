@@ -43,7 +43,7 @@ const ProductManagementModal = ({
 
       // Realizar ajuste negativo (reducir stock)
       const adjustment = -quantity;
-      console.log('🔄 Iniciando actualización de stock...', { productId: product.id, adjustment });
+      console.log('Iniciando actualización de stock...', { productId: product.id, adjustment });
       
       const response = await apiService.updateProductStock(
         product.id, 
@@ -51,10 +51,10 @@ const ProductManagementModal = ({
         reason || `Reducción manual de ${quantity} unidades`
       );
 
-      console.log('📡 Respuesta del backend:', response);
+      console.log('Respuesta del backend:', response);
 
       if (response.success) {
-        console.log('✅ Stock actualizado exitosamente, emitiendo evento...');
+        console.log('Stock actualizado exitosamente, emitiendo evento...');
         
         toast.success(`Stock reducido: -${quantity} unidades`);
         
@@ -71,7 +71,7 @@ const ProductManagementModal = ({
 
         // **EMITIR EVENTO PARA SINCRONIZACIÓN GLOBAL**
         const eventDetail = { productId: product.id, newStock: response.newStock };
-        console.log('🔥 Disparando evento stock-updated:', eventDetail);
+        console.log('Disparando evento stock-updated:', eventDetail);
         window.dispatchEvent(new CustomEvent('stock-updated', {
           detail: eventDetail
         }));

@@ -400,20 +400,20 @@ export const generateInvoicePDF = async (sale) => {
     doc.setFontSize(9);
     doc.setTextColor(...colors.secondary);
     doc.setFont('helvetica', 'normal');
-    doc.text('🏢 Este documento no tiene validez fiscal sin el sello correspondiente', pageWidth / 2, footerY + 5, { align: 'center' });
+    doc.text('Este documento no tiene validez fiscal sin el sello correspondiente', pageWidth / 2, footerY + 5, { align: 'center' });
     
     doc.setFontSize(8);
-    doc.text(`📅 Documento generado automáticamente el ${new Date().toLocaleString()}`, pageWidth / 2, footerY + 12, { align: 'center' });
+    doc.text(`Documento generado automáticamente el ${new Date().toLocaleString()}`, pageWidth / 2, footerY + 12, { align: 'center' });
 
-    console.log('🎉 PDF con diseño Bootstrap generado correctamente');
+    console.log('PDF con diseño Bootstrap generado correctamente');
 
     // Generar y descargar PDF
     doc.save(`Factura-${sale.id || sale._id || 'No-ID'}.pdf`);
 
     return true;
   } catch (error) {
-    console.error('❌ Error al generar PDF de factura:', error);
-    console.log('🔄 Intentando con función de respaldo...');
+    console.error('Error al generar PDF de factura:', error);
+    console.log('Intentando con función de respaldo...');
     return generateInvoicePDFAlternative(sale);
   }
 };

@@ -15,10 +15,10 @@ const useProductSync = (initialProducts = []) => {
       setLoading(true);
       setError(null);
       
-      console.log('🔄 [useProductSync] Refrescando productos desde backend...');
+      console.log('[useProductSync] Refrescando productos desde backend...');
       const response = await apiService.getProducts();
       
-      console.log('🔍 [useProductSync] Respuesta del backend:', response);
+      console.log('[useProductSync] Respuesta del backend:', response);
       
       // Extraer productos según la estructura de respuesta
       let freshProducts = [];
@@ -32,17 +32,17 @@ const useProductSync = (initialProducts = []) => {
         console.log(`[useProductSync] Productos obtenidos (formato directo): ${freshProducts.length}`);
         setProducts(freshProducts);
       } else {
-        console.warn('⚠️ [useProductSync] Formato de respuesta inesperado:', response);
+        console.warn('[useProductSync] Formato de respuesta inesperado:', response);
         return false;
       }
       
       // Actualizar estado
       setProducts(freshProducts);
-      console.log('🎯 [useProductSync] Estado actualizado exitosamente');
+      console.log('[useProductSync] Estado actualizado exitosamente');
       return true;
       
     } catch (err) {
-      console.error('❌ [useProductSync] Error refrescando productos:', err);
+      console.error('[useProductSync] Error refrescando productos:', err);
       setError(err.message || 'Error al refrescar productos');
       return false;
     } finally {
@@ -52,7 +52,7 @@ const useProductSync = (initialProducts = []) => {
 
   // Función para actualizar un producto específico
   const updateProduct = useCallback((updatedProduct) => {
-    console.log('📊 [useProductSync] Actualizando producto:', updatedProduct);
+    console.log('[useProductSync] Actualizando producto:', updatedProduct);
     
     setProducts(prevProducts => 
       prevProducts.map(product => 
@@ -73,7 +73,7 @@ const useProductSync = (initialProducts = []) => {
 
   // Función para eliminar un producto
   const removeProduct = useCallback((productId) => {
-    console.log('🗑️ [useProductSync] Eliminando producto:', productId);
+    console.log('[useProductSync] Eliminando producto:', productId);
     
     setProducts(prevProducts => 
       prevProducts.filter(product => product.id !== productId)
@@ -83,7 +83,7 @@ const useProductSync = (initialProducts = []) => {
   // Listener para eventos de stock actualizado
   useEffect(() => {
     const handleStockUpdated = (event) => {
-      console.log('📊 [useProductSync] Evento stock-updated recibido:', event.detail);
+      console.log('[useProductSync] Evento stock-updated recibido:', event.detail);
       refreshProducts();
     };
 

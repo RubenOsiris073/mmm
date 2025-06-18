@@ -8,12 +8,12 @@ let model = null;
 // Función para cargar el modelo
 async function loadModel() {
   try {
-    console.log("🔄 Cargando modelo TensorFlow...");
+    console.log("Cargando modelo TensorFlow...");
     model = await tf.loadLayersModel('file://./models/model.json');
-    console.log("✅ Modelo cargado exitosamente");
+    console.log("Modelo cargado exitosamente");
     return true;
   } catch (error) {
-    console.error("❌ Error al cargar el modelo:", error);
+    console.error("Error al cargar el modelo:", error);
     return false;
   }
 }

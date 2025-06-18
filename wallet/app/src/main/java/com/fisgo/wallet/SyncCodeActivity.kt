@@ -345,7 +345,7 @@ class SyncCodeActivity : AppCompatActivity() {
                     WalletManager.deductAmount(this@SyncCodeActivity, cartTotal)
                     
                     // Mostrar feedback de éxito
-                    confirmPurchaseButton.text = "✅ ¡Pago exitoso!"
+                    confirmPurchaseButton.text = "¡Pago exitoso!"
                     showMessage("¡Compra realizada exitosamente con wallet!")
                     
                     val intent = Intent(this@SyncCodeActivity, PaymentSuccessActivity::class.java)

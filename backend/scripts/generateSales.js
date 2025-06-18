@@ -189,7 +189,7 @@ async function generateSales() {
       const ventasLote = [];
       const ventasEnEsteLote = Math.min(batchSize, totalVentas - ventasCreadas);
       
-      console.log(`📊 Procesando lote ${lote + 1}: ${ventasEnEsteLote} ventas...`);
+      console.log(`Procesando lote ${lote + 1}: ${ventasEnEsteLote} ventas...`);
       
       for (let i = 0; i < ventasEnEsteLote; i++) {
         const venta = generarVentaAleatoria(productos);
@@ -237,7 +237,7 @@ async function generateSales() {
       const ventasGuardadas = await Promise.all(promesasVentas);
       ventasCreadas += ventasGuardadas.length;
       
-      console.log(`✅ Lote ${lote + 1} completado: ${ventasGuardadas.length} ventas guardadas`);
+      console.log(`Lote ${lote + 1} completado: ${ventasGuardadas.length} ventas guardadas`);
     }
     
     // Resumen de productos más vendidos

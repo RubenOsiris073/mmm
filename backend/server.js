@@ -116,7 +116,7 @@ apiRouter.post('/auth/login', async (req, res) => {
       return res.status(400).json({ error: 'Email y contraseña son requeridos' });
     }
 
-    console.log('🔑 Intento de login para:', email);
+    console.log('Intento de login para:', email);
 
     // Autenticar con Firebase
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -133,7 +133,7 @@ apiRouter.post('/auth/login', async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    console.log('✅ Login exitoso para:', email);
+    console.log('Login exitoso para:', email);
 
     res.json({
       success: true,
@@ -148,7 +148,7 @@ apiRouter.post('/auth/login', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Error en login:', error.message);
+    console.error('Error en login:', error.message);
     
     let errorMessage = 'Error al iniciar sesión';
     
@@ -185,7 +185,7 @@ apiRouter.post('/auth/register', async (req, res) => {
       return res.status(400).json({ error: 'Email y contraseña son requeridos' });
     }
 
-    console.log('📝 Intento de registro para:', email);
+    console.log('Intento de registro para:', email);
 
     // Crear usuario en Firebase
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -202,7 +202,7 @@ apiRouter.post('/auth/register', async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    console.log('✅ Registro exitoso para:', email);
+    console.log('Registro exitoso para:', email);
 
     res.json({
       success: true,
@@ -217,7 +217,7 @@ apiRouter.post('/auth/register', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Error en registro:', error.message);
+    console.error('Error en registro:', error.message);
     
     let errorMessage = 'Error al crear usuario';
     
@@ -323,18 +323,18 @@ const PORT = config.port;
 const HOST = '0.0.0.0'; // Escuchar en todas las interfaces de red
 
 app.listen(PORT, HOST, () => {
-  console.log(`🚀 Servidor corriendo en http://0.0.0.0:${PORT}`);
-  console.log(`📡 Accesible desde:`);
+  console.log(`Servidor corriendo en http://0.0.0.0:${PORT}`);
+  console.log(`Accesible desde:`);
   console.log(`   - Ethernet: http://154.0.0.9:${PORT}`);
   console.log(`   - WiFi: http://154.0.0.5:${PORT}`);
   console.log(`   - Localhost: http://localhost:${PORT}`);
   console.log(`Modo: ${config.env}`);
-  console.log('🔗 Endpoints de autenticación:');
+  console.log('Endpoints de autenticación:');
   console.log('- POST /api/auth/login - Iniciar sesión');
   console.log('- POST /api/auth/register - Registrar usuario');
   console.log('- GET /api/auth/verify - Verificar token');
   console.log('- POST /api/auth/logout - Cerrar sesión');
-  console.log('📊 Otros endpoints:');
+  console.log('Otros endpoints:');
   console.log('- GET /api/health');
   console.log('- GET /api/status');
   console.log('- GET /api/firebase-config');

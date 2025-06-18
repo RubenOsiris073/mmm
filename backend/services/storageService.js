@@ -33,7 +33,7 @@ const getDetections = async (limitCount = 10) => {
       timestamp: doc.data().createdAt?.toDate().toISOString() || new Date().toISOString()
     }));
   } catch (error) {
-    console.error("❌ Error al obtener detecciones:", error);
+    console.error("Error al obtener detecciones:", error);
     throw error;
   }
 };

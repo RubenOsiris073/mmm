@@ -130,7 +130,7 @@ const ProductDetectionPanel = ({
               
               {lastDetection.productInfo ? (
                 <>
-                  <p className="text-success">✅ Producto encontrado en inventario</p>
+                  <p className="text-success">Producto encontrado en inventario</p>
                   <Button
                     variant="success"
                     size="sm"
@@ -144,7 +144,7 @@ const ProductDetectionPanel = ({
                   </Button>
                 </>
               ) : (
-                <p className="text-danger">❌ Producto no encontrado en inventario</p>
+                <p className="text-danger">Producto no encontrado en inventario</p>
               )}
             </Card.Body>
           </Card>

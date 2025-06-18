@@ -39,7 +39,7 @@ const CameraView = () => {
         setModel(loadedModel);
         setLoading(false);
       } catch (error) {
-        console.error("❌ Error al cargar el modelo:", error);
+        console.error("Error al cargar el modelo:", error);
         setLoading(false);
       }
     }
@@ -82,7 +82,7 @@ const CameraView = () => {
           // Actualizar estado solo si hay cambio significativo
           if (prediction.label !== label || 
               Math.abs(prediction.similarity - parseFloat(similarity)) > 5) {
-            console.log(`📊 Detectado: ${label} con precisión ${similarity}%`);
+            console.log(`Detectado: ${label} con precisión ${similarity}%`);
             setPrediction({ label, similarity: parseFloat(similarity) });
           }
         } catch (err) {
@@ -156,7 +156,7 @@ const CameraView = () => {
           variant={isDetecting ? "danger" : "success"} 
           onClick={() => setIsDetecting(prev => !prev)}
         >
-          {isDetecting ? "⏸️ Pausar Detección" : "▶️ Reanudar Detección"}
+          {isDetecting ? "Pausar Detección" : "Reanudar Detección"}
         </Button>
         
         <Button 
@@ -164,13 +164,13 @@ const CameraView = () => {
           onClick={handleSaveDetection}
           disabled={!prediction.label || prediction.similarity < 50}
         >
-          💾 Guardar Producto Detectado
+          Guardar Producto Detectado
         </Button>
       </div>
       
       {saveSuccess && (
         <Alert variant="success" className="mt-3">
-          ✅ Producto guardado exitosamente en la lista
+          Producto guardado exitosamente en la lista
         </Alert>
       )}
 

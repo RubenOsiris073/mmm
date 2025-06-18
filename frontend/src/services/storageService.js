@@ -153,7 +153,7 @@ export const assignCategoriesAutomatically = async () => {
         updatedCount++;
         console.log(`Producto "${product.nombre || product.label}" categorizado como "${categoria}"`);
       } catch (error) {
-        console.error(`❌ Error actualizando producto ${product.id}:`, error);
+        console.error(`Error actualizando producto ${product.id}:`, error);
       }
     }
     

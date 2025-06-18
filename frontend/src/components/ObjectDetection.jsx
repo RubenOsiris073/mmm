@@ -40,7 +40,7 @@ const ObjectDetection = () => {
         setModel(loadedModel);
         setLoading(false);
       } catch (error) {
-        console.error("❌ Error al cargar el modelo:", error);
+        console.error("Error al cargar el modelo:", error);
         setLoading(false);
       }
     }
@@ -70,7 +70,7 @@ const ObjectDetection = () => {
     
     // Solo para depuración - mostrar heartbeat de detección cada 30 frames
     if (detectionCount.current % 30 === 0) {
-      console.log(`🔍 Detección en curso... (${detectionCount.current} frames procesados)`);
+      console.log(`Detección en curso... (${detectionCount.current} frames procesados)`);
     }
     
     if (videoRef.current && videoRef.current.readyState >= 2 && model) {
@@ -98,7 +98,7 @@ const ObjectDetection = () => {
           
           // Sólo actualizar el estado si hay un cambio significativo para evitar re-renders innecesarios
           if (prediction.label !== label || Math.abs(prediction.similarity - parseFloat(similarity)) > 5) {
-            console.log(`📊 Detectado: ${label} con precisión ${similarity}%`);
+            console.log(`Detectado: ${label} con precisión ${similarity}%`);
             setPrediction({ label, similarity: parseFloat(similarity) });
             
             // Registrar en Firebase (solo para cambios significativos)
@@ -119,12 +119,12 @@ const ObjectDetection = () => {
   // Iniciar/Detener detección basado en isDetecting
   useEffect(() => {
     if (isDetecting && model && !rafRef.current) {
-      console.log("▶️ Iniciando bucle de detección");
+      console.log("Iniciando bucle de detección");
       isRunning.current = true;
       detectionCount.current = 0;
       detectFrame();
     } else if (!isDetecting && rafRef.current) {
-      console.log("⏸️ Pausando bucle de detección");
+      console.log("Pausando bucle de detección");
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     }
@@ -133,7 +133,7 @@ const ObjectDetection = () => {
   // Efecto para iniciar la detección cuando el modelo se carga
   useEffect(() => {
     if (model && isDetecting && !rafRef.current) {
-      console.log("🔄 Modelo cargado, iniciando detección");
+      console.log("Modelo cargado, iniciando detección");
       detectFrame();
     }
   }, [model, isDetecting, detectFrame]);

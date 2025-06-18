@@ -56,7 +56,7 @@ router.put('/:productId/stock', async (req, res) => {
       });
     }
     
-    console.log(`📊 Actualizando stock: ${productId}, ajuste: ${adjustment}, razón: ${reason}`);
+    console.log(`Actualizando stock: ${productId}, ajuste: ${adjustment}, razón: ${reason}`);
     
     const updatedItem = await inventoryService.updateStock(
       productId, 
@@ -95,7 +95,7 @@ router.put('/:productId/set-stock', async (req, res) => {
       });
     }
     
-    console.log(`📦 Estableciendo stock absoluto: ${productId}, cantidad: ${quantity}`);
+    console.log(`Estableciendo stock absoluto: ${productId}, cantidad: ${quantity}`);
     
     // Primero obtener el stock actual
     const currentStock = await inventoryService.getProductStock(productId);

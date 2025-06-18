@@ -102,10 +102,10 @@ async function createSale(saleData) {
             success: true
           });
           
-          console.log(`✅ Stock actualizado: ${updateResult.productName} - Nuevo stock: ${updateResult.newStock}`);
+          console.log(`Stock actualizado: ${updateResult.productName} - Nuevo stock: ${updateResult.newStock}`);
           
         } catch (stockError) {
-          console.error(`❌ Error actualizando stock para ${productId}:`, stockError);
+          console.error(`Error actualizando stock para ${productId}:`, stockError);
           stockUpdates.push({
             productId,
             quantitySold,
@@ -120,7 +120,7 @@ async function createSale(saleData) {
       // Verificar si hubo errores críticos
       const failedUpdates = stockUpdates.filter(update => !update.success);
       if (failedUpdates.length > 0) {
-        console.warn(`⚠️ ${failedUpdates.length} productos no pudieron actualizar su stock`);
+        console.warn(`${failedUpdates.length} productos no pudieron actualizar su stock`);
       }
       
     } catch (inventoryError) {
@@ -134,7 +134,7 @@ async function createSale(saleData) {
       timestamp: new Date().toISOString()
     };
     
-    console.log(`✅ Venta procesada exitosamente: ${docRef.id}`);
+    console.log(`Venta procesada exitosamente: ${docRef.id}`);
     return newSale;
     
   } catch (error) {

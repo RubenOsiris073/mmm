@@ -944,17 +944,17 @@ const productos = [
 // Función principal para inicializar productos
 async function initializeProducts() {
   try {
-    console.log('🚀 Iniciando inicialización de productos...');
+    console.log('Iniciando inicialización de productos...');
     
     // Primero, limpiar productos existentes (opcional)
-    console.log('🧹 Limpiando productos existentes...');
+    console.log('Limpiando productos existentes...');
     const existingProducts = await getDocs(collection(db, COLLECTIONS.PRODUCTS));
     const deletePromises = existingProducts.docs.map(doc => deleteDoc(doc.ref));
     await Promise.all(deletePromises);
-    console.log(`✅ Se eliminaron ${existingProducts.size} productos existentes`);
+    console.log(`Se eliminaron ${existingProducts.size} productos existentes`);
     
     // Agregar productos nuevos
-    console.log('📦 Agregando nuevos productos...');
+    console.log('Agregando nuevos productos...');
     const addPromises = productos.map(async (producto, index) => {
       try {
         const docRef = await addDoc(collection(db, COLLECTIONS.PRODUCTS), {
@@ -966,10 +966,10 @@ async function initializeProducts() {
           precisionDeteccion: null
         });
         
-        console.log(`✅ Producto agregado: ${producto.nombre} (ID: ${docRef.id})`);
+        console.log(`Producto agregado: ${producto.nombre} (ID: ${docRef.id})`);
         return { id: docRef.id, ...producto };
       } catch (error) {
-        console.error(`❌ Error agregando producto ${producto.nombre}:`, error);
+        console.error(`Error agregando producto ${producto.nombre}:`, error);
         throw error;
       }
     });
@@ -978,7 +978,7 @@ async function initializeProducts() {
     
     // Resumen por categorías
     const categorias = [...new Set(productos.map(p => p.categoria))];
-    console.log('\n📊 RESUMEN POR CATEGORÍAS:');
+    console.log('\n RESUMEN POR CATEGORÍAS:');
     categorias.forEach(categoria => {
       const productosCategoria = productos.filter(p => p.categoria === categoria);
       console.log(`  ${categoria}: ${productosCategoria.length} productos`);
@@ -987,9 +987,9 @@ async function initializeProducts() {
       });
     });
     
-    console.log(`\n🎉 ¡Inicialización completada exitosamente!`);
-    console.log(`📈 Total de productos agregados: ${productosAgregados.length}`);
-    console.log(`📂 Total de categorías: ${categorias.length}`);
+    console.log(`\n¡Inicialización completada exitosamente!`);
+    console.log(`Total de productos agregados: ${productosAgregados.length}`);
+    console.log(`Total de categorías: ${categorias.length}`);
     
     return {
       success: true,
@@ -999,7 +999,7 @@ async function initializeProducts() {
     };
     
   } catch (error) {
-    console.error('💥 Error durante la inicialización:', error);
+    console.error('Error durante la inicialización:', error);
     throw error;
   }
 }
@@ -1008,11 +1008,11 @@ async function initializeProducts() {
 if (require.main === module) {
   initializeProducts()
     .then(result => {
-      console.log('\n✅ Script completado exitosamente:', result);
+      console.log('\n Script completado exitosamente:', result);
       process.exit(0);
     })
     .catch(error => {
-      console.error('\n❌ Error en el script:', error);
+      console.error('\n Error en el script:', error);
       process.exit(1);
     });
 }
