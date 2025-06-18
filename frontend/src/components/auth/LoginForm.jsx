@@ -117,16 +117,16 @@ const LoginForm = ({ accessType = 'general', onBack, onLoginSuccess }) => {
     }}>
       <Row className="w-100 justify-content-center">
         <Col xs={12} sm={10} md={8} lg={6} xl={5}>
-          <Card className="shadow-lg border-0" style={{ 
+          <Card className="shadow-lg" style={{ 
             backgroundColor: 'var(--card-bg)', 
-            borderColor: 'var(--border-color)' 
+            border: 'none'
           }}>
-            <Card.Body className="p-5">
+            <Card.Body className="py-5 px-5" style={{ minHeight: '500px' }}>
               {/* Botón de volver */}
               {onBack && (
                 <Button
                   variant="link"
-                  className="p-0 mb-3 text-decoration-none"
+                  className="p-0 mb-2 text-decoration-none"
                   onClick={onBack}
                   style={{ color: 'var(--text-secondary)' }}
                 >
@@ -135,15 +135,18 @@ const LoginForm = ({ accessType = 'general', onBack, onLoginSuccess }) => {
                 </Button>
               )}
 
+              {/* Espaciado superior mínimo */}
+              <div style={{ height: '10px' }}></div>
+
               {/* Header */}
               <div className="text-center mb-4">
-                <div className="mb-3">
+                <div className="mb-4">
                   <div className="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" 
                        style={{ width: '80px', height: '80px' }}>
                     <i className="bi bi-person-circle fs-1 text-primary"></i>
                   </div>
                 </div>
-                <h3 className="fw-bold" style={{ color: 'var(--text-primary)' }}>
+                <h3 className="fw-bold mb-3" style={{ color: 'var(--text-primary)' }}>
                   {config.title}
                 </h3>
                 <p className="mb-0" style={{ color: 'var(--text-secondary)' }}>

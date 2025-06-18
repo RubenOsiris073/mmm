@@ -1,5 +1,5 @@
 const { db } = require('../config/firebase');
-const { collection, query, orderBy, limit, getDocs, addDoc, serverTimestamp } = require('firebase/firestore');
+const { collection, query, orderBy, limit, getDocs, addDoc, serverTimestamp, where } = require('firebase/firestore');
 
 // Obtener transacciones con un límite
 const getTransactions = async (limitVal) => {
@@ -21,6 +21,43 @@ const getTransactions = async (limitVal) => {
   } catch (error) {
     console.error("Error al obtener transacciones:", error);
     throw new Error("Error al obtener transacciones");
+  }
+};
+
+// Obtener transacciones por userId
+const getUserTransactions = async (userId, limitVal = 20) => {
+  try {
+    if (!userId) {
+      throw new Error("Se requiere un userId para obtener las transacciones del usuario");
+    }
+
+    const transactionsRef = collection(db, 'transactions');
+    const q = query(
+      transactionsRef,
+      where('userId', '==', userId),
+      orderBy('timestamp', 'desc'),
+      limit(limitVal)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.empty) {
+      return [];
+    }
+    
+    const transactions = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        timestamp: data.timestamp?.toDate?.() || data.timestamp
+      };
+    });
+    
+    return transactions;
+  } catch (error) {
+    console.error(`Error al obtener transacciones para usuario ${userId}:`, error);
+    throw new Error(`Error al obtener transacciones del usuario: ${error.message}`);
   }
 };
 
@@ -75,5 +112,6 @@ const createTransaction = async (transactionData) => {
 
 module.exports = {
   getTransactions,
+  getUserTransactions,
   createTransaction
 };

@@ -87,31 +87,6 @@ const ProductsPage = () => {
 
   return (
     <>
-      <Row className="mb-4">
-        <Col>
-          <div className="d-flex justify-content-between align-items-center">
-            <h1>Lista de Productos</h1>
-            <div>
-              <Button 
-                as={Link} 
-                to="/products/new" 
-                variant="primary"
-                className="me-2"
-              >
-                <FaPlus className="me-1" />
-                Nuevo Producto
-              </Button>
-              <Link to="/">
-                <Button variant="outline-secondary">
-                  <i className="bi bi-camera me-2"></i>
-                  Volver a Cámara
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </Col>
-      </Row>
-
       {/* Banner de productos - Versión simplificada */}
       <Card className="mb-4">
         <Card.Body>
@@ -122,6 +97,17 @@ const ProductsPage = () => {
                 Gestione su catálogo de productos, visualice las detecciones automáticas y mantenga su inventario actualizado.
                 Este módulo le permite ver, editar y añadir productos para optimizar su gestión de inventario.
               </p>
+            </Col>
+            <Col md={4} className="text-end">
+              <Button 
+                as={Link} 
+                to="/products/new" 
+                variant="primary"
+                size="lg"
+              >
+                <FaPlus className="me-1" />
+                Nuevo Producto
+              </Button>
             </Col>
           </Row>
         </Card.Body>

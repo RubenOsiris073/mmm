@@ -1,8 +1,75 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import { FaMoneyBillWave, FaCog, FaArrowRight } from 'react-icons/fa';
+import Particles from '@tsparticles/react';
+import { loadSlim } from '@tsparticles/slim';
 
 const AccessSelector = ({ onSelectAccess }) => {
+  // Configuración más simple y compatible
+  const particlesConfig = {
+    background: {
+      color: {
+        value: "transparent",
+      },
+    },
+    fpsLimit: 120,
+    interactivity: {
+      events: {
+        onClick: {
+          enable: false,
+        },
+        onHover: {
+          enable: false,
+        },
+        resize: true,
+      },
+    },
+    particles: {
+      color: {
+        value: "#3b82f6",
+      },
+      links: {
+        color: "#3b82f6",
+        distance: 150,
+        enable: true,
+        opacity: 0.2,
+        width: 1,
+      },
+      move: {
+        direction: "none",
+        enable: true,
+        outModes: {
+          default: "bounce",
+        },
+        random: false,
+        speed: 1,
+        straight: false,
+      },
+      number: {
+        density: {
+          enable: true,
+          area: 800,
+        },
+        value: 80,
+      },
+      opacity: {
+        value: 0.5,
+      },
+      shape: {
+        type: "circle",
+      },
+      size: {
+        value: { min: 1, max: 5 },
+      },
+    },
+    detectRetina: true,
+  };
+
+  const particlesInit = useCallback(async (engine) => {
+    console.log("Inicializando partículas...");
+    await loadSlim(engine);
+  }, []);
+
   const accessOptions = [
     {
       id: 'pos',
@@ -37,15 +104,36 @@ const AccessSelector = ({ onSelectAccess }) => {
   return (
     <Container fluid className="min-vh-100 d-flex align-items-center justify-content-center" style={{ 
       backgroundColor: 'var(--bg-primary)', 
-      color: 'var(--text-primary)' 
+      color: 'var(--text-primary)',
+      position: 'relative'
     }}>
-      <div className="w-100" style={{ maxWidth: '1000px' }}>
+      {/* Particles Background - Positioned absolutely to not affect layout */}
+      <div style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        zIndex: 0,
+        pointerEvents: 'none'
+      }}>
+        <Particles 
+          id="tsparticles"
+          init={particlesInit}
+          options={particlesConfig}
+        />
+      </div>
+
+      <div className="w-100" style={{ maxWidth: '1000px', position: 'relative', zIndex: 1 }}>
+        {/* Espaciado superior reducido para subir el header */}
+        <div style={{ height: '40px' }}></div>
+        
         {/* Header */}
-        <div className="text-center mb-5">
+        <div className="text-center mb-4">
           <h2 className="fw-bold mb-3" style={{ color: 'var(--text-primary)' }}>
             Selecciona tu tipo de acceso
           </h2>
-          <p className="lead" style={{ color: 'var(--text-secondary)' }}>
+          <p className="lead mb-4" style={{ color: 'var(--text-secondary)' }}>
             Elige la opción que corresponde a tu rol en el sistema
           </p>
         </div>
@@ -55,12 +143,16 @@ const AccessSelector = ({ onSelectAccess }) => {
           {accessOptions.map((option) => (
             <Col key={option.id} xs={12} md={6} lg={5}>
               <Card 
-                className="h-100 shadow-lg border-0 position-relative overflow-hidden access-card"
+                className="h-100 shadow-lg position-relative overflow-hidden access-card"
                 style={{ 
                   backgroundColor: 'var(--card-bg)', 
-                  borderColor: 'var(--border-color)',
+                  border: '0 !important',
                   cursor: 'pointer',
-                  transition: 'all 0.3s ease'
+                  transition: 'all 0.3s ease',
+                  position: 'relative',
+                  zIndex: 2,
+                  outline: 'none !important',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15) !important'
                 }}
                 onClick={() => onSelectAccess(option.id)}
               >
@@ -132,12 +224,27 @@ const AccessSelector = ({ onSelectAccess }) => {
       </div>
 
       <style jsx>{`
+        .access-card {
+          border: none !important;
+          outline: none !important;
+        }
+        .access-card:focus {
+          border: none !important;
+          outline: none !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        }
         .access-card:hover {
           transform: translateY(-5px);
           box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+          border: none !important;
+          outline: none !important;
         }
         .access-card:hover .position-absolute {
           opacity: 1 !important;
+        }
+        .card {
+          border: none !important;
+          outline: none !important;
         }
       `}</style>
     </Container>

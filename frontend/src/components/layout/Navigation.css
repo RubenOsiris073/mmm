@@ -60,6 +60,129 @@
   white-space: nowrap;
 }
 
+/* Estilos para el botón de tema */
+.theme-toggle {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 8px 12px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.85em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.theme-toggle-icon {
+  font-size: 0.9em;
+}
+
+/* Estilos para el menú de usuario */
+.user-menu-title {
+  color: rgba(255, 255, 255, 0.9) !important;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  font-size: 0.9em;
+}
+
+/* Alineación mejorada para la sección derecha del navbar */
+.navbar-nav {
+  align-items: center;
+}
+
+.navbar-nav .nav-link {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px !important;
+  margin: 0 4px;
+}
+
+/* Alineación específica para el dropdown de usuario */
+#user-dropdown {
+  display: flex;
+  align-items: center;
+}
+
+#user-dropdown .dropdown-toggle {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px !important;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.9) !important;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+#user-dropdown .dropdown-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff !important;
+}
+
+#user-dropdown .dropdown-toggle:focus {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+}
+
+#user-dropdown .dropdown-toggle::after {
+  margin-left: 8px;
+}
+
+/* Asegurar que todos los elementos del Nav derecho estén alineados */
+.navbar-collapse .navbar-nav:last-child {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-info {
+  padding: 8px 4px;
+  min-width: 200px;
+}
+
+.user-info small {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.75em;
+}
+
+.user-info div {
+  font-weight: 500;
+  color: #495057;
+  word-break: break-word;
+}
+
+/* Personalizar el dropdown del usuario */
+#user-dropdown .dropdown-menu {
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+#user-dropdown .dropdown-item {
+  padding: 8px 16px;
+  transition: background-color 0.2s ease;
+}
+
+#user-dropdown .dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+#user-dropdown .dropdown-item:last-child:hover {
+  background-color: #ffeaea;
+  color: #dc3545;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .pos-button-modern {
@@ -75,15 +198,30 @@
   .pos-icon {
     font-size: 1.1em;
   }
+
+  .theme-toggle {
+    padding: 6px 10px;
+    font-size: 0.8em;
+  }
+
+  .user-menu-title {
+    font-size: 0.85em;
+  }
+
+  .user-info {
+    min-width: 180px;
+  }
 }
 
 /* Accesibilidad y focus */
-.pos-button-modern:focus {
+.pos-button-modern:focus,
+.theme-toggle:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
 }
 
-.pos-button-modern:focus-visible {
+.pos-button-modern:focus-visible,
+.theme-toggle:focus-visible {
   outline: 2px solid #007bff;
   outline-offset: 2px;
 }

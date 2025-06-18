@@ -1,12 +1,35 @@
 import React from 'react';
 import { Navbar, Nav, Container, NavDropdown } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
-import { FaBoxes, FaStore, FaChartLine, FaPlus, FaCog, FaMoneyBillWave, FaSun, FaMoon, FaBuilding } from 'react-icons/fa';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaBoxes, FaStore, FaChartLine, FaPlus, FaCog, FaMoneyBillWave, FaSun, FaMoon, FaBuilding, FaUser, FaSignOutAlt } from 'react-icons/fa';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../contexts/AuthContext';
 import './Navigation.css';
 
 const Navigation = () => {
   const { isDark, toggleTheme } = useTheme();
+  const { user, signOut, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/login'); // Redirigir al login después del logout
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
+  };
+
+  // Función para obtener el nombre a mostrar del usuario
+  const getUserDisplayName = () => {
+    if (user?.displayName) {
+      return user.displayName;
+    }
+    if (user?.email) {
+      return user.email.split('@')[0]; // Usar la parte antes del @ del email
+    }
+    return 'Usuario';
+  };
 
   return (
     <Navbar bg="dark" variant="dark" expand="lg" className="shadow">
@@ -48,6 +71,52 @@ const Navigation = () => {
           </Nav>
           
           <Nav>
+            {/* Menú de usuario - A la izquierda de Cámara */}
+            {isAuthenticated && (
+              <NavDropdown 
+                title={
+                  <span className="user-menu-title d-flex align-items-center">
+                    {user?.photoURL ? (
+                      <img 
+                        src={user.photoURL} 
+                        alt="Avatar" 
+                        className="rounded-circle me-2" 
+                        style={{ width: '24px', height: '24px' }}
+                      />
+                    ) : (
+                      <FaUser className="me-1" />
+                    )}
+                    {getUserDisplayName()}
+                  </span>
+                } 
+                id="user-dropdown"
+              >
+                <NavDropdown.Item>
+                  <div className="user-info d-flex align-items-center">
+                    {user?.photoURL ? (
+                      <img 
+                        src={user.photoURL} 
+                        alt="Avatar" 
+                        className="rounded-circle me-2" 
+                        style={{ width: '32px', height: '32px' }}
+                      />
+                    ) : (
+                      <FaUser className="me-2" style={{ fontSize: '32px' }} />
+                    )}
+                    <div>
+                      <small className="text-muted">Conectado como:</small>
+                      <div>{user?.email}</div>
+                    </div>
+                  </div>
+                </NavDropdown.Item>
+                <NavDropdown.Divider />
+                <NavDropdown.Item onClick={handleLogout}>
+                  <FaSignOutAlt className="me-2" />
+                  Cerrar Sesión
+                </NavDropdown.Item>
+              </NavDropdown>
+            )}
+
             <Nav.Link as={Link} to="/camera">
               <FaCog className="me-1" />
               Cámara
