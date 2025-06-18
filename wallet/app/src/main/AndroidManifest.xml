@@ -53,6 +53,13 @@
             android:theme="@style/Theme.App.NoActionBar"
             android:parentActivityName=".MainActivity" />
 
+        <!-- Nueva actividad para gestión de métodos de pago -->
+        <activity
+            android:name=".PaymentMethodsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.App.NoActionBar"
+            android:parentActivityName=".MainActivity" />
+
         <!-- Actividades del historial de transacciones -->
         <activity
             android:name=".TransactionHistoryActivity"

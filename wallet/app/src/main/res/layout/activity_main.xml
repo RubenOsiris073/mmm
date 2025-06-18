@@ -39,7 +39,6 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Bienvenido de vuelta"
                         android:textColor="#E3F2FD"
                         android:textSize="16sp"
                         android:alpha="0.9"
@@ -96,20 +95,11 @@
                 android:layout_marginBottom="20dp">
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="$"
-                    android:textColor="#1D1D1F"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    android:layout_marginEnd="4dp" />
-
-                <TextView
                     android:id="@+id/balanceAmountText"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="1,250.00"
+                    android:text="$1,250.00"
                     android:textColor="#1D1D1F"
                     android:textSize="42sp"
                     android:textStyle="bold"
@@ -205,6 +195,68 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Conecta tu billetera con el sistema de punto de venta"
+                        android:textColor="#8E8E93"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_chevron_right"
+                    android:tint="#C7C7CC"
+                    android:layout_gravity="center_vertical" />
+
+            </LinearLayout>
+
+            <!-- Payment Methods Feature -->
+            <LinearLayout
+                android:id="@+id/paymentMethodsCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/feature_card_bg"
+                android:orientation="horizontal"
+                android:padding="20dp"
+                android:layout_marginBottom="12dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground">
+
+                <LinearLayout
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:background="@drawable/feature_icon_bg"
+                    android:gravity="center"
+                    android:layout_marginEnd="16dp">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_credit_card_modern"
+                        android:tint="#007AFF" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mis Tarjetas"
+                        android:textColor="#1D1D1F"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Administra tus tarjetas de crédito y débito"
                         android:textColor="#8E8E93"
                         android:textSize="14sp" />
 

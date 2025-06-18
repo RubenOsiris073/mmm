@@ -18,6 +18,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var addFundsButton: MaterialButton
     private lateinit var syncCard: LinearLayout
     private lateinit var transactionHistoryCard: LinearLayout
+    private lateinit var paymentMethodsCard: LinearLayout
     private lateinit var settingsCard: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,6 +35,7 @@ class MainActivity : AppCompatActivity() {
         addFundsButton = findViewById(R.id.addFundsButton)
         syncCard = findViewById(R.id.syncCard)
         transactionHistoryCard = findViewById(R.id.transactionHistoryCard)
+        paymentMethodsCard = findViewById(R.id.paymentMethodsCard)
         settingsCard = findViewById(R.id.settingsCard)
     }
 
@@ -47,6 +49,12 @@ class MainActivity : AppCompatActivity() {
         // Transaction History - Conectar con TransactionHistoryActivity
         transactionHistoryCard.setOnClickListener {
             val intent = Intent(this, TransactionHistoryActivity::class.java)
+            startActivity(intent)
+        }
+
+        // Payment Methods - Nueva funcionalidad
+        paymentMethodsCard.setOnClickListener {
+            val intent = Intent(this, PaymentMethodsActivity::class.java)
             startActivity(intent)
         }
 
@@ -65,14 +73,11 @@ class MainActivity : AppCompatActivity() {
     private fun loadWalletData() {
         val balance = WalletManager.getBalance(this)
 
-        // Formato mejorado de moneda mexicana sin doble $
+        // Formato simple ya que el XML maneja el signo de peso
         val currencyFormat = NumberFormat.getCurrencyInstance(Locale("es", "MX"))
-        val formattedBalance = currencyFormat.format(balance)
-            .replace("MX$", "$")  // Quitar MX$ pero mantener $
-            .replace("$", "")     // Quitar el $ del formato
-            .trim()               // Limpiar espacios
+        val formattedBalance = currencyFormat.format(balance).replace("MX$", "$")
 
-        balanceAmountText.text = "$$formattedBalance"  // Agregar solo un $ al inicio
+        balanceAmountText.text = formattedBalance
     }
 
     private fun showMessage(message: String) {

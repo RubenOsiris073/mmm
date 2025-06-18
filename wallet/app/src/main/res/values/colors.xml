@@ -10,4 +10,5 @@
     
     <!-- Payment Method Activity Colors -->
     <color name="payment_selected_bg">#F0F7FF</color>
+    <color name="selected_payment_bg">#E3F2FD</color>
 </resources>

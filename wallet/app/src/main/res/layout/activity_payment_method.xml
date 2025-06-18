@@ -41,6 +41,7 @@
                     android:focusable="true" />
 
                 <TextView
+                    android:id="@+id/titleText"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -66,7 +67,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Monto a Pagar"
+                    android:text=""
                     android:textColor="#E3F2FD"
                     android:textSize="16sp"
                     android:layout_marginBottom="8dp" />
@@ -281,6 +282,7 @@
                         android:orientation="vertical">
 
                         <TextView
+                            android:id="@+id/cardTitle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Tarjeta de Crédito"
@@ -289,12 +291,90 @@
                             android:textStyle="bold" />
 
                         <TextView
+                            android:id="@+id/cardSubtitle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Visa, MasterCard, American Express"
                             android:textColor="#8E8E93"
                             android:textSize="14sp"
                             android:layout_marginTop="4dp" />
+
+                        <!-- Saved card info -->
+                        <TextView
+                            android:id="@+id/savedCardText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="VISA •••• 1234"
+                            android:textColor="#1D1D1F"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:layout_marginTop="4dp"
+                            android:visibility="gone" />
+
+                        <!-- Card action buttons -->
+                        <LinearLayout
+                            android:id="@+id/cardActionsContainer"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginTop="12dp"
+                            android:visibility="gone">
+
+                            <!-- Primera fila: Cambiar y Eliminar -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginBottom="8dp">
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/changeCardButton"
+                                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                                    android:layout_width="0dp"
+                                    android:layout_height="40dp"
+                                    android:layout_weight="1"
+                                    android:text="Cambiar"
+                                    android:textColor="#007AFF"
+                                    android:textSize="14sp"
+                                    android:layout_marginEnd="8dp" />
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/deleteCardButton"
+                                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                                    android:layout_width="0dp"
+                                    android:layout_height="40dp"
+                                    android:layout_weight="1"
+                                    android:text="Eliminar"
+                                    android:textColor="#FF3B30"
+                                    android:textSize="14sp" />
+
+                            </LinearLayout>
+
+                            <!-- Segunda fila: Agregar nueva tarjeta -->
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/addNewCardButton"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                android:layout_width="match_parent"
+                                android:layout_height="40dp"
+                                android:text="+ Agregar Nueva Tarjeta"
+                                android:textColor="#007AFF"
+                                android:textSize="14sp"
+                                app:strokeColor="#007AFF"
+                                app:strokeWidth="1dp" />
+
+                        </LinearLayout>
+
+                        <!-- Add card button (when no card exists) -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/addCardButton"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:text="+ Agregar Tarjeta"
+                            android:textColor="#007AFF"
+                            android:textSize="14sp"
+                            android:layout_marginTop="8dp"
+                            android:visibility="visible" />
 
                         <!-- Security badge -->
                         <LinearLayout
