@@ -2,18 +2,19 @@ package com.fisgo.wallet
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.cardview.widget.CardView
+import com.google.android.material.button.MaterialButton
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var balanceCard: CardView
     private lateinit var balanceAmountText: TextView
-    private lateinit var syncCard: CardView
-    private lateinit var syncButton: Button
-    private lateinit var transactionHistoryButton: Button
+    private lateinit var addFundsButton: MaterialButton
+    private lateinit var syncCard: LinearLayout
+    private lateinit var transactionHistoryCard: LinearLayout
+    private lateinit var settingsCard: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,44 +26,50 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
-        balanceCard = findViewById(R.id.balanceCard)
         balanceAmountText = findViewById(R.id.balanceAmountText)
+        addFundsButton = findViewById(R.id.addFundsButton)
         syncCard = findViewById(R.id.syncCard)
-        syncButton = findViewById(R.id.syncButton)
-        transactionHistoryButton = findViewById(R.id.transactionHistoryButton)
+        transactionHistoryCard = findViewById(R.id.transactionHistoryCard)
+        settingsCard = findViewById(R.id.settingsCard)
     }
 
     private fun setupListeners() {
-        syncButton.setOnClickListener {
+        // Sync with POS
+        syncCard.setOnClickListener {
             val intent = Intent(this, SyncCodeActivity::class.java)
             startActivity(intent)
         }
 
-        transactionHistoryButton.setOnClickListener {
-            // TODO: Implementar historial de transacciones
-            showMessage("Funcionalidad próximamente disponible")
+        // Transaction History
+        transactionHistoryCard.setOnClickListener {
+            showMessage("Funcionalidad de Historial de Transacciones próximamente")
         }
 
-        balanceCard.setOnClickListener {
-            // Navegar a SyncCodeActivity para sincronizar con el POS
-            val intent = Intent(this, SyncCodeActivity::class.java)
-            startActivity(intent)
+        // Settings
+        settingsCard.setOnClickListener {
+            showMessage("Funcionalidad de Configuración próximamente")
+        }
+
+        // Quick action buttons
+        addFundsButton.setOnClickListener {
+            showMessage("Funcionalidad de Agregar Fondos próximamente")
         }
     }
 
     private fun loadWalletData() {
-        // Usar el WalletManager para obtener el saldo dinámico
-        val currentBalance = WalletManager.getBalance(this)
-        balanceAmountText.text = "$${String.format("%.2f", currentBalance)}"
+        // Simular la carga del saldo de la billetera
+        // En una implementación real, esto vendría de una API o base de datos
+        val currentBalance = 1250.00
+        balanceAmountText.text = String.format("%.2f", currentBalance)
     }
 
     private fun showMessage(message: String) {
-        android.widget.Toast.makeText(this, message, android.widget.Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     override fun onResume() {
         super.onResume()
-        // Recargar datos cuando regresemos a esta pantalla
+        // Actualizar el balance cuando se regrese a la actividad
         loadWalletData()
     }
 }

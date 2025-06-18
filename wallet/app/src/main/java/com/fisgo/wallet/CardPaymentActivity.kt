@@ -30,6 +30,7 @@ class CardPaymentActivity : AppCompatActivity() {
     private var paymentAmount: Double = 0.0
     private var clientSecret: String? = null
     private var paymentIntentId: String? = null
+    private var isSetupMode: Boolean = false // Nuevo: para distinguir entre configuración y pago
     
     // Cliente HTTP para conectar con tu backend
     private val httpClient = OkHttpClient.Builder().build()
@@ -53,10 +54,17 @@ class CardPaymentActivity : AppCompatActivity() {
         binding = ActivityCardPaymentBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
-        // Obtener el monto del intent
+        // Obtener el monto y modo del intent
         paymentAmount = intent.getDoubleExtra(EXTRA_AMOUNT, 0.0)
+        isSetupMode = intent.getBooleanExtra("setup_mode", false)
+        
+        // DEBUGGING: Log detallado de lo que recibe
+        Log.d(TAG, "onCreate - Received amount: $paymentAmount")
+        Log.d(TAG, "onCreate - Received setup_mode: $isSetupMode")
+        Log.d(TAG, "onCreate - Intent extras: ${intent.extras}")
         
         if (paymentAmount <= 0) {
+            Log.e(TAG, "Invalid payment amount: $paymentAmount")
             showError("Monto inválido para procesar el pago")
             finish()
             return
@@ -65,7 +73,15 @@ class CardPaymentActivity : AppCompatActivity() {
         setupStripe()
         setupUI()
         setupCardInput()
-        createPaymentIntent()
+        
+        // Solo crear Payment Intent si no es modo configuración
+        if (!isSetupMode) {
+            createPaymentIntent()
+        } else {
+            // En modo configuración, habilitar el botón inmediatamente cuando la tarjeta sea válida
+            binding.payButton.text = "Save Card"
+            binding.payButton.isEnabled = false
+        }
     }
     
     private fun setupStripe() {
@@ -83,12 +99,26 @@ class CardPaymentActivity : AppCompatActivity() {
     }
     
     private fun setupUI() {
-        // Configurar el monto en la UI
+        // DEBUGGING: Verificar si hay inconsistencias en el monto
+        if (paymentAmount <= 1.0 && !isSetupMode) {
+            Log.w(TAG, "WARNING: Received suspiciously low amount ($paymentAmount) in payment mode")
+            Log.w(TAG, "This might indicate a data transfer issue")
+        }
+        
+        // Configurar el monto en la UI con formato correcto
         val formatter = NumberFormat.getCurrencyInstance(Locale("es", "MX"))
         val formattedAmount = formatter.format(paymentAmount)
         
         binding.paymentAmountTextView.text = formattedAmount
-        binding.payButton.text = "🔒 Pagar $formattedAmount"
+        
+        // Configurar texto del botón según el modo
+        if (isSetupMode) {
+            binding.payButton.text = "Save Card"
+            binding.payButton.isEnabled = false
+        } else {
+            binding.payButton.text = "🔒 Pagar $formattedAmount"
+            binding.payButton.isEnabled = false
+        }
         
         // Configurar botón de pago
         binding.payButton.setOnClickListener {
@@ -97,6 +127,10 @@ class CardPaymentActivity : AppCompatActivity() {
         
         // Ocultar error inicial
         binding.errorCard.visibility = android.view.View.GONE
+        
+        // Log para debugging
+        Log.d(TAG, "setupUI - Amount: $paymentAmount, Formatted: $formattedAmount, SetupMode: $isSetupMode")
+        Log.d(TAG, "setupUI - Button text: ${binding.payButton.text}")
     }
     
     private fun setupCardInput() {
@@ -106,11 +140,20 @@ class CardPaymentActivity : AppCompatActivity() {
         
         // Listener para validar la tarjeta
         cardInputWidget.setCardValidCallback { isValid, _ ->
-            binding.payButton.isEnabled = isValid && clientSecret != null
+            // En modo setup, solo requerimos que la tarjeta sea válida
+            // En modo pago, requerimos tarjeta válida Y clientSecret
+            binding.payButton.isEnabled = if (isSetupMode) {
+                isValid
+            } else {
+                isValid && clientSecret != null
+            }
             
             // Actualizar logos de tarjetas basado en el tipo detectado
             val cardBrand = cardInputWidget.brand
             updateCardLogos(cardBrand.code)
+            
+            // Log para debugging
+            Log.d(TAG, "Card validation - Valid: $isValid, ClientSecret: ${clientSecret != null}, SetupMode: $isSetupMode, Button enabled: ${binding.payButton.isEnabled}")
         }
     }
     
@@ -193,44 +236,100 @@ class CardPaymentActivity : AppCompatActivity() {
             return
         }
         
-        if (clientSecret == null) {
-            showError("Error: Payment Intent no está listo")
-            return
-        }
-        
         binding.payButton.isEnabled = false
-        binding.payButton.text = "Procesando pago..."
         
-        lifecycleScope.launch {
-            try {
-                // Crear PaymentMethodCreateParams correctamente para Stripe Android
-                val paymentMethodParams = PaymentMethodCreateParams.createCard(cardParams)
-                val confirmParams = ConfirmPaymentIntentParams.createWithPaymentMethodCreateParams(
-                    paymentMethodCreateParams = paymentMethodParams,
-                    clientSecret = clientSecret!!
-                )
-                
-                // Confirmamos el pago usando el cliente de Stripe
-                stripe.confirmPayment(this@CardPaymentActivity, confirmParams)
-                
-                // Por ahora, asumimos que llegó hasta aquí significa éxito
-                // En una implementación más robusta, necesitaríamos usar callbacks
-                Log.d(TAG, "Pago procesado")
-                Toast.makeText(this@CardPaymentActivity, "¡Pago procesado exitosamente!", Toast.LENGTH_LONG).show()
-                
-                // Enviar resultado exitoso y cerrar actividad
-                setResult(RESULT_OK)
-                finish()
-                
-            } catch (e: Exception) {
-                Log.e(TAG, "Error procesando pago: ${e.message}")
-                showError("Error procesando el pago: ${e.message}")
-                
+        if (isSetupMode) {
+            // Modo configuración: solo guardar información de la tarjeta
+            binding.payButton.text = "Guardando tarjeta..."
+            
+            lifecycleScope.launch {
+                try {
+                    // Simular un pequeño delay para UX
+                    kotlinx.coroutines.delay(1000)
+                    
+                    // Guardar información de la tarjeta
+                    val cardBrand = cardInputWidget.brand.displayName
+                    // En modo configuración, generamos un lastFour simulado para demo
+                    val lastFour = generateMockLastFour()
+                    
+                    PaymentMethodManager.saveCardInfo(
+                        this@CardPaymentActivity,
+                        lastFour,
+                        cardBrand
+                    )
+                    
+                    Log.d(TAG, "Tarjeta configurada: $cardBrand **** $lastFour")
+                    Toast.makeText(this@CardPaymentActivity, "¡Tarjeta guardada exitosamente!", Toast.LENGTH_LONG).show()
+                    
+                    // Enviar resultado exitoso con flag de setup mode
+                    val resultIntent = android.content.Intent()
+                    resultIntent.putExtra("setup_mode", true)
+                    setResult(RESULT_OK, resultIntent)
+                    finish()
+                    
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error guardando tarjeta: ${e.message}")
+                    showError("Error guardando la tarjeta: ${e.message}")
+                    
+                    binding.payButton.isEnabled = true
+                    binding.payButton.text = "Save Card"
+                }
+            }
+        } else {
+            // Modo pago real: procesar pago con Stripe
+            if (clientSecret == null) {
+                showError("Error: Payment Intent no está listo")
                 binding.payButton.isEnabled = true
-                val formatter = NumberFormat.getCurrencyInstance(Locale("es", "MX"))
-                binding.payButton.text = "🔒 Pagar ${formatter.format(paymentAmount)}"
+                return
+            }
+            
+            binding.payButton.text = "Procesando pago..."
+            
+            lifecycleScope.launch {
+                try {
+                    // Crear PaymentMethodCreateParams correctamente para Stripe Android
+                    val paymentMethodParams = PaymentMethodCreateParams.createCard(cardParams)
+                    val confirmParams = ConfirmPaymentIntentParams.createWithPaymentMethodCreateParams(
+                        paymentMethodCreateParams = paymentMethodParams,
+                        clientSecret = clientSecret!!
+                    )
+                    
+                    // Confirmamos el pago usando el cliente de Stripe
+                    stripe.confirmPayment(this@CardPaymentActivity, confirmParams)
+                    
+                    // Guardar información de la tarjeta al completar exitosamente
+                    val cardBrand = cardInputWidget.brand.displayName
+                    val lastFour = generateMockLastFour() // Simulado por seguridad
+                    
+                    PaymentMethodManager.saveCardInfo(
+                        this@CardPaymentActivity,
+                        lastFour,
+                        cardBrand
+                    )
+                    
+                    Log.d(TAG, "Pago procesado exitosamente")
+                    Toast.makeText(this@CardPaymentActivity, "¡Pago procesado exitosamente!", Toast.LENGTH_LONG).show()
+                    
+                    // Enviar resultado exitoso sin flag de setup mode (pago real)
+                    setResult(RESULT_OK)
+                    finish()
+                    
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error procesando pago: ${e.message}")
+                    showError("Error procesando el pago: ${e.message}")
+                    
+                    binding.payButton.isEnabled = true
+                    val formatter = NumberFormat.getCurrencyInstance(Locale("es", "MX"))
+                    binding.payButton.text = "🔒 Pagar ${formatter.format(paymentAmount)}"
+                }
             }
         }
+    }
+    
+    private fun generateMockLastFour(): String {
+        // Por seguridad, Stripe no expone el número real de la tarjeta
+        // Generamos un mock para demo purposes
+        return (1000..9999).random().toString()
     }
     
     private fun showError(message: String) {

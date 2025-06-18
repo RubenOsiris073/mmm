@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Outer circle with shadow effect -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#20000000" />
+            <size android:width="28dp" android:height="28dp" />
+            <padding android:bottom="2dp" android:right="2dp" />
+        </shape>
+    </item>
+    <!-- Main circle -->
+    <item>
+        <shape android:shape="oval">
+            <gradient
+                android:startColor="#0063CC"
+                android:endColor="#004299"
+                android:angle="45"/>
+            <size android:width="26dp" android:height="26dp" />
+        </shape>
+    </item>
+</layer-list>

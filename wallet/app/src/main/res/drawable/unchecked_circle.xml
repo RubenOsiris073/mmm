@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Subtle shadow -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#15000000" />
+            <size android:width="28dp" android:height="28dp" />
+            <padding android:bottom="2dp" android:right="2dp" />
+        </shape>
+    </item>
+    <!-- Main circle with border -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#F5F5F5" />
+            <stroke android:width="1.5dp" android:color="#DEDEDE" />
+            <size android:width="26dp" android:height="26dp" />
+        </shape>
+    </item>
+</layer-list>

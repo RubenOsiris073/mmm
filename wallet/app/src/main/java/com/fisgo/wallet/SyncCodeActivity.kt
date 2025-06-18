@@ -2,18 +2,23 @@ package com.fisgo.wallet
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.text.InputFilter
 import android.util.Log
 import android.view.View
-import android.widget.Button
+import android.view.inputmethod.InputMethodManager
+import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -30,23 +35,39 @@ import kotlinx.parcelize.Parcelize
 class SyncCodeActivity : AppCompatActivity() {
     
     private lateinit var syncCodeInput: EditText
-    private lateinit var syncButton: Button
+    private lateinit var syncButton: MaterialButton
+    private lateinit var progressContainer: LinearLayout
     private lateinit var progressBar: ProgressBar
+    private lateinit var errorContainer: LinearLayout
     private lateinit var errorText: TextView
     private lateinit var cartContainer: LinearLayout
     private lateinit var cartRecyclerView: RecyclerView
     private lateinit var totalText: TextView
-    private lateinit var payButton: Button
-    private lateinit var confirmPurchaseButton: Button
+    private lateinit var confirmPurchaseButton: MaterialButton
+    
+    // Payment method components
+    private lateinit var paymentMethodsContainer: LinearLayout
+    private lateinit var walletOptionContainer: LinearLayout
+    private lateinit var cardOptionContainer: LinearLayout
+    private lateinit var walletCheckBox: CheckBox
+    private lateinit var cardCheckBox: CheckBox
+    private lateinit var walletBalanceText: TextView
+    private lateinit var savedCardInfo: LinearLayout
+    private lateinit var savedCardText: TextView
+    private lateinit var changeCardButton: MaterialButton
+    private lateinit var addCardButton: MaterialButton
+    private lateinit var cardTypeIcon: ImageView
+    
     private lateinit var auth: FirebaseAuth
     
     private var cartItems = mutableListOf<CartItem>()
     private var cartTotal = 0.0
     private var sessionId: String? = null
+    private var selectedPaymentMethod = "wallet" // Default to wallet
     
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     
-    // Request code para el pago con tarjeta
+    // Request codes
     companion object {
         private const val CARD_PAYMENT_REQUEST_CODE = 1001
     }
@@ -58,30 +79,124 @@ class SyncCodeActivity : AppCompatActivity() {
         auth = Firebase.auth
         initViews()
         setupListeners()
+        setupSyncCodeInput()
+        loadSavedPaymentMethods()
     }
     
     private fun initViews() {
         syncCodeInput = findViewById(R.id.syncCodeInput)
         syncButton = findViewById(R.id.syncButton)
+        progressContainer = findViewById(R.id.progressContainer)
         progressBar = findViewById(R.id.progressBar)
+        errorContainer = findViewById(R.id.errorContainer)
         errorText = findViewById(R.id.errorText)
         cartContainer = findViewById(R.id.cartContainer)
         cartRecyclerView = findViewById(R.id.cartRecyclerView)
         totalText = findViewById(R.id.totalText)
-        payButton = findViewById(R.id.payButton)
-        confirmPurchaseButton = findViewById(R.id.confirmPurchaseButton)  // Inicializar el nuevo botón
+        confirmPurchaseButton = findViewById(R.id.confirmPurchaseButton)
+        
+        // Payment method components
+        paymentMethodsContainer = findViewById(R.id.paymentMethodsContainer)
+        walletOptionContainer = findViewById(R.id.walletOptionContainer)
+        cardOptionContainer = findViewById(R.id.cardOptionContainer)
+        walletCheckBox = findViewById(R.id.walletCheckBox)
+        cardCheckBox = findViewById(R.id.cardCheckBox)
+        walletBalanceText = findViewById(R.id.walletBalanceText)
+        savedCardInfo = findViewById(R.id.savedCardInfo)
+        savedCardText = findViewById(R.id.savedCardText)
+        changeCardButton = findViewById(R.id.changeCardButton)
+        addCardButton = findViewById(R.id.addCardButton)
+        cardTypeIcon = findViewById(R.id.cardTypeIcon)
         
         // Configuración inicial
         cartRecyclerView.layoutManager = LinearLayoutManager(this)
         
-        // Asegurar que el botón de confirmación sea visible y llamativo
-        confirmPurchaseButton.visibility = View.VISIBLE
-        confirmPurchaseButton.text = "💳 CONFIRMAR COMPRA"
-        confirmPurchaseButton.setBackgroundResource(android.R.color.holo_green_dark)
-        confirmPurchaseButton.setTextColor(getColor(android.R.color.white))
+        // Initially disable sync button
+        syncButton.isEnabled = false
+    }
+    
+    private fun setupSyncCodeInput() {
+        // Limitar a 6 caracteres y solo números/letras
+        syncCodeInput.filters = arrayOf(InputFilter.LengthFilter(6))
         
-        // Aplicar elevación para efecto 3D
-        confirmPurchaseButton.elevation = 12f
+        syncCodeInput.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                hideError()
+                val length = s?.length ?: 0
+                syncButton.isEnabled = length == 6
+                
+                // Ocultar teclado cuando alcance 6 caracteres
+                if (length == 6) {
+                    hideKeyboard()
+                }
+            }
+        })
+    }
+    
+    private fun hideKeyboard() {
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(syncCodeInput.windowToken, 0)
+    }
+    
+    private fun loadSavedPaymentMethods() {
+        // Cargar saldo de wallet
+        val currentBalance = WalletManager.getBalance(this)
+        walletBalanceText.text = "Available: $${String.format("%.2f", currentBalance)}"
+        
+        // Cargar método preferido
+        selectedPaymentMethod = PaymentMethodManager.getPreferredPaymentMethod(this)
+        
+        // Configurar información de tarjeta guardada
+        if (PaymentMethodManager.hasSavedCard(this)) {
+            val lastFour = PaymentMethodManager.getSavedCardLastFour(this)
+            val cardType = PaymentMethodManager.getSavedCardType(this)
+            
+            savedCardText.text = "${cardType?.uppercase()} •••• $lastFour"
+            savedCardInfo.visibility = View.VISIBLE
+            addCardButton.visibility = View.GONE
+            
+            // Configurar icono de tarjeta
+            when (cardType?.lowercase()) {
+                "visa" -> cardTypeIcon.setImageResource(R.drawable.ic_visa)
+                "mastercard" -> cardTypeIcon.setImageResource(R.drawable.ic_mastercard)
+                else -> cardTypeIcon.setImageResource(R.drawable.ic_credit_card)
+            }
+        } else {
+            savedCardInfo.visibility = View.GONE
+            addCardButton.visibility = View.VISIBLE
+        }
+        
+        // Seleccionar método preferido usando nuestro nuevo método
+        setPaymentMethod(selectedPaymentMethod)
+        
+        updatePaymentMethodAvailability()
+    }
+    
+    private fun updatePaymentMethodAvailability() {
+        val currentBalance = WalletManager.getBalance(this)
+        val hasCard = PaymentMethodManager.hasSavedCard(this)
+        
+        // Habilitar/deshabilitar opciones según disponibilidad
+        walletCheckBox.isEnabled = currentBalance >= cartTotal
+        cardCheckBox.isEnabled = hasCard
+        
+        // Si el método seleccionado no está disponible, cambiar al disponible
+        if (selectedPaymentMethod == "wallet" && currentBalance < cartTotal && hasCard) {
+            setPaymentMethod("card")
+        } else if (selectedPaymentMethod == "card" && !hasCard) {
+            setPaymentMethod("wallet")
+        }
+        
+        // Mostrar indicadores visuales
+        if (currentBalance < cartTotal) {
+            walletBalanceText.setTextColor(getColor(android.R.color.holo_red_dark))
+            walletBalanceText.text = "Insufficient funds: $${String.format("%.2f", currentBalance)}"
+        } else {
+            walletBalanceText.setTextColor(getColor(android.R.color.holo_green_dark))
+            walletBalanceText.text = "Available: $${String.format("%.2f", currentBalance)}"
+        }
     }
     
     private fun setupListeners() {
@@ -92,6 +207,54 @@ class SyncCodeActivity : AppCompatActivity() {
         confirmPurchaseButton.setOnClickListener {
             handleProcessPayment()
         }
+        
+        setupPaymentMethodListener()
+        
+        changeCardButton.setOnClickListener {
+            launchCardPaymentForSetup()
+        }
+        
+        addCardButton.setOnClickListener {
+            launchCardPaymentForSetup()
+        }
+    }
+    
+    private fun setupPaymentMethodListener() {
+        // Listener para los CheckBoxes de método de pago
+        walletCheckBox.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                setPaymentMethod("wallet")
+            }
+        }
+        
+        cardCheckBox.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                setPaymentMethod("card")
+            }
+        }
+        
+        // Listeners para los contenedores completos
+        walletOptionContainer.setOnClickListener {
+            setPaymentMethod("wallet")
+        }
+        
+        cardOptionContainer.setOnClickListener {
+            // Solo permitir seleccionar tarjeta si hay una guardada
+            if (PaymentMethodManager.hasSavedCard(this)) {
+                setPaymentMethod("card")
+            } else {
+                // Si no hay tarjeta, mostrar opción para agregar una
+                launchCardPaymentForSetup()
+            }
+        }
+    }
+    
+    private fun launchCardPaymentForSetup() {
+        // Lanzar CardPaymentActivity para configurar/cambiar tarjeta
+        val intent = Intent(this, CardPaymentActivity::class.java)
+        intent.putExtra(CardPaymentActivity.EXTRA_AMOUNT, 1.0) // Monto mínimo para setup
+        intent.putExtra("setup_mode", true) // Modo configuración
+        startActivityForResult(intent, CARD_PAYMENT_REQUEST_CODE)
     }
     
     private fun handleSyncCart() {
@@ -139,55 +302,23 @@ class SyncCodeActivity : AppCompatActivity() {
             showError("Error: No hay sesión activa")
             return
         }
-        
-        // Mostrar diálogo para elegir método de pago
-        showPaymentMethodDialog()
-    }
-    
-    private fun showPaymentMethodDialog() {
-        val currentBalance = WalletManager.getBalance(this)
-        
-        val options = mutableListOf<String>()
-        val methods = mutableListOf<String>()
-        
-        // Siempre mostrar opción de tarjeta
-        options.add("💳 Pagar con Tarjeta de Crédito")
-        methods.add("card")
-        
-        // Solo mostrar opción de wallet si hay saldo suficiente
-        if (currentBalance >= cartTotal) {
-            options.add("💰 Pagar con Saldo de Wallet (\$${String.format("%.2f", currentBalance)} disponible)")
-            methods.add("wallet")
+
+        // Procesar pago según el método seleccionado
+        when (selectedPaymentMethod) {
+            "wallet" -> processWalletPayment()
+            "card" -> processCardPayment()
         }
-        
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Selecciona método de pago")
-        builder.setIcon(android.R.drawable.ic_dialog_info)
-        
-        if (options.isEmpty()) {
-            // No hay métodos disponibles
-            builder.setMessage("No tienes saldo suficiente en tu wallet (\$${String.format("%.2f", currentBalance)}) y necesitas \$${String.format("%.2f", cartTotal)}.\n\nPuedes usar tu tarjeta de crédito para completar la compra.")
-            builder.setPositiveButton("Pagar con Tarjeta") { _, _ ->
-                processCardPayment()
-            }
-        } else {
-            builder.setItems(options.toTypedArray()) { _, which ->
-                when (methods[which]) {
-                    "card" -> processCardPayment()
-                    "wallet" -> processWalletPayment()
-                }
-            }
-        }
-        
-        builder.setNegativeButton("Cancelar", null)
-        builder.show()
     }
     
     private fun processCardPayment() {
-        // Abrir la actividad de pago con tarjeta - solo pasar el monto
+        Log.d("SyncCodeActivity", "processCardPayment - cartTotal: $cartTotal")
+        
         val intent = Intent(this, CardPaymentActivity::class.java)
         intent.putExtra(CardPaymentActivity.EXTRA_AMOUNT, cartTotal)
-        // Removemos el paso de cartItems que puede causar el crash
+        intent.putExtra("setup_mode", false) // Asegurar que NO es modo configuración
+        
+        Log.d("SyncCodeActivity", "Launching CardPaymentActivity with amount: $cartTotal, setup_mode: false")
+        
         startActivityForResult(intent, CARD_PAYMENT_REQUEST_CODE)
     }
     
@@ -199,8 +330,7 @@ class SyncCodeActivity : AppCompatActivity() {
             return
         }
         
-        // Mejorar feedback visual durante el proceso
-        confirmPurchaseButton.text = "⏳ Procesando pago con wallet..."
+        confirmPurchaseButton.text = "Procesando..."
         confirmPurchaseButton.isEnabled = false
         showLoading(true)
         
@@ -241,44 +371,67 @@ class SyncCodeActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         
-        if (requestCode == CARD_PAYMENT_REQUEST_CODE) {
-            if (resultCode == RESULT_OK) {
-                // Pago con tarjeta exitoso
-                scope.launch {
-                    try {
-                        // Notificar al backend que el pago fue exitoso
-                        val result = withContext(Dispatchers.IO) {
-                            processPaymentWithBackend("card")
-                        }
+        when (requestCode) {
+            CARD_PAYMENT_REQUEST_CODE -> {
+                if (resultCode == RESULT_OK) {
+                    // Verificar si era modo configuración o pago real
+                    val setupMode = data?.getBooleanExtra("setup_mode", false) ?: false
+                    
+                    if (setupMode) {
+                        // Solo era configuración de tarjeta, recargar métodos de pago
+                        loadSavedPaymentMethods()
+                        showMessage("¡Tarjeta configurada exitosamente!")
                         
-                        if (result.success) {
-                            showMessage("¡Compra realizada exitosamente con tarjeta!")
-                            
-                            val intent = Intent(this@SyncCodeActivity, PaymentSuccessActivity::class.java)
-                            intent.putExtra("amount", cartTotal)
-                            intent.putExtra("transactionId", result.transactionId)
-                            intent.putExtra("paymentMethod", "Tarjeta de Crédito")
-                            startActivity(intent)
-                            finish()
-                        } else {
-                            showError("Error al confirmar el pago: ${result.error}")
-                            resetPaymentButton()
+                        // Si ahora hay una tarjeta guardada, seleccionarla automáticamente
+                        if (PaymentMethodManager.hasSavedCard(this)) {
+                            // Establecer tarjeta como método preferido
+                            setPaymentMethod("card")
+                            Log.d("SyncCodeActivity", "Card saved successfully - switched to card payment method")
                         }
-                    } catch (e: Exception) {
-                        showError("Error confirmando el pago: ${e.message}")
+                    } else {
+                        // Era un pago real, procesar con el backend
+                        scope.launch {
+                            try {
+                                // Notificar al backend que el pago fue exitoso
+                                val result = withContext(Dispatchers.IO) {
+                                    processPaymentWithBackend("card")
+                                }
+                                
+                                if (result.success) {
+                                    showMessage("¡Compra realizada exitosamente con tarjeta!")
+                                    
+                                    val intent = Intent(this@SyncCodeActivity, PaymentSuccessActivity::class.java)
+                                    intent.putExtra("amount", cartTotal)
+                                    intent.putExtra("transactionId", result.transactionId)
+                                    intent.putExtra("paymentMethod", "Tarjeta de Crédito")
+                                    startActivity(intent)
+                                    finish()
+                                } else {
+                                    showError("Error al confirmar el pago: ${result.error}")
+                                    resetPaymentButton()
+                                }
+                            } catch (e: Exception) {
+                                showError("Error confirmando el pago: ${e.message}")
+                                resetPaymentButton()
+                            }
+                        }
+                    }
+                } else {
+                    // Pago cancelado o falló
+                    val setupMode = data?.getBooleanExtra("setup_mode", false) ?: false
+                    if (setupMode) {
+                        showError("Configuración de tarjeta cancelada")
+                    } else {
+                        showError("Pago con tarjeta cancelado")
                         resetPaymentButton()
                     }
                 }
-            } else {
-                // Pago cancelado o falló
-                showError("Pago con tarjeta cancelado")
-                resetPaymentButton()
             }
         }
     }
     
     private fun resetPaymentButton() {
-        confirmPurchaseButton.text = "💳 CONFIRMAR COMPRA - \$${String.format("%.2f", cartTotal)}"
+        confirmPurchaseButton.text = "Confirmar Compra"
         confirmPurchaseButton.isEnabled = true
     }
     
@@ -326,7 +479,7 @@ class SyncCodeActivity : AppCompatActivity() {
                         val item = itemsArray.getJSONObject(i)
                         items.add(
                             CartItem(
-                                id = item.getString("id"),  // Cambiado de getInt a getString
+                                id = item.getString("id"),
                                 nombre = item.getString("nombre"),
                                 precio = item.getDouble("precio"),
                                 quantity = item.getInt("quantity")
@@ -417,67 +570,55 @@ class SyncCodeActivity : AppCompatActivity() {
     private fun showCartItems() {
         // Asegurar que el contenedor del carrito sea visible
         cartContainer.visibility = View.VISIBLE
-        syncButton.visibility = View.GONE
         
         val adapter = CartAdapter(cartItems)
         cartRecyclerView.adapter = adapter
         
-        totalText.text = "Total: $${String.format("%.2f", cartTotal)}"
+        totalText.text = String.format("%.2f", cartTotal)
         
-        // Asegurar que el botón de pago sea completamente visible y llamativo
-        confirmPurchaseButton.visibility = View.VISIBLE
-        confirmPurchaseButton.isEnabled = true
-        confirmPurchaseButton.text = "💳 CONFIRMAR COMPRA - $${String.format("%.2f", cartTotal)}"
+        // Actualizar disponibilidad de métodos de pago con el nuevo total
+        updatePaymentMethodAvailability()
         
-        // Aplicar estilos adicionales para llamar la atención
-        confirmPurchaseButton.setBackgroundResource(android.R.color.holo_green_dark)
-        confirmPurchaseButton.setTextColor(getColor(android.R.color.white))
-        
-        // Animar el botón para que sea más visible
-        confirmPurchaseButton.animate()
-            .scaleX(1.1f)
-            .scaleY(1.1f)
-            .setDuration(300)
-            .withEndAction {
-                confirmPurchaseButton.animate()
-                    .scaleX(1.0f)
-                    .scaleY(1.0f)
-                    .setDuration(200)
-                    .start()
-            }
-            .start()
-            
-        // Para depuración
-        Log.d("SyncCodeActivity", "Contenedor de carrito visible: ${cartContainer.visibility == View.VISIBLE}")
-        Log.d("SyncCodeActivity", "Botón de pago visible: ${confirmPurchaseButton.visibility == View.VISIBLE}")
-        
-        // Mostrar un mensaje para guiar al usuario
-        Toast.makeText(
-            this,
-            "Carrito sincronizado. Haz clic en CONFIRMAR COMPRA para completar la transacción",
-            Toast.LENGTH_LONG
-        ).show()
+        showMessage("Carrito sincronizado! Revisa tus artículos y confirma la compra.")
     }
     
     private fun showLoading(show: Boolean) {
-        progressBar.visibility = if (show) android.view.View.VISIBLE else android.view.View.GONE
-        syncButton.isEnabled = !show
-        if (!show || sessionId == null) {
-            confirmPurchaseButton.isEnabled = !show && sessionId != null
-        }
+        progressContainer.visibility = if (show) View.VISIBLE else View.GONE
+        syncButton.isEnabled = !show && syncCodeInput.text.length == 6
+        confirmPurchaseButton.isEnabled = !show && sessionId != null
     }
     
     private fun showError(message: String) {
         errorText.text = message
-        errorText.visibility = android.view.View.VISIBLE
+        errorContainer.visibility = View.VISIBLE
     }
     
     private fun hideError() {
-        errorText.visibility = android.view.View.GONE
+        errorContainer.visibility = View.GONE
     }
     
     private fun showMessage(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+    
+    private fun setPaymentMethod(method: String) {
+        // Guardar el método seleccionado
+        selectedPaymentMethod = method
+        PaymentMethodManager.setPreferredPaymentMethod(this, method)
+        
+        // Establecer manualmente el estado de los checkboxes
+        when (method) {
+            "wallet" -> {
+                walletCheckBox.isChecked = true
+                cardCheckBox.isChecked = false
+                Log.d("SyncCodeActivity", "Payment method set to Wallet")
+            }
+            "card" -> {
+                cardCheckBox.isChecked = true
+                walletCheckBox.isChecked = false
+                Log.d("SyncCodeActivity", "Payment method set to Card")
+            }
+        }
     }
     
     override fun onDestroy() {
@@ -528,7 +669,6 @@ class SyncCodeActivity : AppCompatActivity() {
         override fun getItemCount() = items.size
     }
     
-    // Data classes
     @Parcelize
     data class CartItem(
         val id: String,
