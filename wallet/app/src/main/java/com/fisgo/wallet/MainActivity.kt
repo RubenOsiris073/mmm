@@ -8,6 +8,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import java.text.NumberFormat
 import java.util.*
@@ -20,6 +21,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var transactionHistoryCard: LinearLayout
     private lateinit var paymentMethodsCard: LinearLayout
     private lateinit var settingsCard: LinearLayout
+    private lateinit var inventoryFab: FloatingActionButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         transactionHistoryCard = findViewById(R.id.transactionHistoryCard)
         paymentMethodsCard = findViewById(R.id.paymentMethodsCard)
         settingsCard = findViewById(R.id.settingsCard)
+        inventoryFab = findViewById(R.id.inventoryFab)
     }
 
     private fun setupListeners() {
@@ -67,6 +70,12 @@ class MainActivity : AppCompatActivity() {
         // Quick action buttons
         addFundsButton.setOnClickListener {
             showMessage("Funcionalidad de Agregar Fondos próximamente")
+        }
+
+        // Botón flotante de inventario
+        inventoryFab.setOnClickListener {
+            val intent = Intent(this, ProductInventoryActivity::class.java)
+            startActivity(intent)
         }
     }
 

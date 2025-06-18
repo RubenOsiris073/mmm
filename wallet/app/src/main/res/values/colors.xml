@@ -1,14 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Colores principales -->
+    <color name="primary">#007AFF</color>
+    <color name="primary_dark">#0056CC</color>
+    <color name="accent">#FF6B35</color>
+    
+    <!-- Colores de texto -->
+    <color name="text_primary">#1D1D1F</color>
+    <color name="text_secondary">#8E8E93</color>
+    <color name="text_tertiary">#C7C7CC</color>
+    
+    <!-- Colores de fondo -->
+    <color name="background_primary">#FFFFFF</color>
+    <color name="background_secondary">#F2F2F7</color>
+    <color name="background_tertiary">#F8F9FA</color>
+    
+    <!-- Colores de estado de stock -->
+    <color name="stock_high">#34C759</color>
+    <color name="stock_medium">#007AFF</color>
+    <color name="stock_low">#FF9500</color>
+    <color name="stock_empty">#FF3B30</color>
+    
+    <!-- Otros colores -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="transparent">#00000000</color>
+    
+    <!-- Payment Method Activity Colors -->
+    <color name="payment_selected_bg">#F0F7FF</color>
+    <color name="selected_payment_bg">#E3F2FD</color>
+    
+    <!-- Colores predeterminados de Android (Material Design) -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
     
-    <!-- Payment Method Activity Colors -->
-    <color name="payment_selected_bg">#F0F7FF</color>
-    <color name="selected_payment_bg">#E3F2FD</color>
+    <!-- Colores adicionales para compatibilidad -->
+    <color name="colorPrimary">@color/primary</color>
+    <color name="colorPrimaryDark">@color/primary_dark</color>
+    <color name="colorAccent">@color/accent</color>
 </resources>
