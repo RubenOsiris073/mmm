@@ -59,4 +59,11 @@ object WalletManager {
     fun resetBalance(context: Context) {
         setBalance(context, DEFAULT_BALANCE)
     }
+    
+    /**
+     * Limpiar todos los datos de la wallet (para eliminación de cuenta)
+     */
+    fun clearAllData(context: Context) {
+        getPrefs(context).edit().clear().apply()
+    }
 }

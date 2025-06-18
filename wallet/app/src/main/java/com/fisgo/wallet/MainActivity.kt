@@ -2,11 +2,15 @@ package com.fisgo.wallet
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
+import com.google.firebase.auth.FirebaseAuth
+import java.text.NumberFormat
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -40,14 +44,16 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Transaction History
+        // Transaction History - Conectar con TransactionHistoryActivity
         transactionHistoryCard.setOnClickListener {
-            showMessage("Funcionalidad de Historial de Transacciones próximamente")
+            val intent = Intent(this, TransactionHistoryActivity::class.java)
+            startActivity(intent)
         }
 
         // Settings
         settingsCard.setOnClickListener {
-            showMessage("Funcionalidad de Configuración próximamente")
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
         }
 
         // Quick action buttons
@@ -57,10 +63,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadWalletData() {
-        // Simular la carga del saldo de la billetera
-        // En una implementación real, esto vendría de una API o base de datos
-        val currentBalance = 1250.00
-        balanceAmountText.text = String.format("%.2f", currentBalance)
+        val balance = WalletManager.getBalance(this)
+
+        // Formato mejorado de moneda mexicana sin doble $
+        val currencyFormat = NumberFormat.getCurrencyInstance(Locale("es", "MX"))
+        val formattedBalance = currencyFormat.format(balance)
+            .replace("MX$", "$")  // Quitar MX$ pero mantener $
+            .replace("$", "")     // Quitar el $ del formato
+            .trim()               // Limpiar espacios
+
+        balanceAmountText.text = "$$formattedBalance"  // Agregar solo un $ al inicio
     }
 
     private fun showMessage(message: String) {
@@ -69,7 +81,17 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Actualizar el balance cuando se regrese a la actividad
+        // Actualizar el balance cuando se regrese a la actividad (importante para reembolsos)
         loadWalletData()
+
+        // TEMPORAL: Mostrar el ID del usuario en logs
+        val auth = FirebaseAuth.getInstance()
+        val currentUser = auth.currentUser
+        if (currentUser != null) {
+            Log.d("USER_ID", "=== TU ID DE USUARIO ES: ${currentUser.uid} ===")
+            println("=== TU ID DE USUARIO ES: ${currentUser.uid} ===")
+        } else {
+            Log.d("USER_ID", "No hay usuario autenticado")
+        }
     }
 }

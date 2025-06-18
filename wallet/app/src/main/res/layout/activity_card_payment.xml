@@ -26,7 +26,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Payment"
+                android:text="Pago"
                 android:textColor="#FFFFFF"
                 android:textSize="28sp"
                 android:textStyle="bold"
@@ -36,7 +36,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Complete your secure payment"
+                android:text="Completa tu pago seguro"
                 android:textColor="#E3F2FD"
                 android:textSize="16sp"
                 android:alpha="0.9" />
@@ -67,7 +67,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Amount to Pay"
+                    android:text="Monto a Pagar"
                     android:textColor="#8E8E93"
                     android:textSize="14sp"
                     android:layout_marginBottom="8dp" />
@@ -112,7 +112,7 @@
                     android:id="@+id/paymentIdTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Payment ID: ********"
+                    android:text="ID de Pago: ********"
                     android:textColor="#C7C7CC"
                     android:textSize="12sp"
                     android:fontFamily="monospace"
@@ -125,7 +125,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Card Information"
+                android:text="Información de Tarjeta"
                 android:textColor="#1D1F1F"
                 android:textSize="18sp"
                 android:textStyle="bold"
@@ -207,15 +207,15 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Secure Payment"
-                        android:textColor="#1D1D1F"
+                        android:text="Pago Seguro"
+                        android:textColor="#1D1F1F"
                         android:textSize="14sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Your payment is protected by 256-bit SSL encryption"
+                        android:text="Tu pago está protegido por encriptación SSL de 256 bits"
                         android:textColor="#8E8E93"
                         android:textSize="12sp"
                         android:layout_marginTop="2dp" />
@@ -234,7 +234,7 @@
                     android:id="@+id/payButton"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
-                    android:text="Pay Now"
+                    android:text="Pagar Ahora"
                     android:textColor="#FFFFFF"
                     android:textSize="16sp"
                     android:textStyle="bold"
@@ -248,7 +248,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="By continuing, you agree to our Terms of Service"
+                    android:text="Al continuar, aceptas nuestros Términos de Servicio"
                     android:textColor="#C7C7CC"
                     android:textSize="12sp"
                     android:gravity="center"
@@ -282,7 +282,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Error message"
+                android:text="Mensaje de error"
                 android:textColor="#FF3B30"
                 android:textSize="14sp" />
 

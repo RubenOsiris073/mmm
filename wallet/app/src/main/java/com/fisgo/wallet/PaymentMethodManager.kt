@@ -75,4 +75,11 @@ object PaymentMethodManager {
             .putBoolean(KEY_HAS_SAVED_CARD, false)
             .apply()
     }
+    
+    /**
+     * Limpiar todos los datos de métodos de pago (para eliminación de cuenta)
+     */
+    fun clearAllData(context: Context) {
+        getPrefs(context).edit().clear().apply()
+    }
 }

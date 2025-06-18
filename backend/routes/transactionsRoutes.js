@@ -65,4 +65,129 @@ router.get('/:transactionId/status', async (req, res) => {
   }
 });
 
+// Crear una nueva transacción
+router.post('/', async (req, res) => {
+  try {
+    const transactionData = req.body;
+    
+    console.log('Creando transacción:', transactionData);
+    
+    const transaction = await transactionsService.createTransaction(transactionData);
+    
+    res.json({
+      success: true,
+      transaction
+    });
+  } catch (error) {
+    console.error('Error al crear transacción:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || "Error al crear transacción"
+    });
+  }
+});
+
+// Obtener una transacción específica por ID
+router.get('/:transactionId', async (req, res) => {
+  try {
+    const { transactionId } = req.params;
+    
+    console.log(`Obteniendo transacción con ID: ${transactionId}`);
+    
+    const transaction = await transactionsService.getTransactionById(transactionId);
+    
+    if (!transaction) {
+      return res.status(404).json({
+        success: false,
+        error: "Transacción no encontrada"
+      });
+    }
+    
+    res.json({
+      success: true,
+      transaction
+    });
+  } catch (error) {
+    console.error(`Error al obtener transacción ${req.params.transactionId}:`, error);
+    res.status(500).json({
+      success: false,
+      error: error.message || "Error al obtener la transacción"
+    });
+  }
+});
+
+// Crear reembolso para una transacción específica
+router.post('/:transactionId/refund', async (req, res) => {
+  try {
+    const { transactionId } = req.params;
+    const { reason, amount } = req.body;
+    
+    console.log(`Procesando reembolso para transacción ${transactionId}`);
+    
+    // Primero obtener la transacción original
+    const originalTransaction = await transactionsService.getTransactionById(transactionId);
+    
+    if (!originalTransaction) {
+      return res.status(404).json({
+        success: false,
+        error: "Transacción no encontrada"
+      });
+    }
+    
+    // Verificar que sea una transacción de pago
+    if (originalTransaction.type !== 'payment') {
+      return res.status(400).json({
+        success: false,
+        error: "Solo se pueden reembolsar pagos"
+      });
+    }
+    
+    // Verificar que no haya sido reembolsada ya
+    if (originalTransaction.status === 'refunded') {
+      return res.status(400).json({
+        success: false,
+        error: "Esta transacción ya fue reembolsada"
+      });
+    }
+    
+    // Calcular monto del reembolso
+    const refundAmount = amount || originalTransaction.amount;
+    
+    if (refundAmount > originalTransaction.amount) {
+      return res.status(400).json({
+        success: false,
+        error: "El monto del reembolso no puede ser mayor al monto original"
+      });
+    }
+    
+    // Crear transacción de reembolso
+    const refundData = {
+      userId: originalTransaction.userId,
+      amount: refundAmount,
+      type: 'refund',
+      description: `Reembolso de transacción ${transactionId}${reason ? ` - ${reason}` : ''}`,
+      originalTransactionId: transactionId,
+      paymentMethod: originalTransaction.paymentMethod
+    };
+    
+    const refundTransaction = await transactionsService.createTransaction(refundData);
+    
+    // Actualizar la transacción original como reembolsada
+    await transactionsService.updateTransactionStatus(transactionId, 'refunded');
+    
+    res.json({
+      success: true,
+      refund: refundTransaction,
+      message: 'Reembolso procesado exitosamente'
+    });
+    
+  } catch (error) {
+    console.error(`Error procesando reembolso:`, error);
+    res.status(500).json({
+      success: false,
+      error: error.message || "Error al procesar el reembolso"
+    });
+  }
+});
+
 module.exports = router;

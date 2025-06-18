@@ -1,5 +1,5 @@
 const { db } = require('../config/firebase');
-const { collection, query, orderBy, limit, getDocs, addDoc, serverTimestamp, where } = require('firebase/firestore');
+const { collection, query, orderBy, limit, getDocs, addDoc, serverTimestamp, where, doc, getDoc, updateDoc } = require('firebase/firestore');
 
 // Obtener transacciones con un límite
 const getTransactions = async (limitVal) => {
@@ -32,10 +32,10 @@ const getUserTransactions = async (userId, limitVal = 20) => {
     }
 
     const transactionsRef = collection(db, 'transactions');
+    // Simplificar la consulta para evitar el error de índice
     const q = query(
       transactionsRef,
       where('userId', '==', userId),
-      orderBy('timestamp', 'desc'),
       limit(limitVal)
     );
     
@@ -52,6 +52,13 @@ const getUserTransactions = async (userId, limitVal = 20) => {
         ...data,
         timestamp: data.timestamp?.toDate?.() || data.timestamp
       };
+    });
+    
+    // Ordenar en memoria por timestamp descendente
+    transactions.sort((a, b) => {
+      const timeA = a.timestamp instanceof Date ? a.timestamp : new Date(a.timestamp);
+      const timeB = b.timestamp instanceof Date ? b.timestamp : new Date(b.timestamp);
+      return timeB.getTime() - timeA.getTime();
     });
     
     return transactions;
@@ -75,7 +82,7 @@ const createTransaction = async (transactionData) => {
   try {
     console.log("Creando nueva transacción:", transactionData);
     
-    const { userId, amount, type = 'payment', description, sessionId } = transactionData;
+    const { userId, amount, type = 'payment', description, sessionId, paymentMethod } = transactionData;
     
     if (!userId) {
       throw new Error("userId es requerido para crear una transacción");
@@ -91,10 +98,18 @@ const createTransaction = async (transactionData) => {
       amount: parseFloat(amount),
       type,
       description: description || `${type} de $${amount}`,
-      sessionId,
       timestamp: serverTimestamp(),
       status: 'completed'
     };
+    
+    // Solo agregar campos opcionales si tienen valor
+    if (sessionId) {
+      newTransaction.sessionId = sessionId;
+    }
+    
+    if (paymentMethod) {
+      newTransaction.paymentMethod = paymentMethod;
+    }
     
     const docRef = await addDoc(transactionsRef, newTransaction);
     console.log(`Transacción creada con ID: ${docRef.id}`);
@@ -110,8 +125,52 @@ const createTransaction = async (transactionData) => {
   }
 };
 
+// Obtener una transacción por ID
+const getTransactionById = async (transactionId) => {
+  try {
+    const transactionsRef = collection(db, 'transactions');
+    const docRef = doc(transactionsRef, transactionId);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) {
+      return null;
+    }
+    
+    const data = docSnap.data();
+    return {
+      id: docSnap.id,
+      ...data,
+      timestamp: data.timestamp?.toDate?.() || data.timestamp
+    };
+  } catch (error) {
+    console.error(`Error al obtener transacción ${transactionId}:`, error);
+    throw new Error(`Error al obtener transacción: ${error.message}`);
+  }
+};
+
+// Actualizar el estado de una transacción
+const updateTransactionStatus = async (transactionId, newStatus) => {
+  try {
+    const transactionsRef = collection(db, 'transactions');
+    const docRef = doc(transactionsRef, transactionId);
+    
+    await updateDoc(docRef, {
+      status: newStatus,
+      updatedAt: serverTimestamp()
+    });
+    
+    console.log(`Transacción ${transactionId} actualizada a estado: ${newStatus}`);
+    return true;
+  } catch (error) {
+    console.error(`Error al actualizar transacción ${transactionId}:`, error);
+    throw new Error(`Error al actualizar transacción: ${error.message}`);
+  }
+};
+
 module.exports = {
   getTransactions,
   getUserTransactions,
-  createTransaction
+  createTransaction,
+  getTransactionById,
+  updateTransactionStatus
 };

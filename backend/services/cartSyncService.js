@@ -1,7 +1,8 @@
 // cartSyncService.js - Servicio para sincronización entre POS web y aplicación móvil
 const crypto = require('crypto');
 const cartService = require('./cartService');
-const salesService = require('./salesService'); // Cambiado de transactionsService a salesService
+const salesService = require('./salesService');
+const transactionsService = require('./transactionsService'); // Agregar transactionsService
 
 // Almacén en memoria de carritos sincronizados (en producción usar Redis o similar)
 const syncedCarts = new Map();
@@ -144,7 +145,44 @@ const processPayment = async (identifier, paymentInfo) => {
     // Usar salesService para crear la venta en la colección "sales"
     const sale = await salesService.createSale(saleData);
     
-    // Actualizar el estado del carrito sincronizado
+    // NUEVO: Crear también una transacción en la colección "transactions"
+    if (paymentInfo.userId) {
+      try {
+        const transactionData = {
+          userId: paymentInfo.userId,
+          amount: syncData.total,
+          type: 'payment',
+          description: `Compra en POS - ${formattedItems.length} artículos`,
+          sessionId: sessionId,
+          paymentMethod: paymentInfo.method || 'wallet',
+          saleId: sale.id // Vincular con la venta
+        };
+        
+        const transaction = await transactionsService.createTransaction(transactionData);
+        console.log(`Transacción creada: ${transaction.id} para usuario: ${paymentInfo.userId}`);
+        
+        // Actualizar el estado del carrito sincronizado
+        syncData.status = 'paid';
+        syncData.transactionId = transaction.id; // Usar transaction ID en lugar de sale ID
+        syncData.saleId = sale.id; // Mantener referencia a la venta también
+        syncData.paidAt = new Date().toISOString();
+        syncedCarts.set(sessionId, syncData);
+        
+        return {
+          success: true,
+          message: 'Pago procesado con éxito',
+          paymentInfo: paymentInfo,
+          orderId: sale.id,
+          transactionId: transaction.id,
+          sessionId: sessionId
+        };
+      } catch (transactionError) {
+        console.error('Error creando transacción:', transactionError);
+        // Continuar aunque la transacción falle, la venta ya se creó
+      }
+    }
+    
+    // Fallback si no hay userId o falla la creación de transacción
     syncData.status = 'paid';
     syncData.transactionId = sale.id;
     syncData.paidAt = new Date().toISOString();

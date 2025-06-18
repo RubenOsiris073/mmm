@@ -52,6 +52,26 @@
             android:exported="false"
             android:theme="@style/Theme.App.NoActionBar"
             android:parentActivityName=".MainActivity" />
+
+        <!-- Actividades del historial de transacciones -->
+        <activity
+            android:name=".TransactionHistoryActivity"
+            android:exported="false"
+            android:theme="@style/Theme.App.NoActionBar"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".TransactionDetailActivity"
+            android:exported="false"
+            android:theme="@style/Theme.App.NoActionBar"
+            android:parentActivityName=".TransactionHistoryActivity" />
+
+        <!-- Actividad de configuración -->
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.App.NoActionBar"
+            android:parentActivityName=".MainActivity" />
             
     </application>
 

@@ -39,7 +39,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Welcome back"
+                        android:text="Bienvenido de vuelta"
                         android:textColor="#E3F2FD"
                         android:textSize="16sp"
                         android:alpha="0.9"
@@ -48,7 +48,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="My Wallet"
+                        android:text="Wallet Fisgo"
                         android:textColor="#FFFFFF"
                         android:textSize="28sp"
                         android:textStyle="bold"
@@ -84,7 +84,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Available Balance"
+                android:text="Saldo Disponible"
                 android:textColor="#8E8E93"
                 android:textSize="14sp"
                 android:layout_marginBottom="12dp" />
@@ -137,7 +137,7 @@
                     android:id="@+id/addFundsButton"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
-                    android:text="Add Funds"
+                    android:text="Agregar Fondos"
                     android:textColor="#FFFFFF"
                     android:textSize="14sp"
                     android:textStyle="bold"
@@ -195,7 +195,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Sync with POS"
+                        android:text="Sincronizar con POS"
                         android:textColor="#1D1D1F"
                         android:textSize="16sp"
                         android:textStyle="bold"
@@ -204,7 +204,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Connect your wallet with the point of sale system"
+                        android:text="Conecta tu billetera con el sistema de punto de venta"
                         android:textColor="#8E8E93"
                         android:textSize="14sp" />
 
@@ -257,7 +257,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Transaction History"
+                        android:text="Historial de Transacciones"
                         android:textColor="#1D1D1F"
                         android:textSize="16sp"
                         android:textStyle="bold"
@@ -266,7 +266,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="View your payment history and transactions"
+                        android:text="Ver tu historial de pagos y transacciones"
                         android:textColor="#8E8E93"
                         android:textSize="14sp" />
 
@@ -319,7 +319,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Settings"
+                        android:text="Configuración"
                         android:textColor="#1D1D1F"
                         android:textSize="16sp"
                         android:textStyle="bold"
@@ -328,7 +328,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Manage your wallet preferences and security"
+                        android:text="Administra las preferencias y seguridad de tu billetera"
                         android:textColor="#8E8E93"
                         android:textSize="14sp" />
 
@@ -366,7 +366,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Make sure you're connected to the same WiFi network as the POS system for seamless syncing."
+                android:text="Asegúrate de estar conectado a la misma red WiFi que el sistema POS para una sincronización perfecta."
                 android:textColor="#007AFF"
                 android:textSize="12sp"
                 android:lineSpacingExtra="2dp" />

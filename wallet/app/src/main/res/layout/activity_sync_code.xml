@@ -39,18 +39,9 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Sync with POS"
-                        android:textColor="#E3F2FD"
-                        android:textSize="16sp"
-                        android:alpha="0.9"
-                        android:layout_marginBottom="4dp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Cart Sync"
+                        android:text="Sincronización de Carrito"
                         android:textColor="#FFFFFF"
-                        android:textSize="28sp"
+                        android:textSize="24sp"
                         android:textStyle="bold"
                         android:fontFamily="sans-serif-medium" />
 
@@ -84,7 +75,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Sync Code"
+                android:text="Código de Sincronización"
                 android:textColor="#1D1D1F"
                 android:textSize="18sp"
                 android:textStyle="bold"
@@ -93,7 +84,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Enter the 6-character code shown on the POS screen"
+                android:text="Ingresa el código de 6 caracteres mostrado en la pantalla del POS"
                 android:textColor="#8E8E93"
                 android:textSize="14sp"
                 android:layout_marginBottom="24dp"
@@ -150,7 +141,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Invalid sync code"
+                    android:text="Código de sincronización inválido"
                     android:textColor="#FF3B30"
                     android:textSize="12sp" />
 
@@ -161,7 +152,7 @@
                 android:id="@+id/syncButton"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:text="Sync Cart"
+                android:text="Sincronizar Carrito"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
                 android:textStyle="bold"
@@ -191,7 +182,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Syncing cart..."
+                    android:text="Sincronizando carrito..."
                     android:textColor="#8E8E93"
                     android:textSize="14sp" />
 
@@ -234,7 +225,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Synced Cart"
+                        android:text="Carrito Sincronizado"
                         android:textColor="#1D1D1F"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -260,7 +251,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Total Amount"
+                        android:text="Monto Total"
                         android:textColor="#8E8E93"
                         android:textSize="14sp"
                         android:layout_marginBottom="8dp" />
@@ -319,7 +310,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Payment Method"
+                    android:text="Método de Pago"
                     android:textColor="#1D1D1F"
                     android:textSize="18sp"
                     android:textStyle="bold"
@@ -363,7 +354,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Wallet Balance"
+                            android:text="Saldo de Billetera"
                             android:textColor="#1D1D1F"
                             android:textSize="16sp"
                             android:textStyle="bold" />
@@ -372,7 +363,7 @@
                             android:id="@+id/walletBalanceText"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Available: $0.00"
+                            android:text="Disponible: $0.00"
                             android:textColor="#4CAF50"
                             android:textSize="12sp" />
 
@@ -426,7 +417,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Saved Card"
+                                android:text="Tarjeta Guardada"
                                 android:textColor="#1D1D1F"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
@@ -445,7 +436,7 @@
                                 style="@style/Widget.MaterialComponents.Button.TextButton"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Change Card"
+                                android:text="Cambiar Tarjeta"
                                 android:textColor="#007AFF"
                                 android:textSize="12sp"
                                 android:layout_marginTop="4dp"
@@ -464,7 +455,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Credit Card"
+                                android:text="Tarjeta de Crédito"
                                 android:textColor="#1D1D1F"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
@@ -481,7 +472,7 @@
                                 style="@style/Widget.MaterialComponents.Button.TextButton"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="+ Add Card"
+                                android:text="+ Agregar Tarjeta"
                                 android:textColor="#007AFF"
                                 android:textSize="12sp"
                                 android:layout_marginTop="4dp"
@@ -499,7 +490,7 @@
                     android:id="@+id/confirmPurchaseButton"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
-                    android:text="Confirm Purchase"
+                    android:text="Confirmar Compra"
                     android:textColor="#FFFFFF"
                     android:textSize="16sp"
                     android:textStyle="bold"

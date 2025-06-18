@@ -44,7 +44,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Payment Method"
+                    android:text="Método de Pago"
                     android:textColor="#FFFFFF"
                     android:textSize="20sp"
                     android:textStyle="bold"
@@ -66,7 +66,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Amount to Pay"
+                    android:text="Monto a Pagar"
                     android:textColor="#E3F2FD"
                     android:textSize="16sp"
                     android:layout_marginBottom="8dp" />
@@ -166,7 +166,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Wallet Balance"
+                            android:text="Saldo de Billetera"
                             android:textColor="#1D1D1F"
                             android:textSize="18sp"
                             android:textStyle="bold" />
@@ -181,7 +181,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Available: $"
+                                android:text="Disponible: $"
                                 android:textColor="#8E8E93"
                                 android:textSize="14sp" />
 
@@ -216,7 +216,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Insufficient funds"
+                                android:text="Fondos insuficientes"
                                 android:textColor="#FF9500"
                                 android:textSize="12sp" />
 
@@ -283,7 +283,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Credit Card"
+                            android:text="Tarjeta de Crédito"
                             android:textColor="#1D1D1F"
                             android:textSize="18sp"
                             android:textStyle="bold" />
@@ -314,7 +314,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Secure payment"
+                                android:text="Pago seguro"
                                 android:textColor="#4CAF50"
                                 android:textSize="12sp" />
 
@@ -363,7 +363,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="All payments are secured with 256-bit encryption"
+                    android:text="Todos los pagos están protegidos con encriptación de 256 bits"
                     android:textColor="#8E8E93"
                     android:textSize="12sp"
                     android:gravity="center" />
@@ -375,7 +375,7 @@
                 android:id="@+id/proceedButton"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:text="Select Payment Method"
+                android:text="Seleccionar Método de Pago"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
                 android:textStyle="bold"
