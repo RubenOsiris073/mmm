@@ -268,6 +268,9 @@ apiRouter.use('/transactions', transactionsRoutes);
 apiRouter.use('/stripe', stripeRoutes);
 apiRouter.use('/cart', cartRoutes); // Registrar nuevas rutas
 
+// Rutas de testing para productos
+app.use('/api/test/products', require('./routes/testProductRoutes'));
+
 // Montar el router principal en /api
 app.use('/api', apiRouter);
 app.use('/api', detectionRoutes);

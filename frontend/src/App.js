@@ -7,6 +7,8 @@ import 'react-toastify/dist/ReactToastify.css';
 
 // Importar estilos de temas
 import './styles/themes.css';
+// Importar estilos modernos para productos
+import './styles/products-modern.css';
 
 // Importar el contexto de tema
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -22,6 +24,7 @@ import useRouteLoading from './hooks/useRouteLoading';
 // Componentes del sistema principal
 import Navigation from './components/layout/Navigation';
 import ProductsPage from './pages/ProductsPage';
+import ProductsTestPage from './pages/ProductsTestPage';
 import ProductFormPage from './pages/ProductFormPage';
 import ProveedorView from './components/proveedor/ProveedorView';
 import SalesPage from './pages/SalesPage';
@@ -124,6 +127,17 @@ const AppRoutes = () => {
             <Navigation />
             <Container fluid className="main-content py-4 flex-grow-1">
               <CameraPage />
+            </Container>
+            <Footer />
+          </div>
+        </ProtectedRoute>
+      } />
+      <Route path="/products-test" element={
+        <ProtectedRoute requireAuth={true}>
+          <div className="App d-flex flex-column min-vh-100">
+            <Navigation />
+            <Container fluid className="main-content py-4 flex-grow-1">
+              <ProductsTestPage />
             </Container>
             <Footer />
           </div>

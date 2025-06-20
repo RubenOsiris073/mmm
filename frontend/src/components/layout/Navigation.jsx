@@ -47,6 +47,11 @@ const Navigation = () => {
               Productos
             </Nav.Link>
             
+            <Nav.Link as={Link} to="/products-test">
+              <span className="me-1">🧪</span>
+              Testing
+            </Nav.Link>
+            
             <Nav.Link as={Link} to="/proveedores">
               <FaBuilding className="me-1" />
               Proveedores

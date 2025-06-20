@@ -3,7 +3,7 @@ import { Card, Badge, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { getCategoryIcon } from '../utils/categoryUtils';
 
-const ProductCard = ({ product, onManage }) => {
+const ProductCardTest = ({ product, onManage }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [animationDelay, setAnimationDelay] = useState(0);
   
@@ -51,11 +51,12 @@ const ProductCard = ({ product, onManage }) => {
   const stockStatus = getStockStatus(currentStock, stockMinimo);
   const categoryClass = getCategoryClass(product.categoria || product.category);
   
-  // Generar clases dinámicas para efectos
+  // Generar clases dinámicas para efectos + indicador de testing
   const cardClasses = [
     'h-100',
     'product-card',
     'premium-effect',
+    'testing-card', // Clase especial para testing
     categoryClass,
     isFeatured() ? 'featured' : '',
     isPremium() ? 'premium-particles glow' : ''
@@ -71,8 +72,34 @@ const ProductCard = ({ product, onManage }) => {
       className={cardClasses}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      style={{ animationDelay: `${animationDelay}s` }}
+      style={{ 
+        animationDelay: `${animationDelay}s`,
+        // Borde especial para testing
+        borderLeft: isHovered ? '4px solid #0dcaf0' : '4px solid transparent'
+      }}
     >
+      {/* Banner de testing flotante */}
+      <div 
+        style={{
+          position: 'absolute',
+          top: '8px',
+          left: '8px',
+          zIndex: 10,
+          background: 'linear-gradient(135deg, #0dcaf0, #17a2b8)',
+          color: 'white',
+          padding: '2px 6px',
+          borderRadius: '4px',
+          fontSize: '0.65rem',
+          fontWeight: '600',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+          opacity: isHovered ? 1 : 0.8,
+          transition: 'all 0.3s ease'
+        }}
+      >
+        🧪 Test
+      </div>
+
       <Card.Body className="d-flex flex-column">
         {/* Icono de categoría con gradiente empresarial */}
         <div className="text-center mb-3">
@@ -86,6 +113,16 @@ const ProductCard = ({ product, onManage }) => {
         {/* Nombre del producto con tipografía empresarial */}
         <Card.Title className="product-title text-center text-capitalize">
           {product.nombre || product.name || product.label || 'Producto sin nombre'}
+          {/* Badge de testing en el título */}
+          <div className="mt-1">
+            <Badge 
+              bg="info" 
+              className="small"
+              style={{ fontSize: '0.6rem' }}
+            >
+              TESTING
+            </Badge>
+          </div>
         </Card.Title>
 
         {/* Información del producto con diseño premium */}
@@ -142,10 +179,10 @@ const ProductCard = ({ product, onManage }) => {
         {/* Botones de acción empresariales con microinteracciones */}
         <div className="mt-auto">
           <div className="d-grid gap-3">
-            <Link to={`/products/edit/${product.id}`} state={{ product }}>
+            <Link to={`/products-test/edit/${product.id}`} state={{ product }}>
               <Button className="btn-edit-modern product-action-btn w-100">
                 <i className="bi bi-pencil-square me-2"></i>
-                {product.nombre ? 'EDITAR' : 'COMPLETAR'}
+                {product.nombre ? 'EDITAR TEST' : 'COMPLETAR TEST'}
               </Button>
             </Link>
             
@@ -154,12 +191,12 @@ const ProductCard = ({ product, onManage }) => {
               onClick={() => onManage(product)}
             >
               <i className="bi bi-gear-fill me-2"></i>
-              GESTIONAR
+              GESTIONAR TEST
             </Button>
           </div>
         </div>
 
-        {/* Indicador de categoría flotante */}
+        {/* Indicador de categoría flotante con efecto testing */}
         <div 
           style={{
             position: 'absolute',
@@ -168,10 +205,27 @@ const ProductCard = ({ product, onManage }) => {
             width: '8px',
             height: '8px',
             borderRadius: '50%',
-            background: `var(--gradient-${product.categoria?.toLowerCase().replace(/\s+/g, '-').replace(/ñ/g, 'n') || 'sin-categoria'})`,
+            background: isHovered 
+              ? 'linear-gradient(135deg, #0dcaf0, #17a2b8)' 
+              : `var(--gradient-${product.categoria?.toLowerCase().replace(/\s+/g, '-').replace(/ñ/g, 'n') || 'sin-categoria'})`,
             opacity: isHovered ? 1 : 0.6,
             transition: 'var(--transition-smooth)',
-            zIndex: 4
+            zIndex: 4,
+            boxShadow: isHovered ? '0 0 10px rgba(13, 202, 240, 0.5)' : 'none'
+          }}
+        />
+
+        {/* Efecto de testing: línea punteada en la parte inferior */}
+        <div 
+          style={{
+            position: 'absolute',
+            bottom: '0',
+            left: '1rem',
+            right: '1rem',
+            height: '2px',
+            background: 'repeating-linear-gradient(90deg, #0dcaf0 0, #0dcaf0 5px, transparent 5px, transparent 10px)',
+            opacity: isHovered ? 0.8 : 0.4,
+            transition: 'var(--transition-smooth)'
           }}
         />
       </Card.Body>
@@ -179,4 +233,4 @@ const ProductCard = ({ product, onManage }) => {
   );
 };
 
-export default ProductCard;
+export default ProductCardTest;
