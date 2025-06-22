@@ -24,7 +24,6 @@ import useRouteLoading from './hooks/useRouteLoading';
 // Componentes del sistema principal
 import Navigation from './components/layout/Navigation';
 import ProductsPage from './pages/ProductsPage';
-import ProductsTestPage from './pages/ProductsTestPage';
 import ProductFormPage from './pages/ProductFormPage';
 import ProveedorView from './components/proveedor/ProveedorView';
 import SalesPage from './pages/SalesPage';
@@ -35,6 +34,27 @@ import Footer from './components/layout/Footer';
 import POSMainPage from './pages/POSMainPage';
 
 import { ToastContainer } from 'react-toastify';
+
+// Componente para envolver el layout compartido (sidebar + contenido)
+const MainLayout = ({ children }) => {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  const handleSidebarToggle = (collapsed) => {
+    setSidebarCollapsed(collapsed);
+  };
+
+  return (
+    <>
+      <Navigation onSidebarToggle={handleSidebarToggle} />
+      <div className={`main-content-with-sidebar ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+        <Container fluid className="py-2 px-3">
+          {children}
+        </Container>
+        <Footer />
+      </div>
+    </>
+  );
+};
 
 // Componente para manejar las rutas principales
 const AppRoutes = () => {
@@ -68,79 +88,49 @@ const AppRoutes = () => {
       {/* Rutas del sistema principal - Protegidas y con navegación */}
       <Route path="/products" element={
         <ProtectedRoute requireAuth={true}>
-          <div className="App d-flex flex-column min-vh-100">
-            <Navigation />
-            <Container fluid className="main-content py-4 flex-grow-1">
-              <ProductsPage />
-            </Container>
-            <Footer />
-          </div>
+          <MainLayout>
+            <ProductsPage />
+          </MainLayout>
         </ProtectedRoute>
       } />
+      
       <Route path="/products/new" element={
         <ProtectedRoute requireAuth={true}>
-          <div className="App d-flex flex-column min-vh-100">
-            <Navigation />
-            <Container fluid className="main-content py-4 flex-grow-1">
-              <ProductFormPage />
-            </Container>
-            <Footer />
-          </div>
+          <MainLayout>
+            <ProductFormPage />
+          </MainLayout>
         </ProtectedRoute>
       } />
+      
       <Route path="/products/edit/:id" element={
         <ProtectedRoute requireAuth={true}>
-          <div className="App d-flex flex-column min-vh-100">
-            <Navigation />
-            <Container fluid className="main-content py-4 flex-grow-1">
-              <ProductFormPage />
-            </Container>
-            <Footer />
-          </div>
+          <MainLayout>
+            <ProductFormPage />
+          </MainLayout>
         </ProtectedRoute>
       } />
+      
       <Route path="/proveedores" element={
         <ProtectedRoute requireAuth={true}>
-          <div className="App d-flex flex-column min-vh-100">
-            <Navigation />
-            <Container fluid className="main-content py-4 flex-grow-1">
-              <ProveedorView />
-            </Container>
-            <Footer />
-          </div>
+          <MainLayout>
+            <ProveedorView />
+          </MainLayout>
         </ProtectedRoute>
       } />
+      
       <Route path="/sales" element={
         <ProtectedRoute requireAuth={true}>
-          <div className="App d-flex flex-column min-vh-100">
-            <Navigation />
-            <Container fluid className="main-content py-4 flex-grow-1">
-              <SalesPage />
-            </Container>
-            <Footer />
-          </div>
+          <MainLayout>
+            <SalesPage />
+          </MainLayout>
         </ProtectedRoute>
       } />
+      
       <Route path="/camera" element={
         <ProtectedRoute requireAuth={true}>
-          <div className="App d-flex flex-column min-vh-100">
-            <Navigation />
-            <Container fluid className="main-content py-4 flex-grow-1">
-              <CameraPage />
-            </Container>
-            <Footer />
-          </div>
-        </ProtectedRoute>
-      } />
-      <Route path="/products-test" element={
-        <ProtectedRoute requireAuth={true}>
-          <div className="App d-flex flex-column min-vh-100">
-            <Navigation />
-            <Container fluid className="main-content py-4 flex-grow-1">
-              <ProductsTestPage />
-            </Container>
-            <Footer />
-          </div>
+          <MainLayout>
+            <CameraPage />
+          </MainLayout>
         </ProtectedRoute>
       } />
       

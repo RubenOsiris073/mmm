@@ -10,8 +10,35 @@
   padding-bottom: 40px;
 }
 
+/* Ajustes específicos para el layout con sidebar */
+.main-content-with-sidebar {
+  margin-left: 260px;
+  transition: margin 0.3s ease;
+  min-height: 100vh;
+  padding: 0 !important; /* Eliminar todos los paddings */
+}
+
+.main-content-with-sidebar.sidebar-collapsed {
+  margin-left: 80px;
+}
+
+/* Eliminar padding innecesario del container cuando hay sidebar */
+.main-content-with-sidebar .container-fluid {
+  padding: 0 !important; /* Sin padding */
+  margin: 0 !important; /* Sin margin */
+}
+
+/* Estilos para la página de productos específicamente */
+.product-page-wrapper {
+  padding: 1rem !important; /* Padding mínimo solo en el wrapper */
+  margin: 0 !important;
+  min-height: calc(100vh - 60px); /* Altura completa menos footer */
+}
+
 body {
   background-color: #f8f9fa;
+  margin: 0;
+  padding: 0;
 }
 
 /* ========== ESTILOS DE NAVEGACIÓN ========== */

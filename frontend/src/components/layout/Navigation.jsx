@@ -1,15 +1,31 @@
-import React from 'react';
-import { Navbar, Nav, Container, NavDropdown } from 'react-bootstrap';
-import { Link, useNavigate } from 'react-router-dom';
-import { FaBoxes, FaStore, FaChartLine, FaPlus, FaCog, FaMoneyBillWave, FaSun, FaMoon, FaBuilding, FaUser, FaSignOutAlt } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { Nav, Container } from 'react-bootstrap';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { 
+  FaBoxes, 
+  FaStore, 
+  FaChartLine, 
+  FaCog, 
+  FaMoneyBillWave, 
+  FaSun, 
+  FaMoon, 
+  FaBuilding, 
+  FaUser, 
+  FaSignOutAlt,
+  FaReceipt,
+  FaArrowLeft,
+  FaArrowRight
+} from 'react-icons/fa';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import './Navigation.css';
 
-const Navigation = () => {
+const Navigation = ({ onSidebarToggle }) => {
   const { isDark, toggleTheme } = useTheme();
   const { user, signOut, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [collapsed, setCollapsed] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -31,115 +47,179 @@ const Navigation = () => {
     return 'Usuario';
   };
 
-  return (
-    <Navbar bg="dark" variant="dark" expand="lg" className="shadow">
-      <Container fluid>
-        <Navbar.Brand as={Link} to="/">
-          <FaStore className="me-2" />
-          Sistema de Productos
-        </Navbar.Brand>
-        
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto">
-            <Nav.Link as={Link} to="/products">
-              <FaBoxes className="me-1" />
-              Productos
-            </Nav.Link>
-            
-            <Nav.Link as={Link} to="/products-test">
-              <span className="me-1">🧪</span>
-              Testing
-            </Nav.Link>
-            
-            <Nav.Link as={Link} to="/proveedores">
-              <FaBuilding className="me-1" />
-              Proveedores
-            </Nav.Link>
-            
-            <NavDropdown title={<><FaPlus className="me-1" />Agregar</>} id="add-dropdown">
-              <NavDropdown.Item as={Link} to="/products/new">
-                <FaPlus className="me-2" />
-                Nuevo Producto
-              </NavDropdown.Item>
-            </NavDropdown>
-            
-            <Nav.Link as={Link} to="/pos">
-              <FaMoneyBillWave className="me-1" />
-              Punto de Venta
-            </Nav.Link>
-            
-            <Nav.Link as={Link} to="/sales">
-              <FaChartLine className="me-1" />
-              Ventas
-            </Nav.Link>
-          </Nav>
-          
-          <Nav>
-            {/* Menú de usuario - A la izquierda de Cámara */}
-            {isAuthenticated && (
-              <NavDropdown 
-                title={
-                  <span className="user-menu-title d-flex align-items-center">
-                    {user?.photoURL ? (
-                      <img 
-                        src={user.photoURL} 
-                        alt="Avatar" 
-                        className="rounded-circle me-2" 
-                        style={{ width: '24px', height: '24px' }}
-                      />
-                    ) : (
-                      <FaUser className="me-1" />
-                    )}
-                    {getUserDisplayName()}
-                  </span>
-                } 
-                id="user-dropdown"
-              >
-                <NavDropdown.Item>
-                  <div className="user-info d-flex align-items-center">
-                    {user?.photoURL ? (
-                      <img 
-                        src={user.photoURL} 
-                        alt="Avatar" 
-                        className="rounded-circle me-2" 
-                        style={{ width: '32px', height: '32px' }}
-                      />
-                    ) : (
-                      <FaUser className="me-2" style={{ fontSize: '32px' }} />
-                    )}
-                    <div>
-                      <small className="text-muted">Conectado como:</small>
-                      <div>{user?.email}</div>
-                    </div>
-                  </div>
-                </NavDropdown.Item>
-                <NavDropdown.Divider />
-                <NavDropdown.Item onClick={handleLogout}>
-                  <FaSignOutAlt className="me-2" />
-                  Cerrar Sesión
-                </NavDropdown.Item>
-              </NavDropdown>
-            )}
+  // Verificar si un enlace está activo
+  const isActive = (path) => {
+    return location.pathname.startsWith(path);
+  };
 
-            <Nav.Link as={Link} to="/camera">
-              <FaCog className="me-1" />
-              Cámara
+  // Función para manejar el toggle del sidebar
+  const handleSidebarToggle = () => {
+    const newCollapsed = !collapsed;
+    setCollapsed(newCollapsed);
+    if (onSidebarToggle) {
+      onSidebarToggle(newCollapsed);
+    }
+  };
+
+  return (
+    <>
+      <div className={`sidebar-navigation ${collapsed ? 'collapsed' : ''}`}>
+        {/* Header del Sidebar con Logo y Usuario */}
+        <div className="sidebar-header">
+          <div className="sidebar-brand">
+            {!collapsed ? (
+              <>
+                <FaStore className="sidebar-logo-icon" />
+                <span className="sidebar-brand-text">Administracion</span>
+              </>
+            ) : (
+              <FaStore className="sidebar-logo-icon-collapsed" />
+            )}
+          </div>
+          
+          {/* Perfil de usuario */}
+          <div className="sidebar-user-profile">
+            {user?.photoURL ? (
+              <img 
+                src={user.photoURL} 
+                alt="Avatar" 
+                className="sidebar-avatar"
+              />
+            ) : (
+              <div className="sidebar-avatar-placeholder">
+                <FaUser />
+              </div>
+            )}
+            {!collapsed && (
+              <div className="sidebar-user-info">
+                <h6 className="sidebar-user-name">{getUserDisplayName()}</h6>
+                <span className="sidebar-user-role">
+                  {user?.role || 'Usuario'}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Menú Principal */}
+        <Nav className="sidebar-menu">
+          {/* Sección de navegación principal */}
+          <div className="sidebar-section">
+            {!collapsed && <div className="sidebar-section-title">Principal</div>}
+            
+            <Nav.Link 
+              as={Link} 
+              to="/products" 
+              className={`sidebar-menu-item ${isActive('/products') && !isActive('/products/new') ? 'active' : ''}`}
+            >
+              <FaBoxes className="sidebar-icon" />
+              {!collapsed && <span>Productos</span>}
             </Nav.Link>
             
-            {/* Botón de cambio de tema */}
-            <button 
-              className="theme-toggle ms-2" 
-              onClick={toggleTheme}
-              aria-label={`Cambiar a tema ${isDark ? 'claro' : 'oscuro'}`}
+            <Nav.Link 
+              as={Link} 
+              to="/pos" 
+              className={`sidebar-menu-item ${isActive('/pos') ? 'active' : ''}`}
             >
-              {isDark ? <FaSun className="theme-toggle-icon" /> : <FaMoon className="theme-toggle-icon" />}
-              {isDark ? 'Claro' : 'Oscuro'}
-            </button>
-          </Nav>
-        </Navbar.Collapse>
+              <FaMoneyBillWave className="sidebar-icon" />
+              {!collapsed && <span>Punto de Venta</span>}
+            </Nav.Link>
+          </div>
+          
+          {/* Sección de Order Process (según imagen POSLINE) */}
+          <div className="sidebar-section">
+            {!collapsed && <div className="sidebar-section-title">Order Process</div>}
+            
+            <Nav.Link 
+              as={Link} 
+              to="/sales" 
+              className={`sidebar-menu-item ${isActive('/sales') ? 'active' : ''}`}
+            >
+              <FaChartLine className="sidebar-icon" />
+              {!collapsed && <span>Ventas</span>}
+            </Nav.Link>
+          </div>
+          
+          {/* Sección de Analytics (según imagen POSLINE) */}
+          <div className="sidebar-section">
+            {!collapsed && <div className="sidebar-section-title">Analytics</div>}
+            
+            <Nav.Link 
+              as={Link} 
+              to="/proveedores" 
+              className={`sidebar-menu-item ${isActive('/proveedores') ? 'active' : ''}`}
+            >
+              <FaBuilding className="sidebar-icon" />
+              {!collapsed && <span>Proveedores</span>}
+            </Nav.Link>
+            
+            <Nav.Link 
+              as={Link} 
+              to="/camera" 
+              className={`sidebar-menu-item ${isActive('/camera') ? 'active' : ''}`}
+            >
+              <FaCog className="sidebar-icon" />
+              {!collapsed && <span>Cámara</span>}
+            </Nav.Link>
+          </div>
+
+          {/* Sección Manage Dish (según imagen POSLINE) */}
+          <div className="sidebar-section">
+            {!collapsed && <div className="sidebar-section-title">Manage Dish</div>}
+            
+            <Nav.Link 
+              as={Link} 
+              to="/products/new" 
+              className={`sidebar-menu-item ${isActive('/products/new') ? 'active' : ''}`}
+            >
+              <FaReceipt className="sidebar-icon" />
+              {!collapsed && <span>Nuevo Producto</span>}
+            </Nav.Link>
+          </div>
+        </Nav>
+        
+        {/* Footer del Sidebar */}
+        <div className="sidebar-footer">
+          <button 
+            className="sidebar-theme-toggle" 
+            onClick={toggleTheme}
+            aria-label={`Cambiar a tema ${isDark ? 'claro' : 'oscuro'}`}
+          >
+            {isDark ? <FaSun className="sidebar-icon" /> : <FaMoon className="sidebar-icon" />}
+            {!collapsed && <span>{isDark ? 'Tema Claro' : 'Tema Oscuro'}</span>}
+          </button>
+          
+          <button 
+            className="sidebar-logout" 
+            onClick={handleLogout}
+          >
+            <FaSignOutAlt className="sidebar-icon" />
+            {!collapsed && <span>Cerrar Sesión</span>}
+          </button>
+          
+          {/* Botón para colapsar/expandir sidebar */}
+          <button 
+            className="sidebar-collapse-btn"
+            onClick={handleSidebarToggle}
+            aria-label={collapsed ? "Expandir menú" : "Colapsar menú"}
+          >
+            {collapsed ? (
+              <FaArrowRight />
+            ) : (
+              <>
+                <FaArrowLeft className="me-2" />
+                <span>Contraer</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+      
+      {/* Contenedor principal que se ajusta según el sidebar */}
+      <Container fluid className={`main-content-with-sidebar ${collapsed ? 'sidebar-collapsed' : ''}`}>
+        {/* El contenido de la aplicación se renderiza aquí */}
       </Container>
-    </Navbar>
+    </>
   );
 };
 

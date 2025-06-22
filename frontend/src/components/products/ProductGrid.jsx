@@ -8,6 +8,7 @@ import useProductFilters from './hooks/useProductFilters';
 
 // Componentes modulares
 import ProductCard from './components/ProductCard';
+import ProductCardModern from './components/ProductCardModern';
 import ProductFilters from './components/ProductFilters';
 import ProductManagementModal from './ProductManagementModal';
 
@@ -15,7 +16,8 @@ import ProductManagementModal from './ProductManagementModal';
 import { getCategoryColor, getCategoryIcon, formatCategoryTitle } from './utils/categoryUtils';
 
 const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' o 'list'
+  const [viewMode, setViewMode] = useState('modern'); // 'modern', 'grid' o 'list'
+  const [activeCategory, setActiveCategory] = useState('all');
   
   // Estados para el modal de gestión
   const [showManagementModal, setShowManagementModal] = useState(false);
@@ -61,7 +63,101 @@ const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
     }
   };
 
-  // Renderizar vista de lista
+  // Función para agregar producto al carrito
+  const handleAddToCart = (product) => {
+    console.log('Añadiendo al carrito:', product);
+    // Aquí puedes implementar la lógica para agregar al carrito
+  };
+
+  // Renderizar vista moderna con pestañas de categorías
+  const renderModernView = () => {
+    if (Object.keys(groupedProducts).length === 0) {
+      return (
+        <div className="text-center py-5">
+          <i className="bi bi-search display-1 text-muted"></i>
+          <h4 className="mt-3">No se encontraron productos</h4>
+          <p className="text-muted">
+            Intenta con otros términos de búsqueda o revisa los filtros aplicados
+          </p>
+          <Button variant="outline-primary" onClick={clearFilters}>
+            <i className="bi bi-arrow-clockwise me-1"></i>
+            Limpiar filtros
+          </Button>
+        </div>
+      );
+    }
+
+    // Determinar qué categorías mostrar según el filtro activo
+    const categoriesToRender = activeCategory === 'all' 
+      ? Object.keys(groupedProducts)
+      : [activeCategory].filter(cat => groupedProducts[cat]);
+
+    return (
+      <div className="products-page-container">
+        {/* Menú de categorías en pestañas */}
+        <div className="product-category-tabs">
+          <div 
+            className={`product-category-tab ${activeCategory === 'all' ? 'active' : ''}`}
+            onClick={() => setActiveCategory('all')}
+          >
+            Todos <span className="ms-1 badge rounded-pill bg-light text-dark">{Object.values(groupedProducts).flat().length}</span>
+          </div>
+          
+          {Object.keys(groupedProducts).map(category => (
+            <div 
+              key={category}
+              className={`product-category-tab ${activeCategory === category ? 'active' : ''}`}
+              onClick={() => setActiveCategory(category)}
+            >
+              {formatCategoryTitle(category)} <span className="ms-1 badge rounded-pill bg-light text-dark">{groupedProducts[category].length}</span>
+            </div>
+          ))}
+        </div>
+        
+        {/* Barra de búsqueda */}
+        <div className="product-search-container">
+          <i className="bi bi-search"></i>
+          <input 
+            type="text" 
+            placeholder="Buscar productos..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        
+        {/* Grid de productos */}
+        {categoriesToRender.length === 0 ? (
+          <div className="text-center py-5">
+            <i className="bi bi-exclamation-circle display-4 text-warning"></i>
+            <h4 className="mt-3">No hay productos en esta categoría</h4>
+            <Button variant="outline-primary" onClick={() => setActiveCategory('all')}>
+              Ver todas las categorías
+            </Button>
+          </div>
+        ) : (
+          categoriesToRender.map(category => (
+            <div key={category} className="mb-4">
+              {activeCategory === 'all' && (
+                <h5 className="mb-3">{formatCategoryTitle(category)}</h5>
+              )}
+              <Row xs={1} sm={2} md={3} lg={4} className="g-4">
+                {groupedProducts[category].map(product => (
+                  <Col key={product.id}>
+                    <ProductCardModern 
+                      product={product} 
+                      onManage={handleManageProduct}
+                    />
+                  </Col>
+                ))}
+              </Row>
+            </div>
+          ))
+        )}
+      </div>
+    );
+  };
+
+  // Renderizar vista de lista (versión original)
   const renderListView = () => {
     return Object.entries(groupedProducts).map(([category, categoryProducts]) => (
       <div key={category} className="mb-5">
@@ -150,7 +246,7 @@ const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
     ));
   };
 
-  // Renderizar vista de cuadrícula
+  // Renderizar vista de cuadrícula (versión original)
   const renderGridView = () => {
     return Object.entries(groupedProducts).map(([category, categoryProducts]) => (
       <div key={category} className="mb-5">
@@ -194,7 +290,7 @@ const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
         <p className="text-muted mb-4">
           Registra productos manualmente o detecta con la cámara para comenzar
         </p>
-        <Link to="/product-form">
+        <Link to="/products/new">
           <Button variant="primary" size="lg">
             <i className="bi bi-plus-circle me-2"></i>
             Agregar Primer Producto
@@ -206,17 +302,29 @@ const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
 
   return (
     <div className="product-grid-container">
-      {/* Barra de filtros */}
-      <ProductFilters
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        allCategories={allCategories}
-        viewMode={viewMode}
-        setViewMode={setViewMode}
-        onClearFilters={clearFilters}
-      />
+      {/* Botones de cambio de vista */}
+      <div className="d-flex justify-content-end mb-3">
+        <div className="btn-group">
+          <Button 
+            variant={viewMode === 'modern' ? 'primary' : 'outline-secondary'}
+            onClick={() => setViewMode('modern')}
+          >
+            <i className="bi bi-grid-3x3-gap me-1"></i> Moderno
+          </Button>
+          <Button 
+            variant={viewMode === 'grid' ? 'primary' : 'outline-secondary'}
+            onClick={() => setViewMode('grid')}
+          >
+            <i className="bi bi-grid me-1"></i> Clásico
+          </Button>
+          <Button 
+            variant={viewMode === 'list' ? 'primary' : 'outline-secondary'}
+            onClick={() => setViewMode('list')}
+          >
+            <i className="bi bi-list me-1"></i> Lista
+          </Button>
+        </div>
+      </div>
 
       {/* Indicador de carga */}
       {isLoading && (
@@ -230,20 +338,12 @@ const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
       {/* Contenido principal */}
       {!isLoading && (
         <div>
-          {Object.keys(groupedProducts).length === 0 ? (
-            <div className="text-center py-5">
-              <i className="bi bi-search display-1 text-muted"></i>
-              <h4 className="mt-3">No se encontraron productos</h4>
-              <p className="text-muted">
-                Intenta con otros términos de búsqueda o revisa los filtros aplicados
-              </p>
-              <Button variant="outline-primary" onClick={clearFilters}>
-                <i className="bi bi-arrow-clockwise me-1"></i>
-                Limpiar filtros
-              </Button>
-            </div>
+          {viewMode === 'modern' ? (
+            renderModernView()
+          ) : viewMode === 'grid' ? (
+            renderGridView()
           ) : (
-            viewMode === 'grid' ? renderGridView() : renderListView()
+            renderListView()
           )}
         </div>
       )}

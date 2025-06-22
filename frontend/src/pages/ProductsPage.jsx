@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Button, Alert, Tabs, Tab } from 'react-bootstrap';
+import { Row, Col, Card, Button, Alert } from 'react-bootstrap';
 import { Link, useLocation } from 'react-router-dom';
-import { FaPlus } from 'react-icons/fa';
+import { FaPlus, FaSearch } from 'react-icons/fa';
 import ProductList from '../components/products/ProductList';
 import ProductGrid from '../components/products/ProductGrid';
 import { getDetections, getProductsWithSafeDates } from '../services/storageService';
 import '../App.css';
+import '../styles/products-modern.css';
 
 const ProductsPage = () => {
   const [detections, setDetections] = useState([]);
@@ -13,7 +14,6 @@ const ProductsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
-  const [activeTab, setActiveTab] = useState('grid');
   const location = useLocation();
 
   useEffect(() => {
@@ -31,11 +31,9 @@ const ProductsPage = () => {
       setError(null);
       
       try {
-        // Usar getProductsWithSafeDates en lugar de getRegisteredProducts
-        // para un mejor manejo de las fechas
         const [detectionsData, productsData] = await Promise.all([
           getDetections(),
-          getProductsWithSafeDates() // Usa la función mejorada que maneja fechas de manera segura
+          getProductsWithSafeDates()
         ]);
         
         // Validar que los datos sean arrays
@@ -86,118 +84,45 @@ const ProductsPage = () => {
   };
 
   return (
-    <>
-      {/* Banner de productos - Versión simplificada */}
-      <Card className="mb-4">
-        <Card.Body>
-          <Row className="align-items-center">
-            <Col md={8}>
-              <h2>Inventario de Productos</h2>
-              <p className="text-muted mb-0">
-                Gestione su catálogo de productos, visualice las detecciones automáticas y mantenga su inventario actualizado.
-                Este módulo le permite ver, editar y añadir productos para optimizar su gestión de inventario.
-              </p>
-            </Col>
-            <Col md={4} className="text-end">
-              <Button 
-                as={Link} 
-                to="/products/new" 
-                variant="primary"
-                size="lg"
-              >
-                <FaPlus className="me-1" />
-                Nuevo Producto
-              </Button>
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
+    <div className="product-page-wrapper">
+      {/* Cabecera simple con botón de Nuevo Producto */}
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h2 className="m-0" style={{ color: '#212529', fontWeight: '600' }}>Productos</h2>
+        <Button 
+          as={Link} 
+          to="/products/new" 
+          variant="primary"
+          className="d-flex align-items-center"
+        >
+          <FaPlus className="me-2" />
+          Nuevo Producto
+        </Button>
+      </div>
 
-      {/* Instrucciones para gestión de productos */}
-      <Card className="mb-4">
-        <Card.Header className="bg-light">
-          <h5 className="mb-0">
-            <i className="bi bi-info-circle me-2"></i>
-            Instrucciones para el Inventario de Productos
-          </h5>
-        </Card.Header>
-        <Card.Body>
-          <Row>
-            <Col md={8}>
-              <ol>
-                <li className="mb-2">Use "Vista por Categorías" para visualizar todos los productos agrupados por categoría.</li>
-                <li className="mb-2">Cambie a "Lista de Detecciones" para ver los productos detectados automáticamente.</li>
-                <li className="mb-2">Haga clic en un producto para ver más detalles o editarlo.</li>
-                <li className="mb-2">Use el botón "Añadir Producto" para registrar manualmente un nuevo producto.</li>
-                <li className="mb-2">Los productos detectados automáticamente se muestran con un indicador especial.</li>
-                <li>Mantenga su catálogo actualizado para facilitar las operaciones de venta e inventario.</li>
-              </ol>
-            </Col>
-            <Col md={4}>
-              <Alert variant="info" className="h-100 mb-0 d-flex align-items-center">
-                <div>
-                  <i className="bi bi-lightbulb-fill me-2 fs-4"></i>
-                  <strong>Consejos:</strong>
-                  <p className="mb-0 mt-2">
-                    Para una mejor organización, asigne categorías claras a todos sus productos. 
-                    Las imágenes de calidad mejoran la identificación visual. Revise regularmente las detecciones automáticas para validar su precisión.
-                  </p>
-                </div>
-              </Alert>
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
-
+      {/* Mensajes de alerta */}
       {successMessage && (
-        <Row className="mb-4">
-          <Col>
-            <Alert variant="success" onClose={() => setSuccessMessage(null)} dismissible>
-              {successMessage}
-            </Alert>
-          </Col>
-        </Row>
+        <Alert variant="success" onClose={() => setSuccessMessage(null)} dismissible className="mb-3">
+          {successMessage}
+        </Alert>
       )}
       
       {error && (
-        <Row className="mb-4">
-          <Col>
-            <Alert variant="danger" onClose={() => setError(null)} dismissible>
-              {error}
-            </Alert>
-          </Col>
-        </Row>
+        <Alert variant="danger" onClose={() => setError(null)} dismissible className="mb-3">
+          {error}
+        </Alert>
       )}
 
-      <Row>
-        <Col>
-          <Card className="shadow-sm">
-            <Card.Body>
-              <Tabs
-                activeKey={activeTab}
-                onSelect={(k) => setActiveTab(k)}
-                className="mb-4"
-              >
-                <Tab eventKey="grid" title="Vista por Categorías">
-                  <ProductGrid 
-                    products={allProducts} 
-                    loading={loading} 
-                    onProductDeleted={handleProductDeleted}
-                  />
-                </Tab>
-                <Tab eventKey="list" title="Lista de Detecciones">
-                  <ProductList 
-                    products={detections} 
-                    loading={loading} 
-                    onProductDeleted={handleProductDeleted}
-                  />
-                </Tab>
-              </Tabs>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </>
+      {/* Contenedor principal de productos */}
+      <Card className="shadow-sm" style={{ backgroundColor: 'white', border: '1px solid #eaeaea', margin: 0 }}>
+        <Card.Body style={{ padding: '1rem' }}>
+          <ProductGrid 
+            products={allProducts} 
+            loading={loading} 
+            onProductDeleted={handleProductDeleted}
+          />
+        </Card.Body>
+      </Card>
+    </div>
   );
 };
 

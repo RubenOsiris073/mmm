@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Badge, Button } from 'react-bootstrap';
+import { Card, Badge, Button, Image } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { getCategoryIcon } from '../utils/categoryUtils';
 
@@ -9,6 +9,14 @@ const ProductCard = ({ product, onManage }) => {
   
   const currentStock = product.cantidad || product.stock || 0;
   const stockMinimo = product.stockMinimo || 5;
+  
+  // Función para obtener la URL de la imagen o usar la imagen por defecto
+  const getImageUrl = () => {
+    if (product.imageUrl || product.imagenURL) {
+      return product.imageUrl || product.imagenURL;
+    }
+    return '/no-image.jpg';
+  };
   
   // Determinar el estado del stock con la nueva paleta empresarial
   const getStockStatus = (stock, minimo) => {
@@ -74,8 +82,20 @@ const ProductCard = ({ product, onManage }) => {
       style={{ animationDelay: `${animationDelay}s` }}
     >
       <Card.Body className="d-flex flex-column">
-        {/* Icono de categoría con gradiente empresarial */}
+        {/* Imagen del producto */}
         <div className="text-center mb-3">
+          <Image 
+            src={getImageUrl()}
+            alt={product.nombre || 'Producto'}
+            onError={(e) => {e.target.src = '/no-image.jpg'}}
+            style={{ 
+              width: '80px', 
+              height: '80px', 
+              objectFit: 'cover', 
+              borderRadius: '8px',
+              marginBottom: '10px' 
+            }}
+          />
           <div className="product-category-icon">
             <span>
               {getCategoryIcon(product.categoria || product.category || 'sin-categoria')}
