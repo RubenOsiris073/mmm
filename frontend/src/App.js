@@ -47,7 +47,7 @@ const MainLayout = ({ children }) => {
     <>
       <Navigation onSidebarToggle={handleSidebarToggle} />
       <div className={`main-content-with-sidebar ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-        <Container fluid className="py-2 px-3">
+        <Container fluid style={{ padding: 0, margin: 0 }}>
           {children}
         </Container>
         <Footer />

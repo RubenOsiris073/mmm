@@ -59,7 +59,7 @@ const SalesPage = () => {
   };
 
   return (
-    <>
+    <div className="p-3" style={{ minHeight: '100vh' }}>
       <Row className="mb-4">
         <Col>
           <Card className="shadow-sm">
@@ -107,7 +107,7 @@ const SalesPage = () => {
         onHide={() => setShowInvoiceModal(false)}
         sale={selectedSale}
       />
-    </>
+    </div>
   );
 };
 

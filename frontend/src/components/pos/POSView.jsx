@@ -147,7 +147,7 @@ const POSView = () => {
 
   return (
     <div className="pos-view">
-      <Container fluid className="pos-container">
+      <Container fluid className="pos-container" style={{ padding: '20px' }}>
       
       {/* Instrucciones */}
       <Card className="mb-4">

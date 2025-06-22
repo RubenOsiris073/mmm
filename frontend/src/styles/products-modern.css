@@ -62,8 +62,8 @@
 
 /* ========== TARJETAS EMPRESARIALES PREMIUM ========== */
 .product-card {
-  background: var(--enterprise-neutral-0) !important;
-  border: 1px solid var(--enterprise-neutral-200) !important;
+  background: var(--card-bg) !important; /* Usar variable del tema */
+  border: 1px solid var(--border-color) !important;
   border-radius: 16px !important;
   padding: 0 !important;
   transition: var(--transition-premium) !important;
@@ -193,7 +193,7 @@
 .product-title {
   font-weight: 700 !important;
   font-size: 1.1rem !important;
-  color: var(--enterprise-neutral-800) !important;
+  color: var(--text-primary) !important; /* Usar variable del tema */
   line-height: 1.4 !important;
   margin-bottom: 1rem !important;
   min-height: 3rem !important;
@@ -207,7 +207,7 @@
 }
 
 .product-card:hover .product-title {
-  color: var(--enterprise-primary) !important;
+  color: var(--accent-blue) !important; /* Usar variable del tema */
   transform: translateY(-2px) !important;
 }
 
@@ -370,8 +370,8 @@
 
 /* ========== HEADERS DE CATEGORÍA EMPRESARIALES ========== */
 .category-header {
-  background: linear-gradient(135deg, var(--enterprise-neutral-0) 0%, var(--enterprise-neutral-50) 100%) !important;
-  border: 1px solid var(--enterprise-neutral-200) !important;
+  background: var(--card-bg) !important; /* Usar variable del tema */
+  border: 1px solid var(--border-color) !important;
   border-radius: 20px !important;
   padding: 2rem !important;
   margin-bottom: 2.5rem !important;
@@ -398,7 +398,7 @@
 }
 
 .category-header h4 {
-  color: var(--enterprise-neutral-800) !important;
+  color: var(--text-primary) !important; /* Usar variable del tema */
   font-weight: 800 !important;
   margin-bottom: 0 !important;
   font-size: 1.5rem !important;
@@ -423,8 +423,8 @@
 
 /* ========== VISTA DE LISTA EMPRESARIAL ========== */
 .list-group-item-modern {
-  background: var(--enterprise-neutral-0) !important;
-  border: 1px solid var(--enterprise-neutral-200) !important;
+  background: var(--card-bg) !important; /* Usar variable del tema */
+  border: 1px solid var(--border-color) !important;
   border-radius: 16px !important;
   margin-bottom: 1rem !important;
   padding: 2rem !important;
@@ -776,10 +776,10 @@
 
 /* Estilos del contenedor principal de productos */
 .products-page-container {
-  background-color: #ffffff;
-  padding: 0 !important; /* Sin padding */
+  background-color: var(--bg-primary) !important; /* Usar variable del tema */
+  padding: 0 !important;
   border-radius: 12px;
-  margin: 0 !important; /* Sin margin */
+  margin: 0 !important;
 }
 
 /* Animación de carga */

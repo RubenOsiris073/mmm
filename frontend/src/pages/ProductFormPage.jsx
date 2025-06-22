@@ -19,10 +19,17 @@ const ProductFormPage = () => {
   };
 
   return (
-    <>
+    <div className="product-page-wrapper" style={{ paddingTop: '4rem' }}>
       <Row className="mb-4">
-        <Col className="d-flex justify-content-between align-items-center">
-          <h1>{preselectedProduct ? 'Editar Producto' : 'Registrar Nuevo Producto'}</h1>
+        <Col lg={10} className="mx-auto d-flex justify-content-between align-items-center">
+          <h1 style={{ 
+            marginTop: '0',
+            marginBottom: '0.5rem',
+            fontWeight: '600',
+            color: 'var(--text-primary)'
+          }}>
+            {preselectedProduct ? 'Editar Producto' : 'Registrar Nuevo Producto'}
+          </h1>
           <div>
             <Link to="/products" className="me-2">
               <Button variant="outline-secondary">
@@ -45,7 +52,7 @@ const ProductFormPage = () => {
           </Card>
         </Col>
       </Row>
-    </>
+    </div>
   );
 };
 

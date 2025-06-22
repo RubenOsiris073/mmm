@@ -85,20 +85,6 @@ const ProductsPage = () => {
 
   return (
     <div className="product-page-wrapper">
-      {/* Cabecera simple con botón de Nuevo Producto */}
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2 className="m-0" style={{ color: '#212529', fontWeight: '600' }}>Productos</h2>
-        <Button 
-          as={Link} 
-          to="/products/new" 
-          variant="primary"
-          className="d-flex align-items-center"
-        >
-          <FaPlus className="me-2" />
-          Nuevo Producto
-        </Button>
-      </div>
-
       {/* Mensajes de alerta */}
       {successMessage && (
         <Alert variant="success" onClose={() => setSuccessMessage(null)} dismissible className="mb-3">
@@ -113,7 +99,21 @@ const ProductsPage = () => {
       )}
 
       {/* Contenedor principal de productos */}
-      <Card className="shadow-sm" style={{ backgroundColor: 'white', border: '1px solid #eaeaea', margin: 0 }}>
+      <Card className="shadow-sm" style={{ margin: 0 }}>
+        {/* Header del card con título y botón */}
+        <Card.Header className="d-flex justify-content-between align-items-center">
+          <h2 className="m-0" style={{ fontWeight: '600' }}>Productos</h2>
+          <Button 
+            as={Link} 
+            to="/products/new" 
+            variant="primary"
+            className="d-flex align-items-center"
+          >
+            <FaPlus className="me-2" />
+            Nuevo Producto
+          </Button>
+        </Card.Header>
+        
         <Card.Body style={{ padding: '1rem' }}>
           <ProductGrid 
             products={allProducts} 

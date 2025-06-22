@@ -12,20 +12,24 @@
 
 /* Ajustes específicos para el layout con sidebar */
 .main-content-with-sidebar {
-  margin-left: 260px;
+  margin-left: 220px !important; /* Forzar el margin */
   transition: margin 0.3s ease;
   min-height: 100vh;
   padding: 0 !important; /* Eliminar todos los paddings */
+  position: relative; /* Asegurar posicionamiento correcto */
+  top: 0; /* Empezar desde la parte superior */
 }
 
 .main-content-with-sidebar.sidebar-collapsed {
-  margin-left: 80px;
+  margin-left: 70px !important; /* Forzar el margin cuando está colapsado */
 }
 
 /* Eliminar padding innecesario del container cuando hay sidebar */
 .main-content-with-sidebar .container-fluid {
   padding: 0 !important; /* Sin padding */
   margin: 0 !important; /* Sin margin */
+  width: 100% !important; /* Ancho completo */
+  max-width: none !important; /* Sin restricción de ancho máximo */
 }
 
 /* Estilos para la página de productos específicamente */
@@ -33,10 +37,19 @@
   padding: 1rem !important; /* Padding mínimo solo en el wrapper */
   margin: 0 !important;
   min-height: calc(100vh - 60px); /* Altura completa menos footer */
+  position: relative; /* Posicionamiento relativo */
+  top: 0; /* Empezar desde arriba */
 }
 
 body {
   background-color: #f8f9fa;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* Evitar scroll horizontal */
+}
+
+/* Eliminar cualquier margin/padding del html */
+html {
   margin: 0;
   padding: 0;
 }
@@ -125,26 +138,27 @@ body {
 
 /* ========== ESTILOS VISTA GRID DE PRODUCTOS ========== */
 .product-card {
-  background-color: white !important; /* Forzar fondo blanco */
-  color: #333 !important; /* Color de texto oscuro */
-  border: 1px solid #dee2e6;
+  background-color: var(--card-bg) !important; /* Usar variable del tema */
+  color: var(--text-primary) !important; /* Usar variable del tema */
+  border: 1px solid var(--border-color);
   transition: all 0.3s ease;
   border-radius: 10px;
   overflow: hidden;
   height: 100%;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px var(--shadow);
 }
+
 .product-card .card-title {
-  color: #212529 !important; /* Título oscuro */
+  color: var(--text-primary) !important; /* Usar variable del tema */
 }
 
 .product-card .text-muted {
-  color: #6c757d !important; /* Texto secundario visible */
+  color: var(--text-muted) !important; /* Usar variable del tema */
 }
 
 .card-footer {
-  background-color: white !important;
-  border-top: 1px solid #f8f9fa !important;
+  background-color: var(--bg-secondary) !important; /* Usar variable del tema */
+  border-top: 1px solid var(--border-color) !important;
 }
 
 
@@ -189,19 +203,19 @@ body {
 
 /* Estilos para la lista */
 .list-group-item {
-  background-color: white !important;
-  color: #212529 !important;
+  background-color: var(--card-bg) !important; /* Usar variable del tema */
+  color: var(--text-primary) !important; /* Usar variable del tema */
   border-left: 4px solid transparent;
 }
 
-/* Asegurar que las cabeceras de categoría sean visibles */
+/* Asegurar que las cabeceras de categoría respeten el tema */
 h4, h5, h3, h2, h1 {
-  color: #212529 !important;
+  color: var(--text-primary) !important; /* Usar variable del tema */
 }
   
-  .category-header {
-    color: #e0e0e0;
-  }
+.category-header {
+  color: var(--text-primary) !important; /* Usar variable del tema */
+}
 
 /* Estilo lista categorizada */
 .list-group-item {

@@ -270,43 +270,9 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
 
   return (
     <>
-      {/* Instrucciones */}
-      <Card className="mb-4">
-        <Card.Header className="bg-light">
-          <h5 className="mb-0">
-            <i className="bi bi-info-circle me-2"></i>
-            Instrucciones para la Gestión de Ventas
-          </h5>
-        </Card.Header>
-        <Card.Body>
-          <Row>
-            <Col md={8}>
-              <ol>
-                <li className="mb-2">Utilice los filtros para buscar ventas específicas por fecha, cliente o monto.</li>
-                <li className="mb-2">Revise los detalles de cada venta en la tabla principal.</li>
-                <li className="mb-2">Genere facturas individuales haciendo clic en el botón "Factura".</li>
-                <li className="mb-2">Exporte todos los datos para análisis detallados con el botón de descarga.</li>
-                <li>Actualice los datos en cualquier momento con el botón "Actualizar".</li>
-              </ol>
-            </Col>
-            <Col md={4}>
-              <Alert variant="info" className="h-100 mb-0 d-flex align-items-center">
-                <div>
-                  <i className="bi bi-lightbulb-fill me-2 fs-4"></i>
-                  <strong>Consejos:</strong>
-                  <p className="mb-0 mt-2">
-                    Para un análisis más efectivo, utilice los filtros por rangos de fechas. Las ventas más recientes aparecen primero en la lista. Puede generar facturas individuales para cada transacción.
-                  </p>
-                </div>
-              </Alert>
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
-
       {/* Panel principal */}
       <Card className="shadow-sm mb-4">
-        <Card.Header className="bg-white d-flex justify-content-between align-items-center">
+        <Card.Header className="d-flex justify-content-between align-items-center">
           <h5 className="mb-0">Historial de Ventas</h5>
           <div>
             <Button 
@@ -330,7 +296,7 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
         
         {/* Panel de filtros plegable */}
         {showFilters && (
-          <Card.Body className="bg-light border-bottom">
+          <Card.Body className="border-bottom">
             <Form>
               <Row>
                 <Col md={3}>
@@ -461,7 +427,7 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
         </Card.Body>
         
         {/* Footer con acciones adicionales */}
-        <Card.Footer className="bg-white">
+        <Card.Footer>
           <div className="d-flex justify-content-between align-items-center">
             <div>
               <small className="text-muted">
