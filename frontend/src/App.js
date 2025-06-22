@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { initializeFirebase } from './services/firebase';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Container } from 'react-bootstrap';
+import { ToastContainer } from 'react-toastify';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -14,26 +15,22 @@ import './styles/products-modern.css';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
-// Importar componentes de autenticación
+// Importar componentes de autenticación (críticos - no lazy)
 import { AuthenticationPage, ProtectedRoute } from './components/auth';
 
-// Importar pantalla de carga y hook
+// Importar pantalla de carga y hook (críticos - no lazy)
 import LoadingScreen from './components/shared/LoadingScreen';
 import useRouteLoading from './hooks/useRouteLoading';
 
-// Componentes del sistema principal
-import Navigation from './components/layout/Navigation';
-import ProductsPage from './pages/ProductsPage';
-import ProductFormPage from './pages/ProductFormPage';
-import ProveedorView from './components/proveedor/ProveedorView';
-import SalesPage from './pages/SalesPage';
-import CameraPage from './pages/CameraPage';
-import Footer from './components/layout/Footer';
-
-// Componentes del POS
-import POSMainPage from './pages/POSMainPage';
-
-import { ToastContainer } from 'react-toastify';
+// Lazy loading para componentes no críticos
+const Navigation = lazy(() => import('./components/layout/Navigation'));
+const ProductsPage = lazy(() => import('./pages/ProductsPage'));
+const ProductFormPage = lazy(() => import('./pages/ProductFormPage'));
+const ProveedorView = lazy(() => import('./components/proveedor/ProveedorView'));
+const SalesPage = lazy(() => import('./pages/SalesPage'));
+const CameraPage = lazy(() => import('./pages/CameraPage'));
+const Footer = lazy(() => import('./components/layout/Footer'));
+const POSMainPage = lazy(() => import('./pages/POSMainPage'));
 
 // Componente para envolver el layout compartido (sidebar + contenido)
 const MainLayout = ({ children }) => {
@@ -199,7 +196,9 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <Router>
-          <AppRoutes />
+          <Suspense fallback={<LoadingScreen />}>
+            <AppRoutes />
+          </Suspense>
           <ToastContainer 
             position="top-right"
             autoClose={3000}

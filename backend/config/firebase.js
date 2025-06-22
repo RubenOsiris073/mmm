@@ -1,36 +1,12 @@
-const admin = require('firebase-admin');
 const { initializeApp } = require('firebase/app');
+const { getAuth } = require('firebase/auth');
 const { getFirestore } = require('firebase/firestore');
+const admin = require('firebase-admin');
 const dotenv = require('dotenv');
-const path = require('path');
-const fs = require('fs');
 
 dotenv.config();
 
-// Intentar cargar desde múltiples ubicaciones
-const envPaths = [
-  path.join(__dirname, '..', '.env'),
-  path.join(process.cwd(), '.env'),
-  '/.env',
-  './.env'
-];
-
-let envLoaded = false;
-
-for (const envPath of envPaths) {
-  if (fs.existsSync(envPath)) {
-    console.log(`Cargando variables de entorno desde: ${envPath}`);
-    dotenv.config({ path: envPath });
-    envLoaded = true;
-    break;
-  }
-}
-
-if (!envLoaded) {
-  dotenv.config();
-}
-
-// Configuración Firebase
+// Configuración Firebase para autenticación
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
   authDomain: process.env.FIREBASE_AUTH_DOMAIN,
@@ -40,27 +16,26 @@ const firebaseConfig = {
   appId: process.env.FIREBASE_APP_ID,
 };
 
-console.log("Firebase config:", {
-  ...firebaseConfig,
-  apiKey: firebaseConfig.apiKey ? "***" : undefined
-});
-
 // Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
 
-// Definir colecciones
+// Definir las colecciones de Firebase
 const COLLECTIONS = {
   PRODUCTS: 'products',
-  INVENTORY: 'inventory',           
-  INVENTORY_MOVEMENTS: 'inventory_movements', 
-  DETECTIONS: 'detections',
+  INVENTORY: 'inventory',
+  INVENTORY_MOVEMENTS: 'inventory_movements',
+  SALES: 'sales',
   TRANSACTIONS: 'transactions',
-  SALES: 'sales'
+  CARTS: 'carts',
+  DETECTIONS: 'detections'
 };
 
 module.exports = {
+  firebaseConfig,
+  auth,
+  admin,
   db,
-  COLLECTIONS,
-  firebaseApp: app
+  COLLECTIONS
 };

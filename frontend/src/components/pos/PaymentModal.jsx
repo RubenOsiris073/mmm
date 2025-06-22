@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Form, InputGroup } from 'react-bootstrap';
+import { Modal, Button, Form } from 'react-bootstrap';
 import SimpleQRPayment from './SimpleQRPayment';
 import StripeCardPayment from './StripeCardPayment';
 import MobileWalletPayment from './MobileWalletPayment';
@@ -16,7 +16,6 @@ const PaymentModal = ({
   loading,
   cartItems
 }) => {
-  const [change, setChange] = useState(0);
   const [isFormValid, setIsFormValid] = useState(false);
   const [qrPaymentConfirmed, setQrPaymentConfirmed] = useState(false);
   const [cardPaymentData, setCardPaymentData] = useState(null);
@@ -26,10 +25,6 @@ const PaymentModal = ({
   const safeSetPaymentMethod = typeof setPaymentMethod === 'function' 
     ? setPaymentMethod 
     : () => console.error('setPaymentMethod no es una función');
-    
-  const safeSetAmountReceived = typeof setAmountReceived === 'function'
-    ? setAmountReceived
-    : () => console.error('setAmountReceived no es una función');
 
   const safeHandleProcessSale = typeof handleProcessSale === 'function'
     ? handleProcessSale
@@ -47,12 +42,6 @@ const PaymentModal = ({
       onHide();
     }
   };
-
-  // Calcular cambio cuando cambia el monto recibido
-  useEffect(() => {
-    const receivedAmount = parseFloat(amountReceived || 0);
-    setChange(receivedAmount > total ? receivedAmount - total : 0);
-  }, [amountReceived, total]);
 
   // Validar formulario según método de pago
   useEffect(() => {

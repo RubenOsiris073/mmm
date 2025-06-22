@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, memo, useMemo } from 'react';
 import { Table, Spinner, Card, Alert, Button, Row, Col, Form, Badge } from 'react-bootstrap';
 import { FaDownload, FaFilter, FaTimes, FaEye, FaCalendarAlt, FaShoppingCart } from 'react-icons/fa';
 import apiService from '../../services/apiService';
@@ -9,7 +9,7 @@ import ClientNameModal from './ClientNameModal';
 import OrderProductManagementModal from '../orders/OrderProductManagementModal';
 import { generateInvoicePDF } from '../../utils/pdfGenerator';
 
-const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }) => {
+const SalesHistory = memo(({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }) => {
   const [sales, setSales] = useState([]);
   const [filteredSales, setFilteredSales] = useState([]);
   const [displayedSales, setDisplayedSales] = useState([]); // Nuevas ventas mostradas
@@ -25,7 +25,6 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
   const [generatingPDF, setGeneratingPDF] = useState(false);
   
   // Estados para paginación
-  const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(100);
   const [hasMoreData, setHasMoreData] = useState(true);
   
@@ -253,6 +252,16 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
     }).format(Number(amount));
   };
 
+  // Usar useMemo para formatear las ventas mostradas
+  const formattedDisplayedSales = useMemo(() => {
+    return displayedSales.map(sale => ({
+      ...sale,
+      formattedDate: formatDate(sale.date || sale.fecha || sale.timestamp),
+      formattedTotal: formatCurrency(sale.total),
+      itemsCount: Array.isArray(sale.items) ? sale.items.length : 0
+    }));
+  }, [displayedSales]);
+
   // Si hay un error pero no está cargando, mostramos el error
   if (error && !loading) {
     return (
@@ -341,7 +350,7 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
           </Card.Body>
         )}
         
-        {/* Tabla de ventas */}
+        {/* Tabla de ventas optimizada */}
         <Card.Body className="p-0">
           {loading ? (
             <div className="text-center p-5">
@@ -349,7 +358,7 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
               <p className="mt-3">Cargando ventas...</p>
             </div>
           ) : (
-            Array.isArray(displayedSales) && displayedSales.length > 0 ? (
+            formattedDisplayedSales.length > 0 ? (
               <Table responsive striped hover className="mb-0">
                 <thead>
                   <tr>
@@ -363,52 +372,14 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
                   </tr>
                 </thead>
                 <tbody>
-                  {displayedSales.map((sale) => (
-                    <tr key={sale.id || sale._id || `sale-${Math.random()}`}>
-                      <td>
-                        <Badge bg="primary">{sale.id}</Badge>
-                      </td>
-                      <td>
-                        <FaCalendarAlt className="me-1" />
-                        {formatDate(sale.date || sale.fecha || sale.timestamp)}
-                      </td>
-                      <td>{sale.client || sale.cliente || 'Cliente general'}</td>
-                      <td>{Array.isArray(sale.items) ? `${sale.items.length} productos` : 'Sin detalles'}</td>
-                      <td>
-                        <strong>{formatCurrency(sale.total)}</strong>
-                      </td>
-                      <td>
-                        <Badge bg="success">{sale.paymentMethod || 'Desconocido'}</Badge>
-                      </td>
-                      <td>
-                        <Button
-                          variant="outline-primary"
-                          size="sm"
-                          className="me-1"
-                          onClick={() => handleViewInvoice(sale)}
-                          title="Ver factura"
-                        >
-                          <FaEye />
-                        </Button>
-                        <Button
-                          variant="outline-info"
-                          size="sm"
-                          className="me-1"
-                          onClick={() => handleViewProducts(sale)}
-                          title="Ver productos"
-                        >
-                          <FaShoppingCart />
-                        </Button>
-                        <Button
-                          variant="outline-success"
-                          size="sm"
-                          onClick={() => handleDownloadInvoice(sale)}
-                          title="Descargar PDF"
-                        >
-                          <FaDownload />
-                        </Button>
-                      </td>
-                    </tr>
+                  {formattedDisplayedSales.map((sale) => (
+                    <SaleRow 
+                      key={sale.id || sale._id || `sale-${Math.random()}`}
+                      sale={sale}
+                      onViewInvoice={handleViewInvoice}
+                      onViewProducts={handleViewProducts}
+                      onDownloadInvoice={handleDownloadInvoice}
+                    />
                   ))}
                 </tbody>
               </Table>
@@ -482,6 +453,58 @@ const SalesHistory = ({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }
       />
     </>
   );
-};
+});
+
+// Componente optimizado para cada fila de venta
+const SaleRow = memo(({ sale, onViewInvoice, onViewProducts, onDownloadInvoice }) => (
+  <tr>
+    <td>
+      <Badge bg="primary">{sale.id}</Badge>
+    </td>
+    <td>
+      <FaCalendarAlt className="me-1" />
+      {sale.formattedDate}
+    </td>
+    <td>{sale.client || sale.cliente || 'Cliente general'}</td>
+    <td>{sale.itemsCount} productos</td>
+    <td>
+      <strong>{sale.formattedTotal}</strong>
+    </td>
+    <td>
+      <Badge bg="success">{sale.paymentMethod || 'Desconocido'}</Badge>
+    </td>
+    <td>
+      <Button
+        variant="outline-primary"
+        size="sm"
+        className="me-1"
+        onClick={() => onViewInvoice(sale)}
+        title="Ver factura"
+      >
+        <FaEye />
+      </Button>
+      <Button
+        variant="outline-info"
+        size="sm"
+        className="me-1"
+        onClick={() => onViewProducts(sale)}
+        title="Ver productos"
+      >
+        <FaShoppingCart />
+      </Button>
+      <Button
+        variant="outline-success"
+        size="sm"
+        onClick={() => onDownloadInvoice(sale)}
+        title="Descargar PDF"
+      >
+        <FaDownload />
+      </Button>
+    </td>
+  </tr>
+));
+
+SalesHistory.displayName = 'SalesHistory';
+SaleRow.displayName = 'SaleRow';
 
 export default SalesHistory;

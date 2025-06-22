@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Button, Alert } from 'react-bootstrap';
+import { Card, Button, Alert } from 'react-bootstrap';
 import { Link, useLocation } from 'react-router-dom';
-import { FaPlus, FaSearch } from 'react-icons/fa';
-import ProductList from '../components/products/ProductList';
+import { FaPlus } from 'react-icons/fa';
 import ProductGrid from '../components/products/ProductGrid';
 import { getDetections, getProductsWithSafeDates } from '../services/storageService';
 import '../App.css';
 import '../styles/products-modern.css';
 
 const ProductsPage = () => {
-  const [detections, setDetections] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -39,8 +37,6 @@ const ProductsPage = () => {
         // Validar que los datos sean arrays
         const safeDetections = Array.isArray(detectionsData) ? detectionsData : [];
         const safeProducts = Array.isArray(productsData) ? productsData : [];
-        
-        setDetections(safeDetections);
         
         // Combinar todos los productos para la vista de cuadrícula
         // Evitar duplicados usando Map con ID como clave
@@ -72,9 +68,6 @@ const ProductsPage = () => {
 
   // Función para manejar la eliminación de productos
   const handleProductDeleted = (deletedProductId) => {
-    // Actualizar la lista de detecciones
-    setDetections(prev => prev.filter(detection => detection.id !== deletedProductId));
-    
     // Actualizar la lista combinada de todos los productos
     setAllProducts(prev => prev.filter(product => product.id !== deletedProductId));
     

@@ -22,7 +22,7 @@ import './Navigation.css';
 
 const Navigation = ({ onSidebarToggle }) => {
   const { isDark, toggleTheme } = useTheme();
-  const { user, signOut, isAuthenticated } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);

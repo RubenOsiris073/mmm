@@ -1,12 +1,19 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
 const path = require('path');
-const jwt = require('jsonwebtoken');
-const { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } = require('firebase/auth');
-const { initializeApp } = require('firebase/app');
-const { initializeInventory } = require('./services/inventoryService');
+const cors = require('cors');
+
+// Importar configuraciones
 const config = require('./config/config');
+const corsOptions = require('./config/cors');
+
+// Importar middleware
+const { verifyToken } = require('./middleware/auth');
+const errorHandler = require('./middleware/errorHandler');
+const logger = require('./middleware/logger');
+
+// Importar controladores
+const systemController = require('./controllers/systemController');
+const authController = require('./controllers/authController');
 
 // Importar rutas
 const productRoutes = require('./routes/productRoutes');
@@ -15,281 +22,59 @@ const detectionRoutes = require('./routes/detectionRoutes');
 const salesRoutes = require('./routes/salesRoutes');
 const transactionsRoutes = require('./routes/transactionsRoutes');
 const stripeRoutes = require('./routes/stripeRoutes');
-const cartRoutes = require('./routes/cartRoutes'); // Importar nuevas rutas
+const cartRoutes = require('./routes/cartRoutes');
+
+// Importar servicios
+const inventoryService = require('./services/inventoryService');
 
 // Configurar express
 const app = express();
 
-// Configuración Firebase para autenticación
-const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.FIREBASE_APP_ID,
-};
+// Guardar tiempo de inicio del servidor
+app.locals.startTime = new Date();
 
-// Inicializar Firebase para auth
-const firebaseApp = initializeApp(firebaseConfig, 'auth-app');
-const auth = getAuth(firebaseApp);
-
-// JWT Secret
-const JWT_SECRET = process.env.JWT_SECRET || 'mmm-aguachile-super-secret-key-2025';
-
-// Middleware para verificar JWT
-const verifyToken = (req, res, next) => {
-  const token = req.headers.authorization?.replace('Bearer ', '');
-  
-  if (!token) {
-    return res.status(401).json({ error: 'Token requerido' });
-  }
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    return res.status(401).json({ error: 'Token inválido' });
-  }
-};
-
-// Middleware de logging
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path} - ${new Date().toISOString()}`);
-  next();
-});
-
-// Configurar middleware de parsing con límites aumentados para imágenes
+// Aplicar middleware global
+app.use(logger);
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Crear router principal
 const apiRouter = express.Router();
 
-// Endpoint de salud en el router principal
-apiRouter.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    version: process.env.npm_package_version || '1.0.0',
-    environment: process.env.NODE_ENV,
-    endpoints: {
-      products: '/api/products',
-      inventory: '/api/inventory', // Endpoint unificado
-      detection: '/api/detection',
-      sales: '/api/sales',
-      transactions: '/api/transactions'
-    },
-  });
-});
+// =========================================================
+// ENDPOINTS DE SISTEMA
+// =========================================================
+apiRouter.get('/health', systemController.healthCheck);
+apiRouter.get('/status', systemController.serverStatus);
+apiRouter.get('/firebase-config', systemController.firebaseConfig);
 
-// API Status
-apiRouter.get('/status', (req, res) => {
-  res.json({
-    isRunning: true,
-    version: '1.0.0',
-    environment: config.env,
-    timestamp: new Date().toISOString()
-  });
-});
-
-// Endpoint para proporcionar las credenciales de Firebase al frontend
-apiRouter.get('/firebase-config', (req, res) => {
-  res.json({
-    apiKey: process.env.FIREBASE_API_KEY,
-    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.FIREBASE_APP_ID
-  });
-});
-
+// =========================================================
 // ENDPOINTS DE AUTENTICACIÓN
-// Login endpoint
-apiRouter.post('/auth/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
+// =========================================================
+apiRouter.post('/auth/login', authController.login);
+apiRouter.get('/auth/verify', verifyToken, authController.verify);
+apiRouter.post('/auth/logout', verifyToken, authController.logout);
 
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email y contraseña son requeridos' });
-    }
-
-    console.log('Intento de login para:', email);
-
-    // Autenticar con Firebase
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    // Generar JWT token
-    const token = jwt.sign(
-      { 
-        uid: user.uid, 
-        email: user.email,
-        emailVerified: user.emailVerified
-      },
-      JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
-    console.log('Login exitoso para:', email);
-
-    res.json({
-      success: true,
-      message: 'Login exitoso',
-      token,
-      user: {
-        uid: user.uid,
-        email: user.email,
-        emailVerified: user.emailVerified,
-        displayName: user.displayName
-      }
-    });
-
-  } catch (error) {
-    console.error('Error en login:', error.message);
-    
-    let errorMessage = 'Error al iniciar sesión';
-    
-    switch (error.code) {
-      case 'auth/user-not-found':
-        errorMessage = 'Usuario no encontrado';
-        break;
-      case 'auth/wrong-password':
-        errorMessage = 'Contraseña incorrecta';
-        break;
-      case 'auth/invalid-email':
-        errorMessage = 'Email inválido';
-        break;
-      case 'auth/too-many-requests':
-        errorMessage = 'Demasiados intentos. Intenta más tarde';
-        break;
-      default:
-        errorMessage = error.message;
-    }
-
-    res.status(400).json({ 
-      success: false,
-      error: errorMessage 
-    });
-  }
-});
-
-// Register endpoint
-apiRouter.post('/auth/register', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email y contraseña son requeridos' });
-    }
-
-    console.log('Intento de registro para:', email);
-
-    // Crear usuario en Firebase
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    // Generar JWT token
-    const token = jwt.sign(
-      { 
-        uid: user.uid, 
-        email: user.email,
-        emailVerified: user.emailVerified
-      },
-      JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
-    console.log('Registro exitoso para:', email);
-
-    res.json({
-      success: true,
-      message: 'Usuario creado exitosamente',
-      token,
-      user: {
-        uid: user.uid,
-        email: user.email,
-        emailVerified: user.emailVerified,
-        displayName: user.displayName
-      }
-    });
-
-  } catch (error) {
-    console.error('Error en registro:', error.message);
-    
-    let errorMessage = 'Error al crear usuario';
-    
-    switch (error.code) {
-      case 'auth/email-already-in-use':
-        errorMessage = 'El email ya está en uso';
-        break;
-      case 'auth/invalid-email':
-        errorMessage = 'Email inválido';
-        break;
-      case 'auth/weak-password':
-        errorMessage = 'La contraseña debe tener al menos 6 caracteres';
-        break;
-      default:
-        errorMessage = error.message;
-    }
-
-    res.status(400).json({ 
-      success: false,
-      error: errorMessage 
-    });
-  }
-});
-
-// Verify token endpoint
-apiRouter.get('/auth/verify', verifyToken, (req, res) => {
-  res.json({
-    success: true,
-    message: 'Token válido',
-    user: req.user
-  });
-});
-
-// Logout endpoint
-apiRouter.post('/auth/logout', verifyToken, (req, res) => {
-  res.json({
-    success: true,
-    message: 'Logout exitoso'
-  });
-});
+// =========================================================
+// REGISTRAR TODAS LAS RUTAS DE LA API
+// =========================================================
 
 // Registrar sub-rutas en el router principal
 apiRouter.use('/products', productRoutes);
-apiRouter.use('/inventory', inventoryRoutes); // Ruta unificada de inventario
+apiRouter.use('/inventory', inventoryRoutes);
 apiRouter.use('/detection', detectionRoutes);
 apiRouter.use('/sales', salesRoutes);
 apiRouter.use('/transactions', transactionsRoutes);
 apiRouter.use('/stripe', stripeRoutes);
-apiRouter.use('/cart', cartRoutes); // Registrar nuevas rutas
-
-// Rutas de testing para productos
-app.use('/api/test/products', require('./routes/testProductRoutes'));
+apiRouter.use('/cart', cartRoutes);
 
 // Montar el router principal en /api
 app.use('/api', apiRouter);
-app.use('/api', detectionRoutes);
 
-// Configuración CORS mejorada para red mixta
-const corsOptions = {
-  origin: [
-    'http://localhost',
-    'http://localhost:80',
-    'http://localhost:3000',
-  ],
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-  credentials: true,
-  optionsSuccessStatus: 204,
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-};
-
-// Aplicar CORS
-app.use(cors(corsOptions));
+// =========================================================
+// CONFIGURACIÓN DE PRODUCCIÓN
+// =========================================================
 
 // Ruta para servir archivos estáticos en producción
 if (config.env === 'production') {
@@ -299,52 +84,82 @@ if (config.env === 'production') {
   });
 }
 
+// =========================================================
+// MANEJO DE ERRORES
+// =========================================================
+
 // Manejador de errores global
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(500).json({
-    error: 'Error interno del servidor',
-    message: err.message,
-    timestamp: new Date().toISOString(),
-    path: req.path,
-    method: req.method,
-  });
-});
+app.use(errorHandler);
+
+// =========================================================
+// INICIALIZACIÓN DE DATOS
+// =========================================================
 
 // Inicializar datos necesarios
 (async () => {
   try {
     console.log("Inicializando inventario...");
-    await initializeInventory();
+    await inventoryService.initializeInventory();
   } catch (error) {
     console.error("Error en inicialización:", error);
   }
 })();
 
-// Puerto de escucha - MODIFICADO para escuchar en todas las interfaces
+// =========================================================
+// INICIAR SERVIDOR
+// =========================================================
+
+// Puerto de escucha
 const PORT = config.port;
 const HOST = '0.0.0.0'; // Escuchar en todas las interfaces de red
 
 app.listen(PORT, HOST, () => {
+  console.log('=========================================================');
+  console.log(`SERVIDOR BACKEND- ${new Date().toISOString()}`);
+  console.log('=========================================================');
   console.log(`Servidor corriendo en http://0.0.0.0:${PORT}`);
-  console.log(`Accesible desde:`);
-  console.log(`   - Ethernet: http://154.0.0.9:${PORT}`);
-  console.log(`   - WiFi: http://154.0.0.5:${PORT}`);
-  console.log(`   - Localhost: http://localhost:${PORT}`);
   console.log(`Modo: ${config.env}`);
-  console.log('Endpoints de autenticación:');
-  console.log('- POST /api/auth/login - Iniciar sesión');
-  console.log('- POST /api/auth/register - Registrar usuario');
-  console.log('- GET /api/auth/verify - Verificar token');
-  console.log('- POST /api/auth/logout - Cerrar sesión');
-  console.log('Otros endpoints:');
-  console.log('- GET /api/health');
-  console.log('- GET /api/status');
-  console.log('- GET /api/firebase-config');
-  console.log('- GET /api/inventory');
-  console.log('- POST /api/inventory/update');
-  console.log('- GET /api/inventory/movements');
-  console.log('- GET /api/inventory/summary');
+  console.log('=========================================================');
+  console.log('ENDPOINTS DISPONIBLES:');
+  console.log('=========================================================');
+  console.log('Sistema:');
+  console.log('  - GET /api/health - Estado de salud del API');
+  console.log('  - GET /api/status - Estado del servidor');
+  console.log('  - GET /api/firebase-config - Configuración de Firebase');
+  console.log('=========================================================');
+  console.log('Autenticación:');
+  console.log('  - POST /api/auth/login - Iniciar sesión');
+  console.log('  - GET /api/auth/verify - Verificar token');
+  console.log('  - POST /api/auth/logout - Cerrar sesión');
+  console.log('=========================================================');
+  console.log('Productos:');
+  console.log('  - GET /api/products - Listar productos');
+  console.log('  - GET /api/products/:id - Obtener producto');
+  console.log('  - POST /api/products - Crear producto');
+  console.log('  - PUT /api/products/:id - Actualizar producto');
+  console.log('  - DELETE /api/products/:id - Eliminar producto');
+  console.log('=========================================================');
+  console.log('Inventario:');
+  console.log('  - GET /api/inventory - Listar inventario');
+  console.log('  - POST /api/inventory/update - Actualizar inventario');
+  console.log('  - GET /api/inventory/movements - Movimientos de inventario');
+  console.log('  - GET /api/inventory/summary - Resumen de inventario');
+  console.log('=========================================================');
+  console.log('Ventas:');
+  console.log('  - GET /api/sales - Listar ventas');
+  console.log('  - GET /api/sales/:id - Obtener venta');
+  console.log('  - POST /api/sales - Crear venta');
+  console.log('=========================================================');
+  console.log('Carrito y Transacciones:');
+  console.log('  - GET /api/cart - Obtener carrito');
+  console.log('  - POST /api/cart - Agregar item al carrito');
+  console.log('  - DELETE /api/cart/:id - Eliminar item del carrito');
+  console.log('  - GET /api/transactions - Listar transacciones');
+  console.log('=========================================================');
+  console.log('Detección:');
+  console.log('  - POST /api/detection - Detectar objetos');
+  console.log('  - POST /api/detection/capture - Capturar imagen');
+  console.log('=========================================================');
 });
 
 // Exportar para testing

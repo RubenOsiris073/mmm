@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Alert, Button, Form, InputGroup, Row, Col, Badge } from 'react-bootstrap';
-import { FaQrcode, FaCopy, FaCheck, FaInfoCircle } from 'react-icons/fa';
+import { FaQrcode, FaCopy, FaCheck } from 'react-icons/fa';
 import QRCode from 'qrcode';
 
 const SimpleQRPayment = ({ amount, concept = "Compra POS", onPaymentConfirmed }) => {
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [copied, setCopied] = useState(false);
   const [manualConfirmation, setManualConfirmation] = useState(false);
-  const [paymentData, setPaymentData] = useState({
+  const [paymentData] = useState({
     clabe: '012345678901234567', // Cambia por tu CLABE real
     bank: 'BBVA',
     account: 'Juan Pérez Negocio',
@@ -59,13 +59,6 @@ const SimpleQRPayment = ({ amount, concept = "Compra POS", onPaymentConfirmed })
         manualConfirmation: true
       });
     }
-  };
-
-  const updatePaymentData = (field, value) => {
-    setPaymentData(prev => ({
-      ...prev,
-      [field]: value
-    }));
   };
 
   return (

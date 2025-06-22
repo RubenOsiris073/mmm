@@ -1,253 +1,310 @@
-import React, { useCallback } from 'react';
-import { Container, Row, Col, Card, Button } from 'react-bootstrap';
-import { FaMoneyBillWave, FaCog, FaArrowRight } from 'react-icons/fa';
-import Particles from '@tsparticles/react';
-import { loadSlim } from '@tsparticles/slim';
+import React from 'react';
+import { Button } from 'react-bootstrap';
+import { FaMoneyBillWave, FaShieldAlt, FaArrowRight } from 'react-icons/fa';
+import { FcGoogle } from 'react-icons/fc';
 
 const AccessSelector = ({ onSelectAccess }) => {
-  // Configuración más simple y compatible
-  const particlesConfig = {
-    background: {
-      color: {
-        value: "transparent",
-      },
-    },
-    fpsLimit: 120,
-    interactivity: {
-      events: {
-        onClick: {
-          enable: false,
-        },
-        onHover: {
-          enable: false,
-        },
-        resize: true,
-      },
-    },
-    particles: {
-      color: {
-        value: "#3b82f6",
-      },
-      links: {
-        color: "#3b82f6",
-        distance: 150,
-        enable: true,
-        opacity: 0.2,
-        width: 1,
-      },
-      move: {
-        direction: "none",
-        enable: true,
-        outModes: {
-          default: "bounce",
-        },
-        random: false,
-        speed: 1,
-        straight: false,
-      },
-      number: {
-        density: {
-          enable: true,
-          area: 800,
-        },
-        value: 80,
-      },
-      opacity: {
-        value: 0.5,
-      },
-      shape: {
-        type: "circle",
-      },
-      size: {
-        value: { min: 1, max: 5 },
-      },
-    },
-    detectRetina: true,
-  };
-
-  const particlesInit = useCallback(async (engine) => {
-    console.log("Inicializando partículas...");
-    await loadSlim(engine);
-  }, []);
-
   const accessOptions = [
     {
       id: 'pos',
       title: 'Punto de Venta',
       subtitle: 'Sistema de ventas y cobros',
       description: 'Acceso para operadores de caja y personal de ventas',
-      icon: <FaMoneyBillWave size={48} className="text-primary" />,
-      variant: 'primary',
-      features: [
-        'Procesar ventas',
-        'Gestionar pagos',
-        'Imprimir tickets',
-        'Consultar productos'
-      ]
+      icon: <FaMoneyBillWave size={24} className="icon-color" />,
+      btnClass: 'primary'
     },
     {
       id: 'admin',
       title: 'Administración',
       subtitle: 'Panel de control completo',
       description: 'Acceso completo para administradores del sistema',
-      icon: <FaCog size={48} className="text-danger" />,
-      variant: 'danger',
-      features: [
-        'Gestionar productos',
-        'Ver reportes de ventas',
-        'Controlar inventario',
-        'Configurar sistema'
-      ]
+      icon: <FaShieldAlt size={24} className="icon-color" />,
+      btnClass: 'danger'
     }
   ];
 
   return (
-    <Container fluid className="min-vh-100 d-flex align-items-center justify-content-center" style={{ 
-      backgroundColor: 'var(--bg-primary)', 
-      color: 'var(--text-primary)',
-      position: 'relative'
-    }}>
-      {/* Particles Background - Positioned absolutely to not affect layout */}
-      <div style={{ 
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        zIndex: 0,
-        pointerEvents: 'none'
-      }}>
-        <Particles 
-          id="tsparticles"
-          init={particlesInit}
-          options={particlesConfig}
-        />
+    <div className="login-split-container">
+      {/* Left side - Image */}
+      <div className="login-image">
+        <div className="overlay">
+          <div className="welcome-text">
+            <h2>MMM Aguachile</h2>
+            <p>Sistema de gestión empresarial</p>
+          </div>
+        </div>
       </div>
 
-      <div className="w-100" style={{ maxWidth: '1000px', position: 'relative', zIndex: 1 }}>
-        {/* Espaciado superior reducido para subir el header */}
-        <div style={{ height: '40px' }}></div>
-        
-        {/* Header */}
-        <div className="text-center mb-4">
-          <h2 className="fw-bold mb-3" style={{ color: 'var(--text-primary)' }}>
-            Selecciona tu tipo de acceso
-          </h2>
-          <p className="lead mb-4" style={{ color: 'var(--text-secondary)' }}>
-            Elige la opción que corresponde a tu rol en el sistema
-          </p>
-        </div>
+      {/* Right side - Selection */}
+      <div className="login-form">
+        <div className="login-content">
+          <div className="header-section">
+            <h2>Selecciona tu tipo de acceso</h2>
+            <p>Elige cómo deseas acceder al sistema</p>
+          </div>
 
-        {/* Access Options */}
-        <Row className="g-4 justify-content-center">
-          {accessOptions.map((option) => (
-            <Col key={option.id} xs={12} md={6} lg={5}>
-              <Card 
-                className="h-100 shadow-lg position-relative overflow-hidden access-card"
-                style={{ 
-                  backgroundColor: 'var(--card-bg)', 
-                  border: '0 !important',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  position: 'relative',
-                  zIndex: 2,
-                  outline: 'none !important',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15) !important'
-                }}
+          {/* Access Options */}
+          <div className="access-options">
+            {accessOptions.map((option) => (
+              <div 
+                key={option.id}
+                className="access-card"
                 onClick={() => onSelectAccess(option.id)}
               >
-                <Card.Body className="p-4 text-center">
-                  {/* Icon */}
-                  <div className="mb-4">
-                    {option.icon}
-                  </div>
+                <div className={`icon-container ${option.btnClass}`}>
+                  {option.icon}
+                </div>
+                <div className="option-content">
+                  <h3>{option.title}</h3>
+                  <p>{option.subtitle}</p>
+                </div>
+                <div className="option-arrow">
+                  <FaArrowRight />
+                </div>
+              </div>
+            ))}
+          </div>
 
-                  {/* Title and Subtitle */}
-                  <h4 className="fw-bold mb-2" style={{ color: 'var(--text-primary)' }}>
-                    {option.title}
-                  </h4>
-                  <h6 className="mb-3" style={{ color: 'var(--text-secondary)' }}>
-                    {option.subtitle}
-                  </h6>
+          {/* Divider */}
+          <div className="divider my-4">
+            <span>o inicia con</span>
+          </div>
 
-                  {/* Description */}
-                  <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>
-                    {option.description}
-                  </p>
+          {/* Google Button */}
+          <Button className="google-btn">
+            <FcGoogle size={20} className="me-2" />
+            <span>Google</span>
+          </Button>
 
-                  {/* Features List */}
-                  <ul className="list-unstyled mb-4">
-                    {option.features.map((feature, index) => (
-                      <li key={index} className="mb-2 d-flex align-items-center justify-content-center">
-                        <i className="bi bi-check-circle-fill text-success me-2"></i>
-                        <small style={{ color: 'var(--text-secondary)' }}>{feature}</small>
-                      </li>
-                    ))}
-                  </ul>
-
-                  {/* Action Button */}
-                  <Button
-                    variant={option.variant}
-                    size="lg"
-                    className="w-100 fw-semibold"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelectAccess(option.id);
-                    }}
-                  >
-                    Acceder como {option.title}
-                    <FaArrowRight className="ms-2" />
-                  </Button>
-                </Card.Body>
-
-                {/* Hover Effect Overlay */}
-                <div 
-                  className="position-absolute top-0 start-0 w-100 h-100"
-                  style={{
-                    background: `linear-gradient(135deg, ${option.variant === 'primary' ? 'rgba(13, 110, 253, 0.1)' : 'rgba(220, 53, 69, 0.1)'} 0%, transparent 100%)`,
-                    opacity: 0,
-                    transition: 'opacity 0.3s ease'
-                  }}
-                ></div>
-              </Card>
-            </Col>
-          ))}
-        </Row>
-
-        {/* Footer Info */}
-        <div className="text-center mt-5">
-          <small style={{ color: 'var(--text-secondary)' }}>
-            <i className="bi bi-info-circle me-2"></i>
-            Si no tienes acceso a ninguna de estas opciones, contacta al administrador del sistema
-          </small>
+          <div className="text-center mt-4">
+            <p className="helper-text">
+              ¿No tienes acceso? <button type="button" className="text-link" onClick={() => alert('Contacta al administrador del sistema')}>Contacta al administrador</button>
+            </p>
+          </div>
         </div>
       </div>
 
       <style jsx>{`
+        .login-split-container {
+          display: flex;
+          min-height: 100vh;
+          width: 100%;
+        }
+
+        .login-image {
+          flex: 1;
+          background-image: url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1567&q=80');
+          background-size: cover;
+          background-position: center;
+          display: none;
+        }
+
+        .overlay {
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.7));
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          padding: 2rem;
+        }
+
+        .welcome-text {
+          color: white;
+        }
+
+        .welcome-text h2 {
+          font-size: 2.5rem;
+          font-weight: 700;
+          margin-bottom: 1rem;
+        }
+
+        .welcome-text p {
+          font-size: 1.1rem;
+          opacity: 0.9;
+        }
+
+        .login-form {
+          flex: 1;
+          background-color: #f1f3f6;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 2rem;
+        }
+
+        .login-content {
+          width: 100%;
+          max-width: 420px;
+        }
+
+        .header-section {
+          margin-bottom: 2rem;
+          text-align: center;
+        }
+
+        .header-section h2 {
+          font-weight: 700;
+          font-size: 1.75rem;
+          color: #212529;
+          margin-bottom: 0.5rem;
+        }
+
+        .header-section p {
+          color: #495057;
+          margin-bottom: 0;
+        }
+
+        .access-options {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+          margin-bottom: 1.5rem;
+        }
+
         .access-card {
-          border: none !important;
-          outline: none !important;
+          display: flex;
+          align-items: center;
+          padding: 1rem;
+          background-color: white;
+          border-radius: 0.5rem;
+          border: 1px solid #dee2e6;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.04);
         }
-        .access-card:focus {
-          border: none !important;
-          outline: none !important;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-        }
+
         .access-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
-          border: none !important;
-          outline: none !important;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+          border-color: #ced4da;
         }
-        .access-card:hover .position-absolute {
-          opacity: 1 !important;
+
+        .icon-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 48px;
+          height: 48px;
+          border-radius: 0.375rem;
+          margin-right: 1rem;
         }
-        .card {
-          border: none !important;
-          outline: none !important;
+
+        .icon-container.primary {
+          background-color: rgba(13, 110, 253, 0.1);
+        }
+
+        .icon-container.danger {
+          background-color: rgba(220, 53, 69, 0.1);
+        }
+
+        .primary .icon-color {
+          color: #0d6efd;
+        }
+
+        .danger .icon-color {
+          color: #dc3545;
+        }
+
+        .option-content {
+          flex: 1;
+        }
+
+        .option-content h3 {
+          font-size: 1.1rem;
+          font-weight: 600;
+          margin: 0 0 0.25rem 0;
+          color: #212529;
+        }
+
+        .option-content p {
+          font-size: 0.875rem;
+          color: #495057;
+          margin: 0;
+        }
+
+        .option-arrow {
+          color: #6c757d;
+          margin-left: 0.5rem;
+          transition: transform 0.2s ease;
+        }
+
+        .access-card:hover .option-arrow {
+          transform: translateX(3px);
+          color: #495057;
+        }
+
+        .divider {
+          display: flex;
+          align-items: center;
+          text-align: center;
+          color: #495057;
+        }
+
+        .divider::before,
+        .divider::after {
+          content: '';
+          flex: 1;
+          border-bottom: 1px solid #dee2e6;
+        }
+
+        .divider::before {
+          margin-right: 1rem;
+        }
+
+        .divider::after {
+          margin-left: 1rem;
+        }
+
+        .google-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto;
+          background-color: #fff !important;
+          color: #212529 !important;
+          border: 1px solid #ced4da !important;
+          border-radius: 0.375rem !important;
+          padding: 0.6rem 2rem !important;
+          font-weight: 500 !important;
+          transition: all 0.3s ease !important;
+        }
+
+        .google-btn:hover {
+          background-color: #f8f9fa !important;
+          border-color: #ced4da !important;
+          box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+        }
+
+        .helper-text {
+          color: #495057;
+          font-size: 0.875rem;
+        }
+
+        .text-link {
+          color: #0d6efd;
+          text-decoration: none;
+          font-weight: 500;
+        }
+
+        .text-link:hover {
+          text-decoration: underline;
+        }
+
+        @media (min-width: 992px) {
+          .login-image {
+            display: block;
+          }
+        }
+
+        @media (max-width: 576px) {
+          .login-form {
+            padding: 1.5rem;
+          }
         }
       `}</style>
-    </Container>
+    </div>
   );
 };
 

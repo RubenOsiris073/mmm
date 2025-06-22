@@ -2,12 +2,10 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Container, Row, Col, Card, Button, Table, Badge, Form, Spinner } from 'react-bootstrap';
 import { FaPlus, FaEdit, FaTrash, FaEye, FaBuilding, FaPhone, FaEnvelope } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import { useTheme } from '../../contexts/ThemeContext';
 import ProveedorForm from './ProveedorForm';
 import ProveedorDetails from './ProveedorDetails';
 
 const ProveedorView = () => {
-  const { isDark } = useTheme();
   const [proveedores, setProveedores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);

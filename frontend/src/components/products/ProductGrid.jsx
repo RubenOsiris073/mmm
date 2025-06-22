@@ -9,11 +9,10 @@ import useProductFilters from './hooks/useProductFilters';
 // Componentes modulares
 import ProductCard from './components/ProductCard';
 import ProductCardModern from './components/ProductCardModern';
-import ProductFilters from './components/ProductFilters';
 import ProductManagementModal from './ProductManagementModal';
 
 // Utilidades
-import { getCategoryColor, getCategoryIcon, formatCategoryTitle } from './utils/categoryUtils';
+import { getCategoryIcon, formatCategoryTitle } from './utils/categoryUtils';
 
 const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
   const [viewMode, setViewMode] = useState('modern'); // 'modern', 'grid' o 'list'
@@ -35,9 +34,6 @@ const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
   const {
     searchTerm,
     setSearchTerm,
-    selectedCategory,
-    setSelectedCategory,
-    allCategories,
     groupedProducts,
     clearFilters
   } = useProductFilters(syncedProducts);
@@ -61,12 +57,6 @@ const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
     if (onProductDeleted) {
       onProductDeleted(deletedProductId);
     }
-  };
-
-  // Función para agregar producto al carrito
-  const handleAddToCart = (product) => {
-    console.log('Añadiendo al carrito:', product);
-    // Aquí puedes implementar la lógica para agregar al carrito
   };
 
   // Renderizar vista moderna con pestañas de categorías
