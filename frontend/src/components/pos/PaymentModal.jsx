@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Form } from 'react-bootstrap';
-import SimpleQRPayment from './SimpleQRPayment';
+import { Modal, Button, Row, Col, Alert, Form } from 'react-bootstrap';
 import StripeCardPayment from './StripeCardPayment';
+import SimpleQRPayment from './SimpleQRPayment';
 import MobileWalletPayment from './MobileWalletPayment';
+import './styles/PaymentModal.css';
 
 const PaymentModal = ({
   show,
@@ -102,22 +103,29 @@ const PaymentModal = ({
   }, [paymentMethod]);
 
   return (
-    <Modal show={show} onHide={safeOnHide} centered backdrop="static" size={paymentMethod === 'qr-spei' || paymentMethod === 'mobile-wallet' ? 'xl' : 'lg'}>
-      <Modal.Header closeButton>
-        <Modal.Title>Procesar Pago</Modal.Title>
+    <Modal 
+      show={show} 
+      onHide={safeOnHide} 
+      centered 
+      backdrop="static" 
+      size={paymentMethod === 'qr-spei' || paymentMethod === 'mobile-wallet' ? 'xl' : 'lg'}
+      className="payment-modal-custom"
+    >
+      <Modal.Header closeButton className="payment-modal-header">
+        <Modal.Title className="payment-modal-title">Procesar Pago</Modal.Title>
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body className="payment-modal-body">
         <Form>
-          <Form.Group className="mb-3">
-            <Form.Label>Método de Pago</Form.Label>
+          <Form.Group className="mb-4">
+            <Form.Label className="payment-form-label">Método de Pago</Form.Label>
             <Form.Select
               value={paymentMethod}
               onChange={(e) => safeSetPaymentMethod(e.target.value)}
               disabled={loading}
+              className="payment-form-select"
             >
-              {/* <option value="efectivo">Efectivo</option> */}
-              <option value="tarjeta">Tarjeta</option>
-              <option value="qr-spei">QR mediante SPEI</option>
+              <option value="tarjeta">Tarjeta de Crédito/Débito</option>
+              <option value="qr-spei">Transferencia QR SPEI</option>
               <option value="mobile-wallet">App Móvil Wallet</option>
             </Form.Select>
           </Form.Group>
@@ -167,7 +175,7 @@ const PaymentModal = ({
           {paymentMethod === 'qr-spei' && (
             <SimpleQRPayment 
               amount={total}
-              concept={`Venta POS ${Date.now()}`}
+              concept={`POS Sale ${Date.now()}`}
               onPaymentConfirmed={handleQRPaymentConfirmed}
             />
           )}
@@ -181,28 +189,29 @@ const PaymentModal = ({
           )}
           
           {(paymentMethod !== 'qr-spei' && paymentMethod !== 'tarjeta' && paymentMethod !== 'mobile-wallet') && (
-            <div className="d-flex justify-content-between align-items-center mt-4">
+            <div className="payment-total-section">
               <h5>Total a Pagar: ${total.toFixed(2)}</h5>
             </div>
           )}
         </Form>
       </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={safeOnHide} disabled={loading}>
+      <Modal.Footer className="payment-modal-footer">
+        <Button variant="outline-secondary" onClick={safeOnHide} disabled={loading} className="payment-btn-cancel">
           Cancelar
         </Button>
         {paymentMethod !== 'tarjeta' && paymentMethod !== 'mobile-wallet' && (
           <Button 
-            variant="primary" 
+            variant="dark" 
             onClick={safeHandleProcessSale}
             disabled={!isFormValid || loading}
+            className="payment-btn-confirm"
           >
             {loading ? 'Procesando...' : 'Confirmar Pago'}
           </Button>
         )}
         {(paymentMethod === 'tarjeta' && cardPaymentData) || (paymentMethod === 'mobile-wallet' && walletPaymentData) ? (
-          <div className="text-success">
-            <i className="bi bi-check-circle me-2"></i>
+          <div className="payment-success-message">
+            <i className="fas fa-check-circle me-2"></i>
             Pago procesado exitosamente
           </div>
         ) : null}

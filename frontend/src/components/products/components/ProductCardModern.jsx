@@ -71,7 +71,7 @@ const ProductCardModern = ({ product, onManage }) => {
               variant="outline-secondary"
               onClick={() => onManage(product)}
             >
-              <i className="bi bi-gear-fill me-2"></i>
+              <i className="bi bi-eye-fill me-2"></i>
               Gestionar
             </Button>
           </div>

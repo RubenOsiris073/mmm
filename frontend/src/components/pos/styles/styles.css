@@ -1,0 +1,1145 @@
+/* Estilos para el catálogo de productos */
+.product-card {
+  transition: all 0.3s ease;
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 123, 255, 0.15) !important;
+  border-color: #007bff !important;
+}
+
+.hover-effect {
+  cursor: pointer;
+}
+
+.category-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50px;
+  height: 50px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  box-shadow: 0 2px 6px var(--shadow);
+  transition: all 0.2s ease;
+}
+
+.product-card:hover .category-icon {
+  transform: scale(1.1);
+  background-color: var(--accent-blue);
+  color: white;
+}
+
+.add-to-cart-btn:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Mejorar barra de desplazamiento */
+.product-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.product-grid::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+.product-grid::-webkit-scrollbar-thumb {
+  background: var(--accent-blue);
+  border-radius: 4px;
+}
+
+.product-grid::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-blue-hover);
+}
+
+/* Textos de stock */
+.text-success {
+  color: #28a745 !important;
+}
+
+.text-warning {
+  color: #ffc107 !important;
+  font-weight: bold;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+  font-weight: bold;
+}
+
+/* Mejorar la búsqueda */
+.search-input {
+  font-size: 1.1rem;
+  padding: 10px 15px;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.search-input:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+}
+
+/* Contenedor para la animación del escáner */
+.scanner-animation {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Contenedor del icono del escáner */
+.scanner-icon-container {
+  position: relative;
+  height: 120px;
+  width: 80%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Icono de código de barras */
+.scanner-barcode-icon {
+  font-size: 6rem;
+  color: var(--text-secondary);
+  opacity: 0.8;
+  position: absolute;
+  z-index: 1;
+}
+
+/* Icono de producto */
+.scanner-product-icon {
+  font-size: 3.5rem;
+  color: var(--accent-blue);
+  position: relative;
+  z-index: 2;
+}
+
+/* Línea de escaneo */
+.scanner-line {
+  position: absolute;
+  height: 2px;
+  width: 100%;
+  background-color: var(--accent-blue);
+  z-index: 3;
+  box-shadow: 0px 0px 8px 2px rgba(0, 123, 255, 0.8);
+  left: 0;
+}
+
+/* POS VIEW CONTAINER */
+.pos-view {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  min-height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+}
+
+.pos-container {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+/* FORZAR QUE NO HAY BORDES BLANCOS EN POS */
+.pos-layout {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100vw !important;
+  overflow-x: hidden;
+}
+
+.pos-layout {
+  background-color: var(--bg-primary) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.pos-content {
+  margin: 0 !important;
+  width: 100% !important;
+  background-color: var(--bg-primary) !important;
+}
+
+/* ASEGURAR QUE EL BODY Y HTML NO TENGAN BORDES BLANCOS CUANDO ESTEMOS EN POS */
+body.pos-active {
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: var(--bg-primary) !important;
+}
+
+html.pos-active {
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: var(--bg-primary) !important;
+}
+
+/* FORZAR FONDO NEGRO EN TODO EL POS - SIN ALTERAR LAYOUT */
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+html {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Cuando estamos en POS, forzar el fondo del tema */
+.pos-layout {
+  background-color: var(--bg-primary) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.pos-view {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.pos-container {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* FORZAR QUE BOOTSTRAP CONTAINERS RESPETEN EL TEMA EN POS */
+.pos-layout .container-fluid {
+  background-color: transparent !important;
+}
+
+/* ELIMINAR CUALQUIER FONDO BLANCO DE BOOTSTRAP EN EL POS */
+.pos-view .container-fluid,
+.pos-view .container,
+.pos-view .row,
+.pos-view .col,
+.pos-view .col-md-5,
+.pos-view .col-md-7,
+.pos-view .col-md-12 {
+  background-color: transparent !important;
+}
+
+/* PANELES DEL POS */
+.detection-panel {
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.cart-panel {
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+/* ÚLTIMA DETECCIÓN */
+.last-detection {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* ESTILOS PARA EL SELECTOR DE ACCESO */
+.pos-access-selector {
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  min-height: 100vh;
+}
+
+.access-card {
+  transition: all 0.3s ease;
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.access-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
+  border-color: var(--accent-blue) !important;
+}
+
+.access-card .card-body {
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+/* MEJORAR EL TEMA DEL SELECTOR */
+.pos-access-selector h1 {
+  color: var(--accent-blue) !important;
+}
+
+.pos-access-selector .text-primary {
+  color: var(--accent-blue) !important;
+}
+
+.pos-access-selector .text-danger {
+  color: #dc3545 !important;
+}
+
+/* BOTONES DEL SELECTOR */
+.access-card .btn-primary {
+  background-color: var(--accent-blue) !important;
+  border-color: var(--accent-blue) !important;
+  transition: all 0.3s ease;
+}
+
+.access-card .btn-primary:hover {
+  background-color: var(--accent-blue-hover) !important;
+  border-color: var(--accent-blue-hover) !important;
+  transform: translateY(-2px);
+}
+
+.access-card .btn-danger {
+  background-color: #dc3545 !important;
+  border-color: #dc3545 !important;
+  transition: all 0.3s ease;
+}
+
+.access-card .btn-danger:hover {
+  background-color: #c82333 !important;
+  border-color: #c82333 !important;
+  transform: translateY(-2px);
+}
+
+/* Mejoras para dispositivos móviles */
+@media (max-width: 576px) {
+  .scanner-icon-container {
+    height: 90px;
+  }
+  
+  .scanner-barcode-icon {
+    font-size: 4.5rem;
+  }
+  
+  .scanner-product-icon {
+    font-size: 2.5rem;
+  }
+}
+
+/* ============================================
+   BOTÓN FLOTANTE PARA TOGGLE DE LISTA DE PRODUCTOS
+   ============================================ */
+
+.floating-action-button {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 1050;
+}
+
+.floating-action-button .btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50% !important;
+  border: none;
+  font-size: 20px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.floating-action-button .btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+.floating-action-button .btn:active {
+  transform: scale(0.95);
+}
+
+.floating-action-button .btn i {
+  transition: all 0.3s ease;
+}
+
+.floating-action-button .btn:hover i {
+  transform: scale(1.2);
+}
+
+/* Efecto de onda al hacer clic */
+.floating-action-button .btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s;
+}
+
+.floating-action-button .btn:active::before {
+  width: 100px;
+  height: 100px;
+}
+
+/* Colores específicos para los estados */
+.floating-action-button .btn-danger {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+}
+
+.floating-action-button .btn-success {
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .floating-action-button {
+    bottom: 20px;
+    right: 20px;
+  }
+  
+  .floating-action-button .btn {
+    width: 50px;
+    height: 50px;
+    font-size: 18px;
+  }
+}
+
+/* ============================================
+   FIN ESTILOS BOTÓN FLOTANTE
+   ============================================ */
+
+/* Responsive design */
+@media (max-width: 576px) {
+  .stripe-payment-container {
+    margin: 0 12px;
+    max-width: none;
+  }
+  
+  .payment-header,
+  .payment-body {
+    padding: 20px;
+  }
+  
+  .payment-amount {
+    font-size: 20px;
+  }
+  
+  .card-logos-section {
+    gap: 8px;
+  }
+  
+  .card-logo {
+    width: 35px;
+    height: 22px;
+  }
+}
+
+/* ============================================
+   LAYOUT POS MEJORADO - ESTILO IMAGEN OBJETIVO
+   ============================================ */
+
+.pos-view-container {
+  background: #f8f9fa;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pos-container-fluid {
+  padding: 20px !important;
+  margin: 0 !important;
+  max-width: 1200px;
+  width: 100%;
+}
+
+.pos-main-row {
+  margin: 0 !important;
+  height: auto;
+  min-height: 80vh;
+  overflow: visible;
+}
+
+.products-panel {
+  background: white;
+  padding: 20px;
+  overflow-y: auto;
+  height: auto;
+  border-right: 1px solid #e9ecef;
+  border-radius: 8px 0 0 8px;
+}
+
+.cart-panel-wrapper {
+  background: #f8f9fa;
+  padding: 20px;
+  overflow-y: auto;
+  height: auto;
+}
+
+/* Estilo para cuando el carrito está centrado (sin ProductList) */
+.cart-panel-centered {
+  background: #f8f9fa;
+  padding: 20px;
+  overflow-y: auto;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.cart-panel-centered .cart-panel-modern {
+  width: 100%;
+  max-width: 700px;
+  background: white;
+  border-radius: 8px;
+  padding: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Responsive para el carrito centrado */
+@media (max-width: 768px) {
+  .cart-panel-centered {
+    padding: 15px;
+    max-width: 100%;
+  }
+  
+  .cart-panel-centered .cart-panel-modern {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  .pos-container-fluid {
+    padding: 10px !important;
+  }
+  
+  .cart-panel-centered .cart-panel-modern {
+    padding: 15px;
+  }
+}
+
+/* ============================================
+   FIN LAYOUT POS MEJORADO
+   ============================================ */
+
+/* ============================================
+   LAYOUT POS EXACTO COMO LA IMAGEN - SIN BOOTSTRAP
+   ============================================ */
+
+.pos-view-container {
+  background: #f8f9fa;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  /* Sobrescribir cualquier margin-left global */
+  margin-left: 0 !important;
+}
+
+/* Sobrescribir estilos globales para el POS */
+.pos-view-container .main-content-with-sidebar {
+  margin-left: 0 !important;
+}
+
+.pos-container-fluid {
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  height: 100vh;
+}
+
+.pos-main-row {
+  margin: 0 !important;
+  display: flex;
+  height: 100vh;
+  width: 100%;
+}
+
+/* Panel izquierdo - Shopping Bag (70%) */
+.shopping-bag-panel {
+  background: #f8f9fa;
+  padding: 0;
+  border-right: 1px solid #e9ecef;
+  overflow: visible;
+  width: 70%;
+  flex: 0 0 70%;
+}
+
+/* Panel derecho - Sidebar (30%) */
+.sidebar-panel {
+  background: white;
+  padding: 20px;
+  width: 30%;
+  flex: 0 0 30%;
+  overflow-y: auto;
+}
+
+/* Calculated Shipping Section */
+.calculated-shipping-section {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 15px;
+}
+
+.shipping-form .form-group {
+  margin-bottom: 15px;
+}
+
+.shipping-form label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #666;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.shipping-form .form-control {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  background: white;
+}
+
+.shipping-form .form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-row {
+  display: flex;
+  gap: 10px;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.update-btn {
+  background: #212529;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.update-btn:hover {
+  background: #404040;
+  transform: translateY(-1px);
+}
+
+/* Coupon Code Section */
+.coupon-section {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.section-description {
+  font-size: 0.85rem;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 15px;
+}
+
+.coupon-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.coupon-form .form-control {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  background: white;
+}
+
+.coupon-form .apply-btn {
+  background: #212529;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.coupon-form .apply-btn:hover {
+  background: #404040;
+  transform: translateY(-1px);
+}
+
+/* Cart Total Section - Colores grises como los containers eliminados */
+.cart-total-section {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 20px;
+  color: #212529;
+}
+
+.cart-total-section .section-title {
+  color: #212529;
+  margin-bottom: 15px;
+}
+
+.total-breakdown {
+  margin-bottom: 15px;
+}
+
+.total-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.final-total {
+  border-top: 1px solid #dee2e6;
+  padding-top: 8px;
+  margin-top: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #212529;
+}
+
+.checkout-btn {
+  background: #212529;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.checkout-btn:hover:not(:disabled) {
+  background: #404040;
+  transform: translateY(-1px);
+}
+
+.checkout-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .pos-main-row {
+    flex-direction: column;
+  }
+  
+  .shopping-bag-panel,
+  .sidebar-panel {
+    border-right: none;
+    border-bottom: 1px solid #e9ecef;
+    min-height: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .pos-container-fluid {
+    padding: 0 !important;
+  }
+  
+  .calculated-shipping-section,
+  .coupon-section,
+  .cart-total-section {
+    padding: 15px;
+  }
+  
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+/* ============================================
+   SECCIONES ORIENTADAS AL CLIENTE
+   ============================================ */
+
+.sidebar-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 0;
+}
+
+/* Welcome Section */
+.welcome-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 20px;
+  color: white;
+  text-align: center;
+}
+
+.welcome-section .section-title {
+  color: white;
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
+
+.welcome-message {
+  font-size: 0.9rem;
+  margin: 0;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+/* Order Summary Section */
+.order-summary-section {
+  background: #e3f2fd;
+  border: 1px solid #bbdefb;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.order-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.stat-label {
+  color: #1976d2;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-weight: 600;
+  color: #0d47a1;
+}
+
+.stat-value.savings {
+  color: #2e7d32;
+}
+
+/* Payment Methods Section */
+.payment-info-section {
+  background: #f3e5f5;
+  border: 1px solid #e1bee7;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.payment-method {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 0.9rem;
+  color: #4a148c;
+}
+
+.payment-method i {
+  width: 20px;
+  text-align: center;
+  color: #7b1fa2;
+}
+
+/* Cart Total Section - Mejorado para cliente */
+.cart-total-section {
+  background: #e8f5e8;
+  border: 2px solid #4caf50;
+  border-radius: 12px;
+  padding: 20px;
+  color: #1b5e20;
+}
+
+.cart-total-section .section-title {
+  color: #2e7d32;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.total-breakdown {
+  margin-bottom: 20px;
+}
+
+.total-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: #2e7d32;
+}
+
+.total-line .discount {
+  color: #d32f2f;
+}
+
+.final-total {
+  border-top: 2px solid #4caf50;
+  padding-top: 12px;
+  margin-top: 12px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #1b5e20;
+}
+
+.checkout-btn {
+  background: linear-gradient(135deg, #4caf50, #2e7d32);
+  border: none;
+  color: white;
+  padding: 15px 25px;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 1rem;
+  width: 100%;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.checkout-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+  background: linear-gradient(135deg, #2e7d32, #1b5e20);
+}
+
+.checkout-btn:disabled {
+  background: #9e9e9e;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Store Info Section */
+.store-info-section {
+  background: #fff3e0;
+  border: 1px solid #ffcc02;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  margin-top: auto;
+}
+
+.store-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #e65100;
+  margin: 0 0 5px 0;
+}
+
+.store-tagline {
+  font-size: 0.85rem;
+  color: #bf360c;
+  margin: 0 0 10px 0;
+  font-style: italic;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.contact-info small {
+  color: #f57c00;
+  font-size: 0.75rem;
+}
+
+.contact-info i {
+  margin-right: 6px;
+  width: 12px;
+}
+
+/* Responsive para secciones del cliente */
+@media (max-width: 992px) {
+  .sidebar-content {
+    gap: 15px;
+  }
+  
+  .welcome-section,
+  .order-summary-section,
+  .payment-info-section,
+  .cart-total-section,
+  .store-info-section {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar-content {
+    gap: 12px;
+  }
+  
+  .welcome-section .section-title {
+    font-size: 1rem;
+  }
+  
+  .welcome-message {
+    font-size: 0.8rem;
+  }
+  
+  .checkout-btn {
+    padding: 12px 20px;
+    font-size: 0.9rem;
+  }
+}
+
+/* ============================================
+   FIN SECCIONES ORIENTADAS AL CLIENTE
+   ============================================ */
+
+/* ============================================
+   SECCIONES CART TOTAL - ESTILO ORIGINAL
+   ============================================ */
+
+.sidebar-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 0;
+}
+
+/* Cart Total Section - Estilo original con paleta de la app */
+.cart-total-section {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 24px;
+  color: #212529;
+  width: 100%;
+  max-width: 400px;
+}
+
+.cart-total-section .section-title {
+  color: #212529;
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.total-breakdown {
+  margin-bottom: 20px;
+}
+
+.total-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  color: #495057;
+  padding: 8px 0;
+}
+
+.final-total {
+  border-top: 1px solid #dee2e6;
+  padding-top: 12px;
+  margin-top: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #212529;
+}
+
+.checkout-btn {
+  background: #212529;
+  border: none;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  width: 100%;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.checkout-btn:hover:not(:disabled) {
+  background: #404040;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.checkout-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Responsive para cart total */
+@media (max-width: 992px) {
+  .sidebar-content {
+    padding: 30px 0;
+  }
+  
+  .cart-total-section {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar-content {
+    padding: 20px 0;
+  }
+  
+  .cart-total-section {
+    padding: 16px;
+  }
+  
+  .checkout-btn {
+    padding: 10px 20px;
+    font-size: 0.85rem;
+  }
+}
+
+/* ============================================
+   FIN CART TOTAL ORIGINAL
+   ============================================ */

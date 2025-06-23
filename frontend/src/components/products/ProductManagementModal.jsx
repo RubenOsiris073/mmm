@@ -130,7 +130,7 @@ const ProductManagementModal = ({
     <Modal show={show} onHide={handleClose} centered size="md">
       <Modal.Header closeButton>
         <Modal.Title>
-          <i className="bi bi-gear me-2"></i>
+          <i className="bi bi-eye me-2"></i>
           Gestionar Producto
         </Modal.Title>
       </Modal.Header>

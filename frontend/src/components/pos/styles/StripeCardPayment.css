@@ -1,0 +1,237 @@
+/* ============================================
+   STRIPE CARD PAYMENT - ESTILO CONSISTENTE
+   ============================================ */
+
+.stripe-payment-container {
+  max-width: 450px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 0;
+  overflow: hidden;
+}
+
+.payment-header {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  padding: 20px;
+  text-align: center;
+}
+
+.payment-header h5 {
+  color: #212529;
+  font-weight: 600;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.payment-header p {
+  color: #6c757d;
+  margin: 8px 0 0 0;
+  font-size: 0.85rem;
+}
+
+.payment-body {
+  padding: 20px;
+  background: white;
+}
+
+.payment-summary {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.payment-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #212529;
+  margin: 0;
+}
+
+.payment-currency {
+  font-size: 0.85rem;
+  color: #6c757d;
+  font-weight: 400;
+}
+
+.payment-id {
+  font-size: 0.75rem;
+  color: #6c757d;
+  font-family: 'Monaco', 'Menlo', monospace;
+}
+
+.card-input-section {
+  margin-bottom: 20px;
+}
+
+.card-input-label {
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+.card-input-label i {
+  color: #495057;
+  margin-right: 8px;
+}
+
+.card-input-container {
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 16px;
+  background: white;
+  transition: border-color 0.2s ease;
+}
+
+.card-input-container:hover {
+  border-color: #adb5bd;
+}
+
+.card-input-container.focused {
+  border-color: #495057;
+  box-shadow: 0 0 0 3px rgba(73, 80, 87, 0.1);
+}
+
+.card-logos-section {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 16px 0;
+  padding: 16px 0;
+  border-top: 1px solid #e9ecef;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.card-logo {
+  width: 40px;
+  height: 25px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.4;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+  padding: 2px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+}
+
+.card-logo:hover {
+  opacity: 0.7;
+}
+
+.card-logo.active {
+  opacity: 1;
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-color: #495057;
+}
+
+.security-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  margin: 16px 0;
+  border: 1px solid #bbdefb;
+}
+
+.security-badge i {
+  margin-right: 6px;
+}
+
+.payment-button {
+  width: 100%;
+  background: #212529;
+  border: 1px solid #212529;
+  border-radius: 6px;
+  padding: 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  transition: all 0.2s ease;
+  margin-top: 8px;
+}
+
+.payment-button:hover:not(:disabled) {
+  background: #404040;
+  border-color: #404040;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(33, 37, 41, 0.3);
+}
+
+.payment-button:disabled {
+  background: #6c757d;
+  border-color: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.payment-footer {
+  text-align: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e9ecef;
+  font-size: 0.75rem;
+  color: #6c757d;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+}
+
+.loading-state .spinner-border {
+  width: 2rem;
+  height: 2rem;
+  margin-bottom: 12px;
+  color: #495057;
+}
+
+.error-alert {
+  border-radius: 6px;
+  border: 1px solid #f5c6cb;
+  background: #f8d7da;
+  color: #721c24;
+  border-left: 4px solid #dc3545;
+}
+
+/* Responsive design */
+@media (max-width: 576px) {
+  .stripe-payment-container {
+    margin: 0 12px;
+    max-width: none;
+  }
+  
+  .payment-header,
+  .payment-body {
+    padding: 20px;
+  }
+  
+  .payment-amount {
+    font-size: 20px;
+  }
+  
+  .card-logos-section {
+    gap: 8px;
+  }
+  
+  .card-logo {
+    width: 35px;
+    height: 22px;
+  }
+}

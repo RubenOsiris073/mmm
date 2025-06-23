@@ -8,7 +8,7 @@ import {
 } from '@stripe/react-stripe-js';
 import { Button, Alert, Spinner, Form, Row, Col } from 'react-bootstrap';
 import { toast } from 'react-toastify';
-import './styles.css';
+import './styles/StripeCardPayment.css';
 
 // Función para obtener la clave de Stripe de forma segura
 const getStripeKey = () => {
@@ -35,18 +35,18 @@ const initializeStripe = () => {
   return stripePromise;
 };
 
-// Opciones minimalistas para el CardElement
+// Opciones minimalistas para el CardElement con paleta consistente
 const cardElementOptions = {
   style: {
     base: {
       fontSize: '16px',
-      color: '#2c3e50',
+      color: '#212529',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       fontSmoothing: 'antialiased',
       '::placeholder': {
-        color: '#8e9ba7',
+        color: '#6c757d',
       },
-      iconColor: '#6c757d',
+      iconColor: '#495057',
     },
     invalid: {
       color: '#dc3545',
@@ -214,7 +214,7 @@ const CardPaymentForm = ({ amount, onPaymentSuccess, onPaymentError, loading: ex
         <div className="card-input-section">
           <div className="card-input-label">
             <i className="bi bi-credit-card"></i>
-            Información de la tarjeta
+            Información de la Tarjeta
           </div>
           
           <div className={`card-input-container ${cardFocused ? 'focused' : ''}`}>

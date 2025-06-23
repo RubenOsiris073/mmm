@@ -1,0 +1,412 @@
+/* Shopping Bag Modern Styles - Corrección final para evitar recorte */
+.shopping-bag-container {
+  background: white;
+  border-radius: 0;
+  padding: 40px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.empty-cart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  text-align: center;
+  color: #6c757d;
+}
+
+.empty-cart-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+/* Shopping Bag Header */
+.shopping-bag-header {
+  background: white;
+  padding: 0 0 20px 0;
+  border-bottom: none;
+}
+
+.bag-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #212529;
+  margin: 0;
+  text-align: left;
+}
+
+.bag-subtitle {
+  color: #6c757d;
+  margin: 8px 0 0 0;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+/* Products Table - SOBRESCRIBIR estilos globales de App.css */
+.products-table-container {
+  flex: 1;
+  background: #f8f9fa;
+  overflow: visible;
+  margin-top: 30px;
+  border-radius: 12px;
+  padding: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.products-table {
+  margin: 0 !important;
+  width: 100% !important;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  table-layout: fixed !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  vertical-align: middle !important;
+}
+
+/* SOBRESCRIBIR estilos globales de thead */
+.products-table thead th {
+  background: #f8f9fa !important;
+  color: #666 !important;
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  padding: 20px 16px !important;
+  border: none !important;
+  border-bottom: 1px solid #e9ecef !important;
+  box-sizing: border-box !important;
+  border-top: none !important;
+}
+
+.products-table thead th:first-child {
+  text-align: left !important;
+  width: 40% !important;
+  padding-left: 25px !important;
+}
+
+.products-table thead th:nth-child(2) {
+  text-align: center !important;
+  width: 18% !important;
+}
+
+.products-table thead th:nth-child(3) {
+  text-align: center !important;
+  width: 22% !important;
+}
+
+.products-table thead th:nth-child(4) {
+  text-align: center !important;
+  width: 20% !important;
+  padding-right: 25px !important;
+}
+
+/* SOBRESCRIBIR estilos globales de tbody */
+.products-table tbody tr {
+  border-bottom: 1px solid #f1f3f4 !important;
+  transition: background-color 0.2s ease !important;
+  background-color: white !important;
+}
+
+.products-table tbody tr:hover {
+  background-color: #f8f9fa !important;
+  /* Sobrescribir el hover global de App.css */
+}
+
+.products-table tbody td {
+  padding: 20px 16px !important;
+  vertical-align: middle !important;
+  border: none !important;
+  box-sizing: border-box !important;
+}
+
+.product-row {
+  border-bottom: 1px solid #f1f3f4;
+  transition: background-color 0.2s ease;
+}
+
+.product-row:hover {
+  background-color: #f8f9fa;
+}
+
+.product-row td {
+  padding: 20px 16px;
+  vertical-align: middle;
+  border: none;
+  box-sizing: border-box;
+}
+
+.product-row td:first-child {
+  padding-left: 25px;
+  width: 40%;
+}
+
+.product-row td:nth-child(2) {
+  width: 18%;
+  text-align: center;
+}
+
+.product-row td:nth-child(3) {
+  width: 22%;
+  text-align: center;
+}
+
+.product-row td:last-child {
+  padding-right: 25px;
+  width: 20%;
+  text-align: center;
+}
+
+/* Product Cell - Más espacio para imagen y texto */
+.product-cell {
+  width: 45%;
+}
+
+.product-info-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+}
+
+.product-image-wrapper {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f8f9fa;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e9ecef;
+}
+
+.product-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.product-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #212529;
+  margin: 0 0 6px 0;
+  line-height: 1.3;
+  white-space: normal;
+  overflow: visible;
+}
+
+.product-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.product-brand {
+  font-size: 0.75rem;
+  color: #6c757d;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.product-specs {
+  font-size: 0.8rem;
+  color: #868e96;
+  margin-top: 2px;
+}
+
+/* Price Cell */
+.price-cell {
+  width: 15%;
+  text-align: center;
+}
+
+.unit-price {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+/* Quantity Cell */
+.quantity-cell {
+  width: 20%;
+  text-align: center;
+}
+
+.quantity-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  padding: 6px 12px;
+  border-radius: 25px;
+  border: 1px solid #e9ecef;
+}
+
+.quantity-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: #007bff;
+  color: white;
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.quantity-btn:hover:not(:disabled) {
+  background: #0056b3;
+  transform: scale(1.05);
+}
+
+.quantity-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.quantity-value {
+  font-weight: 600;
+  color: #212529;
+  min-width: 20px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+/* Total Cell - Más espacio */
+.total-cell {
+  width: 20%;
+  text-align: center;
+}
+
+.total-price-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.item-total-price {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffa726;
+  flex-shrink: 0;
+}
+
+.remove-product-btn {
+  color: #dc3545 !important;
+  font-size: 1.1rem;
+  font-weight: 400;
+  text-decoration: none !important;
+  padding: 0 !important;
+  border: none !important;
+  background: none !important;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  margin-left: 5px;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .product-image-wrapper {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .product-info-container {
+    gap: 8px;
+  }
+  
+  .table-header th {
+    padding: 12px 8px;
+    font-size: 0.8rem;
+  }
+  
+  .product-row td {
+    padding: 12px 8px;
+  }
+  
+  .product-name {
+    font-size: 0.8rem;
+  }
+  
+  .quantity-btn {
+    width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .shopping-bag-container {
+    padding: 15px;
+  }
+  
+  .products-table-container {
+    padding: 15px;
+  }
+  
+  .table-header th {
+    padding: 10px 6px;
+    font-size: 0.75rem;
+  }
+  
+  .product-row td {
+    padding: 10px 6px;
+  }
+  
+  .product-name {
+    font-size: 0.75rem;
+  }
+  
+  .unit-price,
+  .item-total-price {
+    font-size: 0.75rem;
+  }
+  
+  .quantity-controls {
+    gap: 4px;
+    padding: 1px;
+  }
+  
+  .quantity-btn {
+    width: 18px;
+    height: 18px;
+    font-size: 0.65rem;
+  }
+  
+  .quantity-value {
+    font-size: 0.7rem;
+    min-width: 12px;
+  }
+}

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Alert, Button, Form, InputGroup, Row, Col, Badge } from 'react-bootstrap';
 import { FaQrcode, FaCopy, FaCheck } from 'react-icons/fa';
 import QRCode from 'qrcode';
+import './styles/SimpleQRPayment.css';
 
 const SimpleQRPayment = ({ amount, concept = "Compra POS", onPaymentConfirmed }) => {
   const [qrCodeUrl, setQrCodeUrl] = useState('');
@@ -66,40 +67,33 @@ const SimpleQRPayment = ({ amount, concept = "Compra POS", onPaymentConfirmed })
       {/* QR Code y datos para pago */}
       <Row>
         <Col md={6}>
-          <Card className="text-center">
-            <Card.Header className="bg-primary text-white">
-              <h5 className="mb-0">
+          <Card className="qr-payment-card">
+            <Card.Header className="qr-payment-header">
+              <h5 className="qr-payment-title">
                 <FaQrcode className="me-2" />
                 Código QR para Pago
               </h5>
             </Card.Header>
-            <Card.Body>
+            <Card.Body className="qr-payment-body">
               {qrCodeUrl && (
                 <div className="mb-3">
                   <img 
                     src={qrCodeUrl} 
                     alt="QR para pago SPEI" 
-                    className="img-fluid"
-                    style={{ 
-                      maxWidth: '280px',
-                      border: '2px solid #dee2e6',
-                      borderRadius: '10px',
-                      padding: '15px',
-                      backgroundColor: 'white'
-                    }}
+                    className="qr-code-image"
                   />
                 </div>
               )}
               
-              <Badge bg="success" className="mb-2">
+              <Badge className="qr-amount-badge">
                 Monto: ${amount.toFixed(2)} MXN
               </Badge>
               
-              <p className="text-muted mb-3">
+              <p className="qr-instructions-text">
                 El cliente escanea este QR desde su app bancaria
               </p>
 
-              <Alert variant="info" className="small">
+              <Alert className="qr-instructions-alert">
                 <strong>Instrucciones para el cliente:</strong><br/>
                 1. Abre tu app bancaria<br/>
                 2. Busca "Transferir" o "SPEI"<br/>
@@ -112,37 +106,48 @@ const SimpleQRPayment = ({ amount, concept = "Compra POS", onPaymentConfirmed })
         </Col>
 
         <Col md={6}>
-          <Card>
-            <Card.Header className="bg-secondary text-white">
-              <h5 className="mb-0">Datos para Transferencia Manual</h5>
+          <Card className="manual-transfer-card">
+            <Card.Header className="manual-transfer-header">
+              <h5 className="manual-transfer-title">Datos para Transferencia Manual</h5>
             </Card.Header>
-            <Card.Body>
+            <Card.Body className="manual-transfer-body">
               <div className="mb-3">
                 <strong>CLABE:</strong>
                 <InputGroup className="mt-1">
                   <Form.Control 
                     value={paymentData.clabe} 
                     readOnly 
-                    className="text-center fw-bold"
+                    className="clabe-input"
                   />
                   <Button 
                     variant="outline-secondary" 
                     onClick={() => copyToClipboard(paymentData.clabe)}
+                    className="copy-btn"
                   >
                     {copied ? <FaCheck /> : <FaCopy />}
                   </Button>
                 </InputGroup>
               </div>
 
-              <div className="mb-3">
-                <strong>Banco:</strong> {paymentData.bank}<br/>
-                <strong>Titular:</strong> {paymentData.account}<br/>
-                <strong>Monto:</strong> <span className="text-success fw-bold">${amount.toFixed(2)}</span><br/>
-                <strong>Concepto:</strong> {paymentData.concept}<br/>
-                <strong>Referencia:</strong> {paymentData.reference}
+              <div className="transfer-details">
+                <div className="detail-line">
+                  <strong>Banco:</strong> {paymentData.bank}
+                </div>
+                <div className="detail-line">
+                  <strong>Titular:</strong> {paymentData.account}
+                </div>
+                <div className="detail-line">
+                  <strong>Monto:</strong> <span className="amount-highlight">${amount.toFixed(2)}</span>
+                </div>
+                <div className="detail-line">
+                  <strong>Concepto:</strong> {paymentData.concept}
+                </div>
+                <div className="detail-line">
+                  <strong>Referencia:</strong> {paymentData.reference}
+                </div>
               </div>
 
-              <Alert variant="warning" className="mb-3">
+              <Alert className="payment-warning">
                 <small>
                   <strong>⚠️ Importante:</strong> Una vez que recibas el pago en tu cuenta, 
                   confirma manualmente para completar la venta.
@@ -151,7 +156,7 @@ const SimpleQRPayment = ({ amount, concept = "Compra POS", onPaymentConfirmed })
 
               <div className="d-grid gap-2">
                 <Button 
-                  variant="success" 
+                  className={`confirm-payment-btn ${manualConfirmation ? 'confirmed' : ''}`}
                   onClick={handleManualConfirmation}
                   disabled={manualConfirmation}
                 >
@@ -166,8 +171,7 @@ const SimpleQRPayment = ({ amount, concept = "Compra POS", onPaymentConfirmed })
                 </Button>
                 
                 <Button 
-                  variant="outline-info" 
-                  size="sm"
+                  className="copy-all-btn"
                   onClick={() => copyToClipboard(
                     `CLABE: ${paymentData.clabe}\nMonto: $${amount.toFixed(2)}\nConcepto: ${paymentData.concept}\nReferencia: ${paymentData.reference}`
                   )}
@@ -181,7 +185,7 @@ const SimpleQRPayment = ({ amount, concept = "Compra POS", onPaymentConfirmed })
         </Col>
       </Row>
 
-      <Alert variant="success" className="mt-3">
+      <Alert className="qr-advantages-alert">
         <h6>Ventajas de este método:</h6>
         <ul className="mb-0">
           <li><strong>Funciona inmediatamente</strong> - Sin registros ni trámites</li>

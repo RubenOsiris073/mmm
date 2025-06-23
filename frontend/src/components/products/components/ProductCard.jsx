@@ -173,7 +173,7 @@ const ProductCard = ({ product, onManage }) => {
               className="btn-manage-modern product-action-btn w-100"
               onClick={() => onManage(product)}
             >
-              <i className="bi bi-gear-fill me-2"></i>
+              <i className="bi bi-eye-fill me-2"></i>
               GESTIONAR
             </Button>
           </div>

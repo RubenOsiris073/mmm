@@ -51,7 +51,7 @@ const AuthenticationPage = () => {
         console.log('Redirigiendo a la página principal...');
         navigate('/products', { replace: true });
       }
-    }, 500); // Aumentamos el timeout a 500ms
+    }, 500);
   };
 
   // No mostrar nada si el usuario ya está autenticado

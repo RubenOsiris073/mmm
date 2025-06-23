@@ -106,31 +106,36 @@ const useProductData = (externalSetError = null) => {
       });
 
       // Solo mostrar productos que tengan stock disponible
-      const productsWithStock = normalizedProducts.filter(product => {
-        const stockDisponible = product.cantidad !== undefined ? product.cantidad : (product.stock || 0);
-        const hasStock = stockDisponible > 0;
-        
-        if (!hasStock) {
-          console.log(`Producto filtrado por falta de stock: ${product.nombre} (Stock: ${stockDisponible})`);
-        }
-        
-        return hasStock;
-      });
+      // COMENTADO: No filtrar por stock aquí, dejarlo al ProductList
+      // const productsWithStock = normalizedProducts.filter(product => {
+      //   const stockDisponible = product.cantidad !== undefined ? product.cantidad : (product.stock || 0);
+      //   const hasStock = stockDisponible > 0;
+      //   
+      //   if (!hasStock) {
+      //     console.log(`Producto filtrado por falta de stock: ${product.nombre} (Stock: ${stockDisponible})`);
+      //   }
+      //   
+      //   return hasStock;
+      // });
 
-      console.log(`Productos originales: ${normalizedProducts.length}, con stock: ${productsWithStock.length}`);
+      // console.log(`Productos originales: ${normalizedProducts.length}, con stock: ${productsWithStock.length}`);
 
-      setProducts(removeDuplicateProducts(productsWithStock));
-      console.log(`Productos disponibles en POS: ${productsWithStock.length}`, productsWithStock.slice(0, 3));
+      // setProducts(removeDuplicateProducts(productsWithStock));
+      // console.log(`Productos disponibles en POS: ${productsWithStock.length}`, productsWithStock.slice(0, 3));
 
-      // Mostrar notificación informativa sobre productos filtrados
-      const productosSinStock = normalizedProducts.length - productsWithStock.length;
-      if (productosSinStock > 0) {
-        console.log(`${productosSinStock} producto(s) sin stock no se mostrarán en el POS`);
-      }
+      // Mostrar todos los productos, el filtro por stock se maneja en ProductList
+      setProducts(removeDuplicateProducts(normalizedProducts));
+      console.log(`Productos disponibles en POS: ${normalizedProducts.length}`, normalizedProducts.slice(0, 3));
+
+      // // Mostrar notificación informativa sobre productos filtrados
+      // const productosSinStock = normalizedProducts.length - productsWithStock.length;
+      // if (productosSinStock > 0) {
+      //   console.log(`${productosSinStock} producto(s) sin stock no se mostrarán en el POS`);
+      // }
       
-      if (productsWithStock.length > 0) {
-        console.log(`${productsWithStock.length} producto(s) disponibles en POS`);
-      }
+      // if (productsWithStock.length > 0) {
+      //   console.log(`${productsWithStock.length} producto(s) disponibles en POS`);
+      // }
 
     } catch (err) {
       console.error("Error cargando productos:", err);
@@ -145,19 +150,21 @@ const useProductData = (externalSetError = null) => {
     loadProducts();
   }, [loadProducts]);
 
-  // Productos filtrados con useMemo - también verificar stock en tiempo real
+  // Productos filtrados con useMemo - SIEMPRE filtrar por stock y por búsqueda
   const filteredProducts = useMemo(() => {
-    if (!searchTerm) return products;
+    // Primero filtrar productos con stock disponible
+    const productsWithStock = products.filter(product => {
+      const stockDisponible = product.cantidad !== undefined ? product.cantidad : (product.stock || 0);
+      return stockDisponible > 0; // Solo productos con stock positivo
+    });
+
+    // Luego aplicar filtro de búsqueda si existe
+    if (!searchTerm) {
+      return productsWithStock;
+    }
     
     const term = searchTerm.toLowerCase();
-    const filtered = products.filter(product => {
-      // Verificar que aún tenga stock disponible
-      const stockDisponible = product.cantidad !== undefined ? product.cantidad : (product.stock || 0);
-      if (stockDisponible <= 0) {
-        return false;
-      }
-      
-      // Aplicar filtro de búsqueda
+    const filtered = productsWithStock.filter(product => {
       return (product.name && product.name.toLowerCase().includes(term)) ||
              (product.nombre && product.nombre.toLowerCase().includes(term)) ||
              (product.label && product.label.toLowerCase().includes(term)) ||

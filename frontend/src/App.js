@@ -14,6 +14,7 @@ import './styles/products-modern.css';
 // Importar el contexto de tema
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ProductVisibilityProvider } from './contexts/ProductVisibilityContext';
 
 // Importar componentes de autenticación (críticos - no lazy)
 import { AuthenticationPage, ProtectedRoute } from './components/auth';
@@ -195,22 +196,24 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Router>
-          <Suspense fallback={<LoadingScreen />}>
-            <AppRoutes />
-          </Suspense>
-          <ToastContainer 
-            position="top-right"
-            autoClose={3000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-          />
-        </Router>
+        <ProductVisibilityProvider>
+          <Router>
+            <Suspense fallback={<LoadingScreen />}>
+              <AppRoutes />
+            </Suspense>
+            <ToastContainer 
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+            />
+          </Router>
+        </ProductVisibilityProvider>
       </AuthProvider>
     </ThemeProvider>
   );

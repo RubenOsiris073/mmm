@@ -1,0 +1,885 @@
+/* Estilos específicos para componentes de autenticación */
+
+/* Reset y configuración base */
+.auth-container * {
+  box-sizing: border-box;
+}
+
+/* Contenedor principal de autenticación */
+.auth-split-container {
+  display: flex !important;
+  min-height: 100vh !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* Lado izquierdo - Imagen */
+.auth-image-side {
+  flex: 1 !important;
+  background-image: url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1567&q=80') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  position: relative !important;
+  z-index: 1 !important;
+  min-height: 100vh !important;
+}
+
+/* Overlay oscuro sobre la imagen */
+.auth-image-overlay {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.7)) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  padding: 2rem !important;
+}
+
+/* Texto de bienvenida */
+.auth-welcome-text {
+  color: white !important;
+  z-index: 2 !important;
+}
+
+.auth-welcome-text h2 {
+  font-size: 2.5rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 1rem !important;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8) !important;
+  color: white !important;
+}
+
+.auth-welcome-text p {
+  font-size: 1.1rem !important;
+  opacity: 0.95 !important;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8) !important;
+  color: white !important;
+  margin: 0 !important;
+}
+
+/* Lado derecho - Formulario */
+.auth-form-side {
+  flex: 1 !important;
+  background-color: #f8f9fa !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 2rem !important;
+  min-height: 100vh !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+/* Contenido del formulario */
+.auth-form-content {
+  width: 100% !important;
+  max-width: 420px !important;
+  background-color: transparent !important;
+}
+
+/* Botón de volver */
+.auth-back-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  color: #495057 !important;
+  text-decoration: none !important;
+  margin-bottom: 1.5rem !important;
+  border: none !important;
+  background: none !important;
+  padding: 0 !important;
+  font-size: 0.9rem !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.auth-back-button:hover {
+  color: #000 !important;
+  transform: translateX(-5px) !important;
+}
+
+/* Sección de encabezado */
+.auth-header-section {
+  margin-bottom: 2rem !important;
+  text-align: center !important;
+}
+
+.auth-header-section h2 {
+  font-weight: 700 !important;
+  font-size: 1.75rem !important;
+  color: #212529 !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.auth-header-section p {
+  color: #495057 !important;
+  margin-bottom: 0 !important;
+  font-size: 1rem !important;
+}
+
+/* Mensaje de error */
+.auth-error-message {
+  background-color: #f8d7da !important;
+  color: #842029 !important;
+  padding: 0.75rem 1rem !important;
+  border-radius: 0.375rem !important;
+  margin-bottom: 1.5rem !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  border: 1px solid #f5c2c7 !important;
+}
+
+.auth-error-close {
+  background: none !important;
+  border: none !important;
+  color: #842029 !important;
+  font-size: 1.25rem !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+}
+
+/* Campos de formulario */
+.auth-form-group {
+  position: relative !important;
+  margin-bottom: 1rem !important;
+}
+
+.auth-form-input {
+  width: 100% !important;
+  padding: 1rem 0.75rem !important;
+  font-size: 1rem !important;
+  line-height: 1.5 !important;
+  color: #212529 !important;
+  background-color: #fff !important;
+  background-clip: padding-box !important;
+  border: 1px solid #ced4da !important;
+  border-radius: 0.375rem !important;
+  transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out !important;
+}
+
+.auth-form-input:focus {
+  color: #212529 !important;
+  background-color: #fff !important;
+  border-color: #86b7fe !important;
+  outline: 0 !important;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .25) !important;
+}
+
+.auth-form-input::placeholder {
+  color: #6c757d !important;
+  opacity: 1 !important;
+}
+
+/* Botón de mostrar/ocultar contraseña */
+.auth-password-toggle {
+  position: absolute !important;
+  right: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  background: none !important;
+  border: none !important;
+  color: #6c757d !important;
+  cursor: pointer !important;
+  padding: 0.25rem !important;
+  z-index: 5 !important;
+}
+
+.auth-password-toggle:hover {
+  color: #212529 !important;
+}
+
+/* Checkbox y links */
+.auth-form-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.auth-forgot-link {
+  color: #0d6efd !important;
+  text-decoration: none !important;
+  font-size: 0.875rem !important;
+  background: none !important;
+  border: none !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+}
+
+.auth-forgot-link:hover {
+  text-decoration: underline !important;
+  color: #0b5ed7 !important;
+}
+
+/* Botón principal de login */
+.auth-login-btn {
+  width: 100% !important;
+  padding: 0.75rem 1rem !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  line-height: 1.5 !important;
+  color: #fff !important;
+  background-color: #0d6efd !important;
+  border: 1px solid #0d6efd !important;
+  border-radius: 0.375rem !important;
+  transition: all 0.15s ease-in-out !important;
+  cursor: pointer !important;
+  text-align: center !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.auth-login-btn:hover:not(:disabled) {
+  background-color: #0b5ed7 !important;
+  border-color: #0a58ca !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+}
+
+.auth-login-btn:disabled {
+  opacity: 0.65 !important;
+  cursor: not-allowed !important;
+}
+
+/* Estilos específicos por tipo de acceso - POS (Azul) */
+.auth-login-btn.pos-theme {
+  background-color: #0d6efd !important;
+  border-color: #0d6efd !important;
+}
+
+.auth-login-btn.pos-theme:hover:not(:disabled) {
+  background-color: #0b5ed7 !important;
+  border-color: #0a58ca !important;
+  box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3) !important;
+}
+
+/* Estilos específicos por tipo de acceso - Admin (Rojo) */
+.auth-login-btn.admin-theme {
+  background-color: #dc3545 !important;
+  border-color: #dc3545 !important;
+}
+
+.auth-login-btn.admin-theme:hover:not(:disabled) {
+  background-color: #c82333 !important;
+  border-color: #bd2130 !important;
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3) !important;
+}
+
+/* Divisor */
+.auth-divider {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  color: #6c757d !important;
+  margin: 1.5rem 0 !important;
+  font-size: 0.875rem !important;
+  position: relative !important;
+  width: 100% !important;
+}
+
+.auth-divider span {
+  background-color: #f8f9fa !important;
+  padding: 0 1rem !important;
+  color: #6c757d !important;
+  font-size: 0.875rem !important;
+  position: relative !important;
+  z-index: 1 !important;
+  white-space: nowrap !important;
+}
+
+.auth-divider::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 1px !important;
+  background-color: #dee2e6 !important;
+  z-index: 0 !important;
+  transform: translateY(-50%) !important;
+}
+
+/* Botón de Google */
+.auth-google-btn {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0.6rem 1rem !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  line-height: 1.5 !important;
+  color: #212529 !important;
+  background-color: #fff !important;
+  border: 1px solid #ced4da !important;
+  border-radius: 0.375rem !important;
+  transition: all 0.15s ease-in-out !important;
+  cursor: pointer !important;
+  text-align: center !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.auth-google-btn:hover:not(:disabled) {
+  background-color: #f8f9fa !important;
+  border-color: #adb5bd !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+  color: #212529 !important;
+}
+
+.auth-google-btn:focus {
+  background-color: #f8f9fa !important;
+  border-color: #adb5bd !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+  color: #212529 !important;
+}
+
+/* Botón de Google con tema POS (Azul) */
+.auth-google-btn.pos-theme {
+  border-color: #0d6efd !important;
+  color: #0d6efd !important;
+  background-color: #fff !important;
+}
+
+.auth-google-btn.pos-theme:hover:not(:disabled) {
+  background-color: rgba(13, 110, 253, 0.05) !important;
+  border-color: #0b5ed7 !important;
+  box-shadow: 0 2px 4px rgba(13, 110, 253, 0.2) !important;
+  color: #0b5ed7 !important;
+}
+
+.auth-google-btn.pos-theme:focus {
+  background-color: rgba(13, 110, 253, 0.05) !important;
+  border-color: #0b5ed7 !important;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+  color: #0b5ed7 !important;
+}
+
+.auth-google-btn.pos-theme:active {
+  background-color: rgba(13, 110, 253, 0.1) !important;
+  border-color: #0a58ca !important;
+  color: #0a58ca !important;
+}
+
+/* Botón de Google con tema Admin (Rojo) */
+.auth-google-btn.admin-theme {
+  border-color: #dc3545 !important;
+  color: #dc3545 !important;
+  background-color: #fff !important;
+}
+
+.auth-google-btn.admin-theme:hover:not(:disabled) {
+  background-color: rgba(220, 53, 69, 0.05) !important;
+  border-color: #c82333 !important;
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2) !important;
+  color: #c82333 !important;
+}
+
+.auth-google-btn.admin-theme:focus {
+  background-color: rgba(220, 53, 69, 0.05) !important;
+  border-color: #c82333 !important;
+  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+  color: #c82333 !important;
+}
+
+.auth-google-btn.admin-theme:active {
+  background-color: rgba(220, 53, 69, 0.1) !important;
+  border-color: #bd2130 !important;
+  color: #bd2130 !important;
+}
+
+/* Asegurar que el ícono de Google mantenga su color */
+.auth-google-btn .me-2 {
+  color: inherit !important;
+}
+
+/* Prevenir que Bootstrap sobrescriba los estilos */
+.btn.auth-google-btn.pos-theme {
+  border-color: #0d6efd !important;
+  color: #0d6efd !important;
+  background-color: #fff !important;
+}
+
+.btn.auth-google-btn.pos-theme:hover,
+.btn.auth-google-btn.pos-theme:focus,
+.btn.auth-google-btn.pos-theme:active {
+  background-color: rgba(13, 110, 253, 0.05) !important;
+  border-color: #0b5ed7 !important;
+  color: #0b5ed7 !important;
+}
+
+.btn.auth-google-btn.admin-theme {
+  border-color: #dc3545 !important;
+  color: #dc3545 !important;
+  background-color: #fff !important;
+}
+
+.btn.auth-google-btn.admin-theme:hover,
+.btn.auth-google-btn.admin-theme:focus,
+.btn.auth-google-btn.admin-theme:active {
+  background-color: rgba(220, 53, 69, 0.05) !important;
+  border-color: #c82333 !important;
+  color: #c82333 !important;
+}
+
+/* Estilos para Access Selector */
+.auth-access-options {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.auth-access-card {
+  display: flex !important;
+  align-items: center !important;
+  padding: 1rem !important;
+  background-color: white !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid #dee2e6 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04) !important;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.auth-access-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+  border-color: #ced4da !important;
+}
+
+.auth-access-card:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.auth-access-card:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.auth-icon-container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 0.375rem !important;
+  margin-right: 1rem !important;
+  flex-shrink: 0 !important;
+}
+
+.auth-icon-container.primary {
+  background-color: rgba(13, 110, 253, 0.1) !important;
+}
+
+.auth-icon-container.danger {
+  background-color: rgba(220, 53, 69, 0.1) !important;
+}
+
+.auth-icon-container.primary .icon-color {
+  color: #0d6efd !important;
+}
+
+.auth-icon-container.danger .icon-color {
+  color: #dc3545 !important;
+}
+
+.auth-option-content {
+  flex: 1 !important;
+}
+
+.auth-option-content h3 {
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  margin: 0 0 0.25rem 0 !important;
+  color: #212529 !important;
+}
+
+.auth-option-content p {
+  font-size: 0.875rem !important;
+  color: #6c757d !important;
+  margin: 0 !important;
+}
+
+.auth-option-arrow {
+  color: #6c757d !important;
+  margin-left: 0.5rem !important;
+  transition: transform 0.2s ease !important;
+  flex-shrink: 0 !important;
+}
+
+.auth-access-card:hover .auth-option-arrow {
+  transform: translateX(3px) !important;
+  color: #495057 !important;
+}
+
+/* Checkbox personalizado */
+.auth-checkbox-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+.auth-checkbox-input {
+  width: 1rem !important;
+  height: 1rem !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+}
+
+.auth-checkbox-label {
+  color: #495057 !important;
+  font-size: 0.9rem !important;
+  cursor: pointer !important;
+  margin: 0 !important;
+  user-select: none !important;
+}
+
+/* Botón de Google personalizado (sin Bootstrap) */
+.auth-google-btn-custom {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0.75rem 1rem !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  line-height: 1.5 !important;
+  color: #212529 !important;
+  background-color: #fff !important;
+  border: 1px solid #ced4da !important;
+  border-radius: 0.375rem !important;
+  transition: all 0.15s ease-in-out !important;
+  cursor: pointer !important;
+  text-align: center !important;
+  margin-bottom: 1.5rem !important;
+  font-family: inherit !important;
+  gap: 0.5rem !important;
+}
+
+.auth-google-btn-custom:hover:not(:disabled) {
+  background-color: #f8f9fa !important;
+  border-color: #adb5bd !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+.auth-google-btn-custom:disabled {
+  opacity: 0.65 !important;
+  cursor: not-allowed !important;
+}
+
+.auth-google-btn-custom span {
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  color: inherit !important;
+}
+
+/* Botón de Google personalizado con tema POS (Azul) */
+.auth-google-btn-custom.pos-theme {
+  border-color: #0d6efd !important;
+  color: #0d6efd !important;
+  background-color: #fff !important;
+}
+
+.auth-google-btn-custom.pos-theme span {
+  color: #0d6efd !important;
+}
+
+.auth-google-btn-custom.pos-theme:hover:not(:disabled) {
+  background-color: rgba(13, 110, 253, 0.08) !important;
+  border-color: #0b5ed7 !important;
+  color: #0b5ed7 !important;
+  box-shadow: 0 2px 6px rgba(13, 110, 253, 0.25) !important;
+}
+
+.auth-google-btn-custom.pos-theme:hover:not(:disabled) span {
+  color: #0b5ed7 !important;
+}
+
+.auth-google-btn-custom.pos-theme:active {
+  background-color: rgba(13, 110, 253, 0.15) !important;
+  border-color: #0a58ca !important;
+  color: #0a58ca !important;
+}
+
+.auth-google-btn-custom.pos-theme:active span {
+  color: #0a58ca !important;
+}
+
+/* Botón de Google personalizado con tema Admin (Rojo) */
+.auth-google-btn-custom.admin-theme {
+  border-color: #dc3545 !important;
+  color: #dc3545 !important;
+  background-color: #fff !important;
+}
+
+.auth-google-btn-custom.admin-theme span {
+  color: #dc3545 !important;
+}
+
+.auth-google-btn-custom.admin-theme:hover:not(:disabled) {
+  background-color: rgba(220, 53, 69, 0.08) !important;
+  border-color: #c82333 !important;
+  color: #c82333 !important;
+  box-shadow: 0 2px 6px rgba(220, 53, 69, 0.25) !important;
+}
+
+.auth-google-btn-custom.admin-theme:hover:not(:disabled) span {
+  color: #c82333 !important;
+}
+
+.auth-google-btn-custom.admin-theme:active {
+  background-color: rgba(220, 53, 69, 0.15) !important;
+  border-color: #bd2130 !important;
+  color: #bd2130 !important;
+}
+
+.auth-google-btn-custom.admin-theme:active span {
+  color: #bd2130 !important;
+}
+
+/* Enlaces temáticos */
+.auth-text-link.pos-theme {
+  color: #0d6efd !important;
+}
+
+.auth-text-link.pos-theme:hover {
+  color: #0b5ed7 !important;
+}
+
+.auth-text-link.admin-theme {
+  color: #dc3545 !important;
+}
+
+.auth-text-link.admin-theme:hover {
+  color: #c82333 !important;
+}
+
+.auth-forgot-link.pos-theme {
+  color: #0d6efd !important;
+}
+
+.auth-forgot-link.pos-theme:hover {
+  color: #0b5ed7 !important;
+}
+
+.auth-forgot-link.admin-theme {
+  color: #dc3545 !important;
+}
+
+.auth-forgot-link.admin-theme:hover {
+  color: #c82333 !important;
+}
+
+/* Animaciones de transición - Solo para el contenido del formulario */
+@keyframes slideInFromRight {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromLeft {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutToRight {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes slideOutToLeft {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animaciones SOLO para el contenido del formulario - MÁS RÁPIDAS */
+.auth-form-content-enter {
+  animation: slideInFromRight 0.25s ease-out forwards;
+}
+
+.auth-form-content-exit {
+  animation: slideOutToLeft 0.2s ease-in forwards;
+}
+
+.auth-form-content-back-enter {
+  animation: slideInFromLeft 0.25s ease-out forwards;
+}
+
+.auth-form-content-back-exit {
+  animation: slideOutToRight 0.2s ease-in forwards;
+}
+
+/* Elementos internos del formulario - animaciones más rápidas y escalonadas */
+.auth-form-group {
+  opacity: 0;
+  transform: translateY(5px);
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.auth-form-group:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.auth-form-group:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.auth-form-row {
+  opacity: 0;
+  transform: translateY(5px);
+  animation: fadeIn 0.2s ease-out 0.15s forwards;
+}
+
+.auth-login-btn {
+  opacity: 0;
+  transform: translateY(5px);
+  animation: fadeIn 0.2s ease-out 0.2s forwards;
+}
+
+.auth-divider {
+  opacity: 0;
+  transform: translateY(5px);
+  animation: fadeIn 0.2s ease-out 0.25s forwards;
+}
+
+.auth-google-btn-custom {
+  opacity: 0;
+  transform: translateY(5px);
+  animation: fadeIn 0.2s ease-out 0.3s forwards;
+}
+
+/* Header del formulario - más rápido */
+.auth-header-section {
+  opacity: 0;
+  transform: translateY(-5px);
+  animation: fadeIn 0.2s ease-out 0.02s forwards;
+}
+
+/* Botón de volver - más rápido */
+.auth-back-button {
+  opacity: 0;
+  transform: translateX(-5px);
+  animation: fadeIn 0.15s ease-out forwards;
+}
+
+/* Animaciones para las opciones de acceso - más rápidas */
+.auth-access-card {
+  display: flex !important;
+  align-items: center !important;
+  padding: 1rem !important;
+  background-color: white !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid #dee2e6 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04) !important;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.auth-access-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+  border-color: #ced4da !important;
+}
+
+.auth-access-card:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.auth-access-card:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+/* Hover mejorado para las cards */
+.auth-access-card:hover {
+  transform: translateY(-4px) scale(1.02) !important;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+  border-color: #bbb !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Botones con transiciones suaves */
+.auth-login-btn,
+.auth-google-btn-custom {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.auth-login-btn:hover:not(:disabled),
+.auth-google-btn-custom:hover:not(:disabled) {
+  transform: translateY(-2px) !important;
+}
+
+/* Eliminar animaciones del contenedor principal */
+.auth-container-enter,
+.auth-container-exit,
+.auth-container-back-enter,
+.auth-container-back-exit {
+  /* Estas clases ya no se usan */
+}
+
+/* Imagen y texto de bienvenida - SIN animaciones de transición */
+.auth-welcome-text {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: fadeIn 0.8s ease-out 0.3s forwards;
+}
+
+.auth-welcome-text h2 {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeIn 0.6s ease-out 0.5s forwards;
+}
+
+.auth-welcome-text p {
+  opacity: 0;
+  transform: translateY(15px);
+  animation: fadeIn 0.6s ease-out 0.7s forwards;
+}

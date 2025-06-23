@@ -1,0 +1,231 @@
+/* ============================================
+   SIMPLE QR PAYMENT - ESTILO CONSISTENTE
+   ============================================ */
+
+.simple-qr-payment {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+/* QR Payment Card */
+.qr-payment-card {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.qr-payment-header {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  padding: 16px 20px;
+}
+
+.qr-payment-title {
+  color: #212529;
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.qr-payment-body {
+  padding: 20px;
+  text-align: center;
+}
+
+.qr-code-image {
+  max-width: 280px;
+  border: 2px solid #dee2e6;
+  border-radius: 10px;
+  padding: 15px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.qr-amount-badge {
+  background: #198754;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+  display: inline-block;
+}
+
+.qr-instructions-text {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+
+.qr-instructions-alert {
+  background: #e3f2fd;
+  border: 1px solid #bbdefb;
+  color: #1976d2;
+  border-radius: 6px;
+  padding: 16px;
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+/* Manual Transfer Card */
+.manual-transfer-card {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.manual-transfer-header {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  padding: 16px 20px;
+}
+
+.manual-transfer-title {
+  color: #212529;
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.manual-transfer-body {
+  padding: 20px;
+}
+
+.clabe-input {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  text-align: center;
+  font-weight: 600;
+  font-family: 'Monaco', 'Menlo', monospace;
+  color: #212529;
+}
+
+.copy-btn {
+  background: white;
+  border: 1px solid #dee2e6;
+  color: #495057;
+  transition: all 0.3s ease;
+}
+
+.copy-btn:hover {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+  color: #212529;
+}
+
+.transfer-details {
+  margin-bottom: 20px;
+}
+
+.detail-line {
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.detail-line strong {
+  color: #212529;
+}
+
+.amount-highlight {
+  color: #198754;
+  font-weight: 600;
+}
+
+.payment-warning {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  color: #495057;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 20px;
+}
+
+.confirm-payment-btn {
+  background: #212529;
+  border: 1px solid #212529;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.confirm-payment-btn:hover:not(:disabled) {
+  background: #404040;
+  border-color: #404040;
+  transform: translateY(-1px);
+}
+
+.confirm-payment-btn.confirmed {
+  background: #6c757d;
+  border-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.copy-all-btn {
+  background: white;
+  border: 1px solid #dee2e6;
+  color: #495057;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+.copy-all-btn:hover {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+  color: #212529;
+}
+
+.qr-advantages-alert {
+  background: #d1ecf1;
+  border: 1px solid #bee5eb;
+  color: #0c5460;
+  border-radius: 6px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.qr-advantages-alert h6 {
+  color: #0c5460;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.qr-advantages-alert ul {
+  margin-bottom: 0;
+}
+
+.qr-advantages-alert li {
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .simple-qr-payment {
+    padding: 15px;
+  }
+  
+  .qr-payment-body,
+  .manual-transfer-body {
+    padding: 15px;
+  }
+  
+  .qr-code-image {
+    max-width: 200px;
+    padding: 10px;
+  }
+  
+  .qr-payment-header,
+  .manual-transfer-header {
+    padding: 12px 15px;
+  }
+}

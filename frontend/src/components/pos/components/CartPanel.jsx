@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from 'react-bootstrap';
 import ShoppingCart from '../ShoppingCart';
+import '../styles/CartPanel.css';
 
 const CartPanel = ({
   cartItems,
@@ -8,13 +9,16 @@ const CartPanel = ({
   onUpdateQuantity,
   calculateTotal,
   onOpenPayment,
-  loading
+  loading,
+  isMainView = false
 }) => {
+  const subtotal = calculateTotal();
+  const itemCount = cartItems.reduce((total, item) => total + (item.quantity || 1), 0);
+
   return (
-    <div className="cart-panel h-100 p-4 shadow-sm rounded">
-      <h3 className="mb-3 text-primary">Carrito de Compras</h3>
-      
-      <div className="cart-container" style={{maxHeight: '300px', overflowY: 'auto'}}>
+    <div className="cart-panel-modern">
+      {/* Shopping Bag Component */}
+      <div className="cart-content">
         <ShoppingCart
           items={cartItems}
           onRemove={onRemove}
@@ -22,22 +26,41 @@ const CartPanel = ({
         />
       </div>
       
-      <div className="checkout-section border-top pt-3 mt-3">
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <h4 className="mb-0">Total:</h4>
-          <h3 className="mb-0 text-primary">${calculateTotal().toFixed(2)}</h3>
+      {/* Cart Total Panel - Solo mostrar si NO es la vista principal */}
+      {!isMainView && cartItems.length > 0 && (
+        <div className="cart-total-panel">
+          <div className="cart-total-header">
+            <h5 className="cart-total-title">Total del Carrito</h5>
+          </div>
+          
+          <div className="cart-total-content">
+            <div className="total-breakdown">
+              <div className="total-line subtotal-line">
+                <span className="total-label">Subtotal del Carrito</span>
+                <span className="total-amount">${subtotal.toFixed(2)}</span>
+              </div>
+              
+              <div className="total-line discount-line">
+                <span className="total-label">Descuento</span>
+                <span className="total-amount">--</span>
+              </div>
+              
+              <div className="total-line final-total-line">
+                <span className="final-total-label">Total del Carrito</span>
+                <span className="final-total-amount">${subtotal.toFixed(2)}</span>
+              </div>
+            </div>
+            
+            <Button 
+              className="apply-btn w-100"
+              onClick={onOpenPayment}
+              disabled={cartItems.length === 0 || loading}
+            >
+              {loading ? 'Procesando...' : 'Aplicar'}
+            </Button>
+          </div>
         </div>
-        
-        <Button 
-          variant="primary" 
-          size="lg" 
-          className="w-100"
-          onClick={onOpenPayment}
-          disabled={cartItems.length === 0 || loading}
-        >
-          Procesar Pago
-        </Button>
-      </div>
+      )}
     </div>
   );
 };

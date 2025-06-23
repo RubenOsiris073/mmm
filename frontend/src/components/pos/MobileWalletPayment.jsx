@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Alert, Button, Row, Col, Badge, Spinner } from 'react-bootstrap';
 import { FaMobile, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import './styles/MobileWalletPayment.css';
 
 const MobileWalletPayment = ({ amount, items, onPaymentConfirmed }) => {
   const [syncCode, setSyncCode] = useState('');
@@ -110,8 +111,8 @@ const MobileWalletPayment = ({ amount, items, onPaymentConfirmed }) => {
 
   if (loading) {
     return (
-      <div className="text-center p-4">
-        <Spinner animation="border" variant="primary" />
+      <div className="mobile-wallet-loading">
+        <Spinner animation="border" />
         <p className="mt-2">Generando código de sincronización...</p>
       </div>
     );
@@ -119,10 +120,10 @@ const MobileWalletPayment = ({ amount, items, onPaymentConfirmed }) => {
 
   if (error) {
     return (
-      <Alert variant="danger">
+      <Alert className="mobile-wallet-error">
         <Alert.Heading>Error</Alert.Heading>
         <p>{error}</p>
-        <Button variant="outline-danger" onClick={handleRetry}>
+        <Button className="retry-btn" onClick={handleRetry}>
           Intentar nuevamente
         </Button>
       </Alert>
@@ -133,61 +134,49 @@ const MobileWalletPayment = ({ amount, items, onPaymentConfirmed }) => {
     <div className="mobile-wallet-payment">
       <Row>
         <Col md={6}>
-          <Card className="text-center">
-            <Card.Header className="bg-primary text-white">
-              <h5 className="mb-0">
+          <Card className="sync-code-card">
+            <Card.Header className="sync-code-header">
+              <h5 className="sync-code-title">
                 <FaMobile className="me-2" />
                 Código de Sincronización
               </h5>
             </Card.Header>
-            <Card.Body>
-              <div className="sync-code-display mb-3">
-                <div 
-                  style={{
-                    fontSize: '3rem',
-                    fontWeight: 'bold',
-                    letterSpacing: '0.5rem',
-                    color: '#007bff',
-                    fontFamily: 'monospace',
-                    padding: '20px',
-                    border: '3px dashed #007bff',
-                    borderRadius: '10px',
-                    backgroundColor: '#f8f9fa'
-                  }}
-                >
+            <Card.Body className="sync-code-body">
+              <div className="sync-code-display">
+                <div className="sync-code-number">
                   {syncCode}
                 </div>
               </div>
               
-              <Badge bg="success" className="mb-2">
+              <Badge className="amount-badge">
                 Monto: ${amount.toFixed(2)} MXN
               </Badge>
               
-              <p className="text-muted mb-3">
+              <p className="sync-instructions">
                 El cliente debe ingresar este código en su app móvil
               </p>
 
               {paymentStatus === 'pending' && (
-                <div className="payment-status">
-                  <div className="d-flex align-items-center justify-content-center mb-2">
+                <div className="payment-status-pending">
+                  <div className="status-content">
                     <Spinner animation="border" size="sm" className="me-2" />
                     <span>Esperando pago desde la app móvil...</span>
                   </div>
                   {checkingPayment && (
-                    <small className="text-muted">Verificando estado...</small>
+                    <small className="checking-text">Verificando estado...</small>
                   )}
                 </div>
               )}
 
               {paymentStatus === 'confirmed' && (
-                <Alert variant="success" className="mb-0">
+                <Alert className="payment-success">
                   <FaCheckCircle className="me-2" />
                   ¡Pago confirmado exitosamente!
                 </Alert>
               )}
 
               {paymentStatus === 'failed' && (
-                <Alert variant="danger" className="mb-0">
+                <Alert className="payment-failed">
                   <FaTimesCircle className="me-2" />
                   Error en el pago
                 </Alert>
@@ -197,30 +186,30 @@ const MobileWalletPayment = ({ amount, items, onPaymentConfirmed }) => {
         </Col>
 
         <Col md={6}>
-          <Card>
-            <Card.Header className="bg-info text-white">
-              <h5 className="mb-0">Instrucciones para el Cliente</h5>
+          <Card className="instructions-card">
+            <Card.Header className="instructions-header">
+              <h5 className="instructions-title">Instrucciones para el Cliente</h5>
             </Card.Header>
-            <Card.Body>
-              <ol className="mb-0">
-                <li className="mb-2">
+            <Card.Body className="instructions-body">
+              <ol className="instruction-list">
+                <li className="instruction-item">
                   <strong>Abrir la aplicación móvil</strong> de la wallet
                 </li>
-                <li className="mb-2">
+                <li className="instruction-item">
                   <strong>Tocar "Sincronizar Ahora"</strong> en la pantalla principal
                 </li>
-                <li className="mb-2">
-                  <strong>Ingresar el código:</strong> <code className="bg-light p-1">{syncCode}</code>
+                <li className="instruction-item">
+                  <strong>Ingresar el código:</strong> <code className="inline-code">{syncCode}</code>
                 </li>
-                <li className="mb-2">
+                <li className="instruction-item">
                   <strong>Revisar los productos</strong> y el total
                 </li>
-                <li className="mb-2">
+                <li className="instruction-item">
                   <strong>Confirmar el pago</strong> desde la app
                 </li>
               </ol>
 
-              <Alert variant="info" className="mt-3 mb-0">
+              <Alert className="expiration-note">
                 <small>
                   <strong>Nota:</strong> El código expira en 30 minutos. 
                   Si el cliente no puede pagar, puede usar otro método.
@@ -231,13 +220,13 @@ const MobileWalletPayment = ({ amount, items, onPaymentConfirmed }) => {
         </Col>
       </Row>
 
-      <Alert variant="warning" className="mt-3">
+      <Alert className="troubleshooting-section">
         <h6>¿No funciona?</h6>
         <p className="mb-2">Si el cliente tiene problemas con la app móvil:</p>
-        <ul className="mb-0">
+        <ul className="troubleshooting-list">
           <li>Verificar que tenga conexión a internet</li>
           <li>Reintentar con un código nuevo</li>
-          <li>Usar otro método de pago (tarjeta, efectivo, etc.)</li>
+          <li>Usar otro método de pago (tarjeta, QR SPEI, etc.)</li>
         </ul>
       </Alert>
     </div>

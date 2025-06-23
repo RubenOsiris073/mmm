@@ -224,7 +224,7 @@ const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
                     className="btn-manage-modern product-action-btn"
                     onClick={() => handleManageProduct(product)}
                   >
-                    <i className="bi bi-gear me-1"></i>
+                    <i className="bi bi-eye me-1"></i>
                     Gestionar
                   </Button>
                 </div>

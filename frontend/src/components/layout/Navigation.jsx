@@ -1,23 +1,27 @@
-import React, { useState } from 'react';
-import { Nav } from 'react-bootstrap';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Navbar, Nav, Container, Button } from 'react-bootstrap';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
+  FaHome, 
   FaBoxes, 
-  FaStore, 
-  FaChartLine, 
+  FaTruck, 
+  FaChartBar, 
   FaCog, 
-  FaMoneyBillWave, 
-  FaSun, 
-  FaMoon, 
-  FaBuilding, 
-  FaUser, 
-  FaSignOutAlt,
+  FaSignOutAlt, 
+  FaBars, 
+  FaTimes,
+  FaStore,
+  FaUser,
+  FaMoneyBillWave,
+  FaChartLine,
   FaReceipt,
-  FaArrowLeft,
-  FaArrowRight
+  FaSun,
+  FaMoon,
+  FaArrowRight,
+  FaArrowLeft
 } from 'react-icons/fa';
-import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import './Navigation.css';
 
 const Navigation = ({ onSidebarToggle }) => {
@@ -142,15 +146,6 @@ const Navigation = ({ onSidebarToggle }) => {
         {/* Sección de Analytics (según imagen POSLINE) */}
         <div className="sidebar-section">
           {!collapsed && <div className="sidebar-section-title">Analytics</div>}
-          
-          <Nav.Link 
-            as={Link} 
-            to="/proveedores" 
-            className={`sidebar-menu-item ${isActive('/proveedores') ? 'active' : ''}`}
-          >
-            <FaBuilding className="sidebar-icon" />
-            {!collapsed && <span>Proveedores</span>}
-          </Nav.Link>
           
           <Nav.Link 
             as={Link} 
