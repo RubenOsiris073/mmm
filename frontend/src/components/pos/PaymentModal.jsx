@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Row, Col, Alert, Form } from 'react-bootstrap';
+import { Modal, Button, Form } from 'react-bootstrap';
 import StripeCardPayment from './StripeCardPayment';
 import SimpleQRPayment from './SimpleQRPayment';
 import MobileWalletPayment from './MobileWalletPayment';

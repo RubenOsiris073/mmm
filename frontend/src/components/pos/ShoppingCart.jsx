@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Card, ListGroup, Button, Badge, Row, Col, Alert, Form } from 'react-bootstrap';
-import { FaTrash, FaPlus, FaMinus, FaShoppingCart, FaCreditCard } from 'react-icons/fa';
-import PaymentModal from './PaymentModal';
+import React from 'react';
+import { Button, Table } from 'react-bootstrap';
 import './styles/ShoppingCart.css';
 
 const ShoppingCart = ({ items, onRemove, onUpdateQuantity }) => {

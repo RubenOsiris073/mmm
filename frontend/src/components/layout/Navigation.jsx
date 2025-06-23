@@ -1,15 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Navbar, Nav, Container, Button } from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Nav } from 'react-bootstrap';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
-  FaHome, 
   FaBoxes, 
-  FaTruck, 
   FaChartBar, 
   FaCog, 
   FaSignOutAlt, 
-  FaBars, 
-  FaTimes,
   FaStore,
   FaUser,
   FaMoneyBillWave,
@@ -146,6 +142,15 @@ const Navigation = ({ onSidebarToggle }) => {
         {/* Sección de Analytics (según imagen POSLINE) */}
         <div className="sidebar-section">
           {!collapsed && <div className="sidebar-section-title">Analytics</div>}
+          
+          <Nav.Link 
+            as={Link} 
+            to="/dashboard" 
+            className={`sidebar-menu-item ${isActive('/dashboard') ? 'active' : ''}`}
+          >
+            <FaChartBar className="sidebar-icon" />
+            {!collapsed && <span>Dashboard</span>}
+          </Nav.Link>
           
           <Nav.Link 
             as={Link} 

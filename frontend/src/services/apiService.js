@@ -36,13 +36,43 @@ const api = axios.create({
   maxBodyLength: Infinity,
 });
 
+// Interceptor para agregar token de autenticación
+api.interceptors.request.use(
+  async (config) => {
+    try {
+      // Intentar obtener el token de Firebase de manera más robusta
+      const { getAuth } = await import('firebase/auth');
+      const auth = getAuth();
+      
+      if (auth.currentUser) {
+        const token = await auth.currentUser.getIdToken(true); // forzar refresh del token
+        config.headers.Authorization = `Bearer ${token}`;
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Token de autenticación agregado correctamente');
+        }
+      } else {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('No hay usuario autenticado - sin token');
+        }
+      }
+    } catch (error) {
+      console.error('Error obteniendo token de autenticación:', error.message);
+    }
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔄 API Request: ${config.method?.toUpperCase()} ${config.url}`);
+    }
+    
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 // Interceptor optimizado para logs solo en desarrollo
 if (process.env.NODE_ENV === 'development') {
-  api.interceptors.request.use((config) => {
-    console.log(`🔄 API Request: ${config.method?.toUpperCase()} ${config.url}`);
-    return config;
-  });
-
   api.interceptors.response.use(
     (response) => {
       console.log(`✅ API Response: ${response.status} - ${response.config.url}`);
@@ -274,6 +304,70 @@ const apiService = {
       keys: Array.from(cache.keys()),
       totalMemory: JSON.stringify(Array.from(cache.entries())).length
     };
+  },
+
+  // Funciones para Dashboard con Google Sheets
+  getDashboardMetrics: async (useCache = true) => {
+    try {
+      const cacheKey = 'dashboard_metrics';
+      
+      if (useCache) {
+        const cachedData = getCachedData(cacheKey);
+        if (cachedData) {
+          return cachedData;
+        }
+      }
+      
+      console.log('Obteniendo métricas del dashboard desde Google Sheets...');
+      const response = await api.get('/dashboard/metrics');
+      
+      setCachedData(cacheKey, response.data);
+      return response.data;
+      
+    } catch (error) {
+      console.error('Error obteniendo métricas del dashboard:', error.message);
+      
+      // Fallback a caché si existe
+      const cachedData = cache.get('dashboard_metrics');
+      if (cachedData) {
+        console.log('Usando métricas en caché debido a error de red');
+        return cachedData.data;
+      }
+      
+      throw error;
+    }
+  },
+
+  getSalesDataFromSheets: async (range = null, useCache = true) => {
+    try {
+      const cacheKey = `sheets_sales_${range || 'default'}`;
+      
+      if (useCache) {
+        const cachedData = getCachedData(cacheKey);
+        if (cachedData) {
+          return cachedData;
+        }
+      }
+      
+      console.log('Obteniendo datos de ventas desde Google Sheets...');
+      const url = range ? `/dashboard/sales-data?range=${encodeURIComponent(range)}` : '/dashboard/sales-data';
+      const response = await api.get(url);
+      
+      setCachedData(cacheKey, response.data);
+      return response.data;
+      
+    } catch (error) {
+      console.error('Error obteniendo datos de Google Sheets:', error.message);
+      
+      // Fallback a caché si existe
+      const cachedData = cache.get(`sheets_sales_${range || 'default'}`);
+      if (cachedData) {
+        console.log('Usando datos de Sheets en caché debido a error de red');
+        return cachedData.data;
+      }
+      
+      throw error;
+    }
   }
 };
 

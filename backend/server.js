@@ -23,9 +23,11 @@ const salesRoutes = require('./routes/salesRoutes');
 const transactionsRoutes = require('./routes/transactionsRoutes');
 const stripeRoutes = require('./routes/stripeRoutes');
 const cartRoutes = require('./routes/cartRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 
 // Importar servicios
 const inventoryService = require('./services/inventoryService');
+const googleSheetsService = require('./services/googleSheetsService');
 
 // Configurar express
 const app = express();
@@ -68,6 +70,7 @@ apiRouter.use('/sales', salesRoutes);
 apiRouter.use('/transactions', transactionsRoutes);
 apiRouter.use('/stripe', stripeRoutes);
 apiRouter.use('/cart', cartRoutes);
+apiRouter.use('/dashboard', dashboardRoutes);
 
 // Montar el router principal en /api
 app.use('/api', apiRouter);
@@ -100,6 +103,9 @@ app.use(errorHandler);
   try {
     console.log("Inicializando inventario...");
     await inventoryService.initializeInventory();
+    
+    console.log("Inicializando servicio de Google Sheets...");
+    await googleSheetsService.initialize();
   } catch (error) {
     console.error("Error en inicialización:", error);
   }
@@ -159,6 +165,10 @@ app.listen(PORT, HOST, () => {
   console.log('Detección:');
   console.log('  - POST /api/detection - Detectar objetos');
   console.log('  - POST /api/detection/capture - Capturar imagen');
+  console.log('=========================================================');
+  console.log('Dashboard:');
+  console.log('  - GET /api/dashboard/metrics - Métricas del dashboard');
+  console.log('  - GET /api/dashboard/sales-data - Datos de ventas desde Google Sheets');
   console.log('=========================================================');
 });
 

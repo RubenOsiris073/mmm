@@ -16,7 +16,7 @@ import './styles/styles.css';
 
 const POSView = () => {
   const [error, setError] = useState(null);
-  const { showProductList, toggleProductList } = useProductVisibility();
+  const { showProductList } = useProductVisibility();
 
   // Custom hooks para datos y lógica
   const { 

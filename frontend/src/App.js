@@ -1,7 +1,6 @@
 import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { initializeFirebase } from './services/firebase';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Container } from 'react-bootstrap';
 import { ToastContainer } from 'react-toastify';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
@@ -30,6 +29,7 @@ const ProductFormPage = lazy(() => import('./pages/ProductFormPage'));
 const ProveedorView = lazy(() => import('./components/proveedor/ProveedorView'));
 const SalesPage = lazy(() => import('./pages/SalesPage'));
 const CameraPage = lazy(() => import('./pages/CameraPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const Footer = lazy(() => import('./components/layout/Footer'));
 const POSMainPage = lazy(() => import('./pages/POSMainPage'));
 
@@ -45,9 +45,7 @@ const MainLayout = ({ children }) => {
     <>
       <Navigation onSidebarToggle={handleSidebarToggle} />
       <div className={`main-content-with-sidebar ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-        <Container fluid style={{ padding: 0, margin: 0 }}>
-          {children}
-        </Container>
+        {children}
         <Footer />
       </div>
     </>
@@ -128,6 +126,14 @@ const AppRoutes = () => {
         <ProtectedRoute requireAuth={true}>
           <MainLayout>
             <CameraPage />
+          </MainLayout>
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/dashboard" element={
+        <ProtectedRoute requireAuth={true}>
+          <MainLayout>
+            <DashboardPage />
           </MainLayout>
         </ProtectedRoute>
       } />

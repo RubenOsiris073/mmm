@@ -12,16 +12,25 @@
 
 /* Ajustes específicos para el layout con sidebar */
 .main-content-with-sidebar {
-  margin-left: 220px !important; /* Forzar el margin */
-  transition: margin 0.3s ease;
+  margin-left: 250px; /* Ancho del sidebar */
   min-height: 100vh;
-  padding: 0 !important; /* Eliminar todos los paddings */
-  position: relative; /* Asegurar posicionamiento correcto */
-  top: 0; /* Empezar desde la parte superior */
+  transition: margin-left 0.3s ease;
+  padding: 0;
 }
 
 .main-content-with-sidebar.sidebar-collapsed {
-  margin-left: 70px !important; /* Forzar el margin cuando está colapsado */
+  margin-left: 80px; /* Ancho del sidebar colapsado */
+}
+
+/* Media queries para responsividad */
+@media (max-width: 768px) {
+  .main-content-with-sidebar {
+    margin-left: 0;
+  }
+  
+  .main-content-with-sidebar.sidebar-collapsed {
+    margin-left: 0;
+  }
 }
 
 /* Eliminar padding innecesario del container cuando hay sidebar */
@@ -39,6 +48,17 @@
   min-height: calc(100vh - 60px); /* Altura completa menos footer */
   position: relative; /* Posicionamiento relativo */
   top: 0; /* Empezar desde arriba */
+}
+
+/* Estilos específicos para la página de dashboard */
+.dashboard-page-wrapper {
+  padding: 1rem !important;
+  margin: 0 !important;
+  min-height: calc(100vh - 60px);
+  position: relative;
+  top: 0;
+  width: 100%;
+  background-color: #f8f9fa;
 }
 
 body {

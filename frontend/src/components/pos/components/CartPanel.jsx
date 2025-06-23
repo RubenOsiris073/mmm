@@ -13,7 +13,6 @@ const CartPanel = ({
   isMainView = false
 }) => {
   const subtotal = calculateTotal();
-  const itemCount = cartItems.reduce((total, item) => total + (item.quantity || 1), 0);
 
   return (
     <div className="cart-panel-modern">
