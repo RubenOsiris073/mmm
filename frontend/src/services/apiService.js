@@ -10,7 +10,7 @@ const CACHE_DURATION = 30000; // 30 segundos para datos que cambian poco
 const getCachedData = (key) => {
   const cached = cache.get(key);
   if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-    console.log(`🚀 Cache HIT para: ${key}`);
+    console.log(`Cache HIT para: ${key}`);
     return cached.data;
   }
   return null;
@@ -21,7 +21,7 @@ const setCachedData = (key, data) => {
     data,
     timestamp: Date.now()
   });
-  console.log(`💾 Datos cached para: ${key}`);
+  console.log(`Datos cached para: ${key}`);
 };
 
 // Crear instancia de axios optimizada
@@ -61,7 +61,7 @@ api.interceptors.request.use(
     }
     
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🔄 API Request: ${config.method?.toUpperCase()} ${config.url}`);
+      console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
     }
     
     return config;
@@ -75,11 +75,11 @@ api.interceptors.request.use(
 if (process.env.NODE_ENV === 'development') {
   api.interceptors.response.use(
     (response) => {
-      console.log(`✅ API Response: ${response.status} - ${response.config.url}`);
+      console.log(`API Response: ${response.status} - ${response.config.url}`);
       return response;
     },
     (error) => {
-      console.error('❌ API Error:', error.response?.status, error.message);
+      console.error('API Error:', error.response?.status, error.message);
       return Promise.reject(error);
     }
   );
@@ -99,7 +99,7 @@ const apiService = {
         }
       }
       
-      console.log('🌐 Obteniendo productos del servidor...');
+      console.log('Obteniendo productos del servidor...');
       const response = await api.get('/products');
       
       // Cachear la respuesta completa
@@ -113,7 +113,7 @@ const apiService = {
       // Si hay error, intentar devolver datos del caché aunque estén expirados
       const cachedData = cache.get('products');
       if (cachedData) {
-        console.log('⚠️ Usando datos en caché debido a error de red');
+        console.log('Usando datos en caché debido a error de red');
         return cachedData.data;
       }
       
@@ -133,7 +133,7 @@ const apiService = {
         }
       }
       
-      console.log('🌐 Obteniendo ventas del servidor...');
+      console.log('Obteniendo ventas del servidor...');
       const response = await api.get('/sales');
       const salesData = response.data.sales || [];
       
@@ -146,7 +146,7 @@ const apiService = {
       // Fallback a caché si existe
       const cachedData = cache.get('sales');
       if (cachedData) {
-        console.log('⚠️ Usando ventas en caché debido a error de red');
+        console.log('Usando ventas en caché debido a error de red');
         return cachedData.data;
       }
       
@@ -157,12 +157,12 @@ const apiService = {
   // Función para crear venta (invalida caché de ventas)
   createSale: async (saleData) => {
     try {
-      console.log('📝 Enviando venta...');
+      console.log('Enviando venta...');
       const response = await api.post('/sales', saleData);
       
       // Invalidar caché de ventas después de crear una nueva
       cache.delete('sales');
-      console.log('🗑️ Cache de ventas invalidado');
+      console.log('Cache de ventas invalidado');
       
       return response.data;
     } catch (error) {
@@ -174,12 +174,12 @@ const apiService = {
   // Eliminar producto (invalida caché de productos)
   deleteProduct: async (productId) => {
     try {
-      console.log(`🗑️ Eliminando producto: ${productId}`);
+      console.log(`Eliminando producto: ${productId}`);
       const response = await api.delete(`/products/${productId}`);
       
       // Invalidar caché de productos
       cache.delete('products');
-      console.log('🗑️ Cache de productos invalidado');
+      console.log('Cache de productos invalidado');
       
       return response.data;
     } catch (error) {
@@ -191,7 +191,7 @@ const apiService = {
   // Actualizar stock (invalida caché de productos)
   updateProductStock: async (productId, adjustment, reason = 'Ajuste manual') => {
     try {
-      console.log(`📊 Actualizando stock - Producto: ${productId}, Ajuste: ${adjustment}`);
+      console.log(`Actualizando stock - Producto: ${productId}, Ajuste: ${adjustment}`);
       const response = await api.put(`/products/${productId}/stock`, {
         adjustment,
         reason
@@ -238,7 +238,7 @@ const apiService = {
   // Establecer stock específico (invalida cachés)
   setProductStock: async (productId, newQuantity, reason = 'Establecer stock') => {
     try {
-      console.log(`📊 Estableciendo stock - Producto: ${productId}, Nueva cantidad: ${newQuantity}`);
+      console.log(`Estableciendo stock - Producto: ${productId}, Nueva cantidad: ${newQuantity}`);
       const response = await api.put(`/products/${productId}/stock`, {
         adjustment: newQuantity,
         reason,
@@ -294,7 +294,7 @@ const apiService = {
   // Función para limpiar caché manualmente
   clearCache: () => {
     cache.clear();
-    console.log('🧹 Cache completamente limpiado');
+    console.log('Cache completamente limpiado');
   },
 
   // Función para obtener estadísticas del caché

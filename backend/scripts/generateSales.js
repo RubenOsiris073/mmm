@@ -1,3 +1,6 @@
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+
 const { db, COLLECTIONS } = require('../config/firebase');
 const { collection, addDoc, getDocs, serverTimestamp } = require('firebase/firestore');
 

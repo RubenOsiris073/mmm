@@ -12,24 +12,24 @@
 
 /* Ajustes específicos para el layout con sidebar */
 .main-content-with-sidebar {
-  margin-left: 250px; /* Ancho del sidebar */
+  margin-left: 240px; /* Aumentar de 220px a 240px para dar más espacio */
   min-height: 100vh;
   transition: margin-left 0.3s ease;
   padding: 0;
 }
 
 .main-content-with-sidebar.sidebar-collapsed {
-  margin-left: 80px; /* Ancho del sidebar colapsado */
+  margin-left: 90px; /* Aumentar de 70px a 90px para dar más espacio */
 }
 
 /* Media queries para responsividad */
 @media (max-width: 768px) {
   .main-content-with-sidebar {
-    margin-left: 0;
+    margin-left: 70px; /* En mobile, el sidebar inicia colapsado */
   }
   
   .main-content-with-sidebar.sidebar-collapsed {
-    margin-left: 0;
+    margin-left: 70px;
   }
 }
 
@@ -48,30 +48,6 @@
   min-height: calc(100vh - 60px); /* Altura completa menos footer */
   position: relative; /* Posicionamiento relativo */
   top: 0; /* Empezar desde arriba */
-}
-
-/* Estilos específicos para la página de dashboard */
-.dashboard-page-wrapper {
-  padding: 1rem !important;
-  margin: 0 !important;
-  min-height: calc(100vh - 60px);
-  position: relative;
-  top: 0;
-  width: 100%;
-  background-color: #f8f9fa;
-}
-
-body {
-  background-color: #f8f9fa;
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden; /* Evitar scroll horizontal */
-}
-
-/* Eliminar cualquier margin/padding del html */
-html {
-  margin: 0;
-  padding: 0;
 }
 
 /* ========== ESTILOS DE NAVEGACIÓN ========== */
