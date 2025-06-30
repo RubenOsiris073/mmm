@@ -97,3 +97,6 @@ credentials/
 # Temporary files
 *.tmp
 *.temp
+backend/config/google-service-account.json
+backend/config/google-credentials-base64.txt
+

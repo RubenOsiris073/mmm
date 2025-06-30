@@ -1,4 +1,6 @@
 const { google } = require('googleapis');
+const path = require('path');
+const fs = require('fs');
 
 class GoogleSheetsService {
   constructor() {
@@ -9,17 +11,65 @@ class GoogleSheetsService {
 
   async initialize() {
     try {
-      // Usar Service Account Key (método recomendado para servidores)
-      const auth = new google.auth.GoogleAuth({
-        keyFile: process.env.GOOGLE_SERVICE_ACCOUNT_PATH || './scripts/config/google-service-account.json',
-        scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
-      });
+      // Usar Service Account Key con múltiples métodos de configuración
+      let auth;
+      
+      // Método 1: Variable de entorno con credenciales completas en Base64
+      if (process.env.GOOGLE_SERVICE_ACCOUNT_BASE64) {
+        console.log('📋 Usando credenciales desde variable de entorno (GOOGLE_SERVICE_ACCOUNT_BASE64)');
+        const credentialsBuffer = Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_BASE64, 'base64');
+        const credentials = JSON.parse(credentialsBuffer.toString('utf8'));
+        
+        auth = new google.auth.GoogleAuth({
+          credentials: credentials,
+          scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
+        });
+      }
+      
+      // Método 2: Variable de entorno con ruta al archivo
+      else if (process.env.GOOGLE_SERVICE_ACCOUNT_PATH) {
+        console.log('📁 Usando archivo de credenciales desde variable de entorno (GOOGLE_SERVICE_ACCOUNT_PATH)');
+        auth = new google.auth.GoogleAuth({
+          keyFile: process.env.GOOGLE_SERVICE_ACCOUNT_PATH,
+          scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
+        });
+      }
+      
+      // Método 3: Archivo local (fallback para desarrollo)
+      else {
+        console.log('🔍 Buscando archivo de credenciales local...');
+        const possiblePaths = [
+          './config/google-service-account.json',
+          './scripts/config/google-service-account.json',
+          path.join(__dirname, '../config/google-service-account.json'),
+          path.join(__dirname, '../scripts/config/google-service-account.json')
+        ];
+        
+        let keyFile = null;
+        for (const filePath of possiblePaths) {
+          const fullPath = path.resolve(filePath);
+          if (fs.existsSync(fullPath)) {
+            keyFile = fullPath;
+            console.log(`📄 Encontrado archivo local: ${keyFile}`);
+            break;
+          }
+        }
+        
+        if (!keyFile) {
+          throw new Error('No se encontraron credenciales de Google. Configura GOOGLE_SERVICE_ACCOUNT_BASE64 o GOOGLE_SERVICE_ACCOUNT_PATH');
+        }
+        
+        auth = new google.auth.GoogleAuth({
+          keyFile: keyFile,
+          scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
+        });
+      }
 
       this.sheets = google.sheets({ version: 'v4', auth });
       this.initialized = true;
-      console.log('Google Sheets service initialized successfully');
+      console.log('✅ Google Sheets service initialized successfully');
     } catch (error) {
-      console.error('Error initializing Google Sheets service:', error);
+      console.error('❌ Error initializing Google Sheets service:', error);
       throw error;
     }
   }
