@@ -11,7 +11,7 @@ class GoogleSheetsService {
     try {
       // Usar Service Account Key (método recomendado para servidores)
       const auth = new google.auth.GoogleAuth({
-        keyFile: process.env.GOOGLE_SERVICE_ACCOUNT_PATH || './config/google-service-account.json',
+        keyFile: process.env.GOOGLE_SERVICE_ACCOUNT_PATH || './scripts/config/google-service-account.json',
         scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
       });
 

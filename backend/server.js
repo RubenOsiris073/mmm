@@ -3,8 +3,8 @@ const path = require('path');
 const cors = require('cors');
 
 // Importar configuraciones
-const config = require('./config/config');
-const corsOptions = require('./config/cors');
+const config = require('./scripts/config/config');
+const corsOptions = require('./scripts/config/cors');
 
 // Importar middleware
 const { verifyToken } = require('./middleware/auth');
@@ -24,6 +24,7 @@ const transactionsRoutes = require('./routes/transactionsRoutes');
 const stripeRoutes = require('./routes/stripeRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const logsRoutes = require('./routes/logsRoutes');
 
 // Importar servicios
 const inventoryService = require('./services/inventoryService');
@@ -71,6 +72,7 @@ apiRouter.use('/transactions', transactionsRoutes);
 apiRouter.use('/stripe', stripeRoutes);
 apiRouter.use('/cart', cartRoutes);
 apiRouter.use('/dashboard', dashboardRoutes);
+apiRouter.use('/logs', logsRoutes);
 
 // Montar el router principal en /api
 app.use('/api', apiRouter);
@@ -169,6 +171,12 @@ app.listen(PORT, HOST, () => {
   console.log('Dashboard:');
   console.log('  - GET /api/dashboard/metrics - Métricas del dashboard');
   console.log('  - GET /api/dashboard/sales-data - Datos de ventas desde Google Sheets');
+  console.log('=========================================================');
+  console.log('Logs del Backend:');
+  console.log('  - GET /api/logs - Obtener logs recientes');
+  console.log('  - GET /api/logs/stream - Stream en tiempo real');
+  console.log('  - POST /api/logs/clear - Limpiar logs');
+  console.log('  - GET /api/logs/download - Descargar logs');
   console.log('=========================================================');
 });
 

@@ -368,6 +368,40 @@ const apiService = {
       
       throw error;
     }
+  },
+
+  // Funciones para Logs del Backend
+  getLogs: async (params = {}) => {
+    try {
+      const response = await api.get('/logs', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Error obteniendo logs:', error.message);
+      throw error;
+    }
+  },
+
+  clearLogs: async () => {
+    try {
+      const response = await api.post('/logs/clear');
+      return response.data;
+    } catch (error) {
+      console.error('Error limpiando logs:', error.message);
+      throw error;
+    }
+  },
+
+  downloadLogs: async (format = 'json') => {
+    try {
+      const response = await api.get(`/logs/download`, {
+        params: { format },
+        responseType: 'blob'
+      });
+      return response;
+    } catch (error) {
+      console.error('Error descargando logs:', error.message);
+      throw error;
+    }
   }
 };
 

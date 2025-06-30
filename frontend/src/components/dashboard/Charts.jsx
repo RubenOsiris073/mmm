@@ -219,7 +219,6 @@ export const PieChart = ({ data, title, height = 300 }) => {
             return `📊 ${context[0].label}`;
           },
           label: function(context) {
-            const label = context.label || '';
             const value = new Intl.NumberFormat('es-MX', {
               style: 'currency',
               currency: 'MXN'

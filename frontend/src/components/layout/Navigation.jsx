@@ -14,7 +14,8 @@ import {
   FaSun,
   FaMoon,
   FaArrowRight,
-  FaArrowLeft
+  FaArrowLeft,
+  FaBell
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -69,7 +70,7 @@ const Navigation = ({ onSidebarToggle }) => {
           {!collapsed ? (
             <>
               <FaStore className="sidebar-logo-icon" />
-              <span className="sidebar-brand-text">Administracion</span>
+              <span className="sidebar-brand-text">Admin</span>
             </>
           ) : (
             <FaStore className="sidebar-logo-icon-collapsed" />
@@ -150,6 +151,15 @@ const Navigation = ({ onSidebarToggle }) => {
           >
             <FaChartBar className="sidebar-icon" />
             {!collapsed && <span>Dashboard</span>}
+          </Nav.Link>
+          
+          <Nav.Link 
+            as={Link} 
+            to="/alerts" 
+            className={`sidebar-menu-item ${isActive('/alerts') ? 'active' : ''}`}
+          >
+            <FaBell className="sidebar-icon" />
+            {!collapsed && <span>Alertas</span>}
           </Nav.Link>
           
           <Nav.Link 

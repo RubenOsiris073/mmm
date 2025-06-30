@@ -30,6 +30,7 @@ const ProveedorView = lazy(() => import('./components/proveedor/ProveedorView'))
 const SalesPage = lazy(() => import('./pages/SalesPage'));
 const CameraPage = lazy(() => import('./pages/CameraPage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const AlertsPage = lazy(() => import('./pages/AlertsPage'));
 const Footer = lazy(() => import('./components/layout/Footer'));
 const POSMainPage = lazy(() => import('./pages/POSMainPage'));
 
@@ -134,6 +135,14 @@ const AppRoutes = () => {
         <ProtectedRoute requireAuth={true}>
           <MainLayout>
             <DashboardPage />
+          </MainLayout>
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/alerts" element={
+        <ProtectedRoute requireAuth={true}>
+          <MainLayout>
+            <AlertsPage />
           </MainLayout>
         </ProtectedRoute>
       } />

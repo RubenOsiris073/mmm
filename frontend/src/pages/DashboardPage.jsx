@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Alert, Spinner, Table, Button, Badge, ProgressBar } from 'react-bootstrap';
 import { FaChartLine, FaDollarSign, FaShoppingCart, FaCalendarAlt, FaSyncAlt, FaTags, FaUsers, FaCreditCard, FaMoneyBillWave, FaTrophy, FaBoxes, FaChartPie, FaChartBar } from 'react-icons/fa';
 import apiService from '../services/apiService';
-import { BarChart, PieChart, HorizontalBarChart } from '../components/dashboard/Charts';
+import { BarChart, PieChart } from '../components/dashboard/Charts';
 import '../components/dashboard/Dashboard.css'; // Cambiar a la ubicación correcta
 
 const DashboardPage = () => {

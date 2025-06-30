@@ -1,4 +1,4 @@
-const config = require('../config/config');
+const config = require('../scripts/config/config');
 
 /**
  * Endpoint de salud del sistema

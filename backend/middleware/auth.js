@@ -5,7 +5,7 @@ dotenv.config();
 
 // Inicializar Firebase Admin si no está inicializado
 if (!admin.apps.length) {
-  const serviceAccount = require('../config/google-service-account.json');
+  const serviceAccount = require('../scripts/config/google-service-account.json');
   
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),

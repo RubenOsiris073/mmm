@@ -1,36 +1,40 @@
 llamen a dios por favor
 
-RESUMEN DE VENTAS GENERADAS:
-💰 Total de ventas: 1000
-💵 Monto total: $313443.50
-📈 Ticket promedio: $313.44
+Lote 100 completado: 50 ventas guardadas
+
+📊 RESUMEN DE VENTAS GENERADAS:
+💰 Total de ventas: 5000
+💵 Monto total: $2529434.50
+📈 Ticket promedio: $505.89
 
 📅 VENTAS POR MES:
-  Mayo: 160 ventas - $45665.50
-  Abril: 158 ventas - $47105.00
-  Marzo: 166 ventas - $56835.50
-  Junio: 176 ventas - $56795.50
-  Enero: 165 ventas - $51207.00
-  Febrero: 175 ventas - $55835.00
+  Febrero: 829 ventas - $415561.50
+  Abril: 832 ventas - $430152.50
+  Marzo: 798 ventas - $394835.50
+  Enero: 852 ventas - $433507.50
+  Mayo: 837 ventas - $439791.00
+  Junio: 852 ventas - $415586.50
 
 💳 VENTAS POR MÉTODO DE PAGO:
-  tarjeta: 510 ventas (51.0%) - $163975.00
-  efectivo: 490 ventas (49.0%) - $149468.50
+  efectivo: 2478 ventas (49.6%) - $1240088.50
+  tarjeta: 2522 ventas (50.4%) - $1289346.00
 
 🏆 TOP 10 PRODUCTOS MÁS VENDIDOS:
-  1. Donas azucaradas: 342 unidades - $8892.00
-  2. Vinagre blanco: 335 unidades - $4690.00
-  3. Puré de papa instantáneo: 325 unidades - $7150.00
-  4. Sopa de pasta instantánea: 322 unidades - $5152.00
-  5. Leche entera ultrapasteurizada: 318 unidades - $7791.00
-  6. Cacahuates japoneses: 310 unidades - $4960.00
-  7. Frijoles refritos negros: 308 unidades - $7392.00
-  8. Lentejas secas: 302 unidades - $8456.00
-  9. Suavizante de telas: 294 unidades - $8232.00
-  10. Agua de coco: 293 unidades - $7325.00
+  1. Chile ancho seco: 1317 unidades - $36876.00
+  2. Chile jalapeño fresco: 1294 unidades - $23292.00
+  3. Totopos naturales: 1290 unidades - $32250.00
+  4. Gorditas de maíz: 1286 unidades - $25720.00
+  5. Crema ácida: 1282 unidades - $23076.00
+  6. Chorizo mexicano: 1280 unidades - $53760.00
+  7. Cigarros Marlboro: 1256 unidades - $94200.00
+  8. Tomate rojo: 1253 unidades - $35084.00
+  9. Pilas AA alcalinas: 1230 unidades - $55350.00
+  10. Jamoncillo de leche: 1229 unidades - $14748.00
 
 🎉 ¡Generación de ventas completada exitosamente!
-📊 Se generaron 1000 ventas desde enero hasta junio de 2025
+📊 Se generaron 5000 ventas desde enero hasta junio de 2025
+
+Script completado exitosamente: { ventasGeneradas: 5000, montoTotal: '$2529434.50' }
 
 💳 Tarjetas de Prueba de Stripe
 

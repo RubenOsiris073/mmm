@@ -1,7 +1,7 @@
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
-const { db, COLLECTIONS } = require('../config/firebase');
+const { db, COLLECTIONS } = require('./config/firebase');
 const { collection, addDoc, getDocs, serverTimestamp } = require('firebase/firestore');
 
 // Métodos de pago posibles
@@ -76,6 +76,16 @@ function seleccionarProductosAleatorios(productos) {
       const precioUnitario = productoAleatorio.precio;
       const subtotal = cantidad * precioUnitario;
       
+      // Generar fecha de caducidad aleatoria si no existe
+      let fechaCaducidad = productoAleatorio.fechaCaducidad;
+      if (!fechaCaducidad) {
+        fechaCaducidad = generarFechaCaducidadAleatoria(productoAleatorio.perecedero, productoAleatorio.categoria);
+      }
+      
+      // Calcular días para caducar desde la fecha actual (23 de junio de 2025)
+      const fechaActual = new Date('2025-06-23');
+      const diasParaCaducar = Math.ceil((new Date(fechaCaducidad) - fechaActual) / (1000 * 60 * 60 * 24));
+      
       productosSeleccionados.push({
         productId: productoAleatorio.id,
         id: productoAleatorio.id,
@@ -85,12 +95,103 @@ function seleccionarProductosAleatorios(productos) {
         subtotal: subtotal,
         categoria: productoAleatorio.categoria,
         marca: productoAleatorio.marca,
-        codigo: productoAleatorio.codigo
+        codigo: productoAleatorio.codigo,
+        // NUEVOS CAMPOS DE CADUCIDAD
+        fechaCaducidad: fechaCaducidad,
+        diasParaCaducar: diasParaCaducar,
+        perecedero: productoAleatorio.perecedero || false,
+        estadoCaducidad: determinarEstadoCaducidad(diasParaCaducar, productoAleatorio.perecedero),
+        lote: generarNumeroLote(), // Número de lote aleatorio
+        ubicacion: productoAleatorio.ubicacion || 'Estante general'
       });
     }
   }
   
   return productosSeleccionados;
+}
+
+/**
+ * Genera una fecha de caducidad aleatoria para productos sin fecha
+ */
+function generarFechaCaducidadAleatoria(perecedero, categoria) {
+  const hoy = new Date('2025-06-23');
+  let diasAleatorios;
+  
+  if (!perecedero) {
+    // Productos no perecederos: 6 meses a 3 años
+    diasAleatorios = Math.floor(Math.random() * (1095 - 180 + 1)) + 180;
+  } else {
+    // Productos perecederos según categoría
+    switch (categoria) {
+      case 'Bebidas':
+        diasAleatorios = Math.floor(Math.random() * (90 - 30 + 1)) + 30; // 1-3 meses
+        break;
+      case 'Panadería y Galletas':
+        diasAleatorios = Math.floor(Math.random() * (15 - 3 + 1)) + 3; // 3-15 días
+        break;
+      case 'Abarrotes Básicos':
+        diasAleatorios = Math.floor(Math.random() * (60 - 15 + 1)) + 15; // 15-60 días
+        break;
+      case 'Lácteos':
+        diasAleatorios = Math.floor(Math.random() * (14 - 3 + 1)) + 3; // 3-14 días
+        break;
+      case 'Carnes y Embutidos':
+        diasAleatorios = Math.floor(Math.random() * (21 - 5 + 1)) + 5; // 5-21 días
+        break;
+      case 'Frutas y Verduras':
+        diasAleatorios = Math.floor(Math.random() * (10 - 2 + 1)) + 2; // 2-10 días
+        break;
+      case 'Helados y Congelados':
+        diasAleatorios = Math.floor(Math.random() * (180 - 30 + 1)) + 30; // 1-6 meses
+        break;
+      default:
+        diasAleatorios = Math.floor(Math.random() * (30 - 7 + 1)) + 7; // 7-30 días
+    }
+  }
+  
+  const fechaCaducidad = new Date(hoy);
+  fechaCaducidad.setDate(hoy.getDate() + diasAleatorios);
+  return fechaCaducidad;
+}
+
+/**
+ * Determina el estado de caducidad de un producto
+ */
+function determinarEstadoCaducidad(diasParaCaducar, perecedero) {
+  if (!perecedero) {
+    return 'no_perecedero';
+  }
+  
+  if (diasParaCaducar < 0) {
+    return 'vencido';
+  } else if (diasParaCaducar <= 3) {
+    return 'critico'; // Vence en 3 días o menos
+  } else if (diasParaCaducar <= 7) {
+    return 'proximo'; // Vence en una semana
+  } else if (diasParaCaducar <= 30) {
+    return 'normal'; // Vence en un mes
+  } else {
+    return 'lejano'; // Vence en más de un mes
+  }
+}
+
+/**
+ * Genera un número de lote aleatorio
+ */
+function generarNumeroLote() {
+  const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const numeros = '0123456789';
+  
+  let lote = '';
+  // 2 letras + 4 números (ej: AB1234)
+  for (let i = 0; i < 2; i++) {
+    lote += letras[Math.floor(Math.random() * letras.length)];
+  }
+  for (let i = 0; i < 4; i++) {
+    lote += numeros[Math.floor(Math.random() * numeros.length)];
+  }
+  
+  return lote;
 }
 
 /**
