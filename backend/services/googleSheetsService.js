@@ -16,7 +16,7 @@ class GoogleSheetsService {
       // Usar Service Account Key con múltiples métodos de configuración
       let auth;
       
-      // Método 1: Archivo con doble encriptación AES
+      // Archivo con doble encriptación AES
       if (fs.existsSync(path.join(__dirname, '../config/google-credentials.double-encrypted.json'))) {
         console.log('Usando credenciales con doble encriptación AES');
         const encryptedFilePath = path.join(__dirname, '../config/google-credentials.double-encrypted.json');
@@ -37,29 +37,7 @@ class GoogleSheetsService {
         }
       }
       
-      // Método 2: Archivo encriptado simple (FALLBACK)
-      else if (fs.existsSync(path.join(__dirname, '../config/google-credentials.encrypted.json'))) {
-        console.log('Usando credenciales encriptadas desde archivo local');
-        const CredentialsManager = require('../utils/credentialsManager');
-        const credentialsManager = new CredentialsManager();
-        const encryptedFilePath = path.join(__dirname, '../config/google-credentials.encrypted.json');
-        const password = process.env.ENCRYPTION_PASSWORD;
-        
-        try {
-          const credentials = credentialsManager.getDecryptedCredentials(encryptedFilePath, password);
-          console.log('Credenciales desencriptadas exitosamente');
-          
-          auth = new google.auth.GoogleAuth({
-            credentials: credentials,
-            scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
-          });
-        } catch (error) {
-          console.error('Error desencriptando credenciales:', error.message);
-          throw new Error('No se pudieron desencriptar las credenciales de Google');
-        }
-      }
-      
-      // Método 3: Variable de entorno con ruta al archivo
+      // Variable de entorno con ruta al archivo
       else if (process.env.GOOGLE_SERVICE_ACCOUNT_PATH) {
         console.log('Usando archivo de credenciales desde variable de entorno (GOOGLE_SERVICE_ACCOUNT_PATH)');
         auth = new google.auth.GoogleAuth({

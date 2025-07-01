@@ -11,7 +11,7 @@ if (!admin.apps.length) {
   let serviceAccount;
   
   try {
-    // Método 1: Archivo con doble encriptación AES
+    // Archivo con doble encriptación AES
     if (fs.existsSync(path.join(__dirname, '../config/google-credentials.double-encrypted.json'))) {
       console.log('Usando credenciales con doble encriptación AES para Firebase Admin');
       const doubleEncryption = new DoubleEncryptionManager();
@@ -28,19 +28,7 @@ if (!admin.apps.length) {
       }
     }
     
-    // Método 3: Archivo encriptado simple (FALLBACK)
-    else if (fs.existsSync(path.join(__dirname, '../config/google-credentials.encrypted.json'))) {
-      console.log('Usando credenciales encriptadas para Firebase Admin');
-      const CredentialsManager = require('../utils/credentialsManager');
-      const credentialsManager = new CredentialsManager();
-      const encryptedFilePath = path.join(__dirname, '../config/google-credentials.encrypted.json');
-      const password = process.env.ENCRYPTION_PASSWORD;
-      
-      serviceAccount = credentialsManager.getDecryptedCredentials(encryptedFilePath, password);
-      console.log('Credenciales de Firebase Admin desencriptadas exitosamente');
-    }
-    
-    // Método 3: Archivo local (fallback)
+    // Archivo local (fallback)
     else {
       console.log('Buscando archivo de credenciales local para Firebase Admin...');
       const possiblePaths = [

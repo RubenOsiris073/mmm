@@ -79,7 +79,6 @@ firestore-debug.log
 
 # Google Cloud credentials (only unencrypted files)
 backend/config/google-service-account.json
-backend/config/google-credentials-base64.txt
 
 # Secrets and credentials
 *.pem
@@ -88,6 +87,5 @@ secrets/
 credentials/
 
 # ALLOWED: Encrypted file (safe for GitHub)
-# backend/config/google-credentials.encrypted.json
 # backend/config/google-credentials.double-encrypted.json
 
