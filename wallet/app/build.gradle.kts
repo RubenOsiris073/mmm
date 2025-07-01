@@ -5,6 +5,29 @@ plugins {
     id("kotlin-parcelize") // Agregar plugin para Parcelize
 }
 
+// Configuración de desencriptación de credenciales
+val walletEncryptionPassword = project.findProperty("WALLET_ENCRYPTION_PASSWORD") as String? 
+    ?: System.getenv("WALLET_ENCRYPTION_PASSWORD") 
+    ?: "fisgo-wallet-2025-secure-key"
+
+// Tarea para desencriptar credenciales antes del build
+tasks.register("decryptCredentials") {
+    description = "Desencripta las credenciales de Firebase si es necesario"
+    group = "build setup"
+    
+    doLast {
+        println("🔐 Verificando credenciales de Firebase...")
+        CredentialsDecryptor.decryptCredentialsIfNeeded(project.projectDir.parent, walletEncryptionPassword)
+    }
+}
+
+// Ejecutar desencriptación antes de procesar google-services
+tasks.whenTaskAdded {
+    if (name == "processDebugGoogleServices" || name == "processReleaseGoogleServices") {
+        dependsOn("decryptCredentials")
+    }
+}
+
 android {
     namespace = "com.fisgo.wallet"
     compileSdk = 35

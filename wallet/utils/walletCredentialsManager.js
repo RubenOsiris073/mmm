@@ -3,9 +3,10 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * Sistema de encriptación/desencriptación para credenciales de Google Cloud
+ * Sistema de encriptación/desencriptación para credenciales de Google Firebase
+ * Específico para la aplicación Wallet
  */
-class CredentialsManager {
+class WalletCredentialsManager {
   constructor() {
     // Algoritmo de encriptación
     this.algorithm = 'aes-256-cbc';
@@ -17,7 +18,7 @@ class CredentialsManager {
    * Genera una clave de encriptación desde una contraseña
    */
   generateKey(password) {
-    return crypto.scryptSync(password, 'salt-mmm-aguachile', this.keyLength);
+    return crypto.scryptSync(password, 'salt-fisgo-wallet', this.keyLength);
   }
 
   /**
@@ -39,7 +40,8 @@ class CredentialsManager {
         iv: iv.toString('hex'),
         encrypted: encrypted,
         algorithm: this.algorithm,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        app: 'fisgo-wallet'
       };
       
       return result;
@@ -83,10 +85,10 @@ class CredentialsManager {
       
       fs.writeFileSync(outputPath, JSON.stringify(encrypted, null, 2));
       
-      console.log(`Archivo encriptado guardado en: ${outputPath}`);
+      console.log(`✅ Archivo encriptado guardado en: ${outputPath}`);
       return true;
     } catch (error) {
-      console.error(`Error encriptando archivo: ${error.message}`);
+      console.error(`❌ Error encriptando archivo: ${error.message}`);
       return false;
     }
   }
@@ -105,10 +107,10 @@ class CredentialsManager {
       
       fs.writeFileSync(outputPath, JSON.stringify(decrypted, null, 2));
       
-      console.log(`Archivo desencriptado guardado en: ${outputPath}`);
+      console.log(`✅ Archivo desencriptado guardado en: ${outputPath}`);
       return true;
     } catch (error) {
-      console.error(`Error desencriptando archivo: ${error.message}`);
+      console.error(`❌ Error desencriptando archivo: ${error.message}`);
       return false;
     }
   }
@@ -128,6 +130,68 @@ class CredentialsManager {
       throw new Error(`Error obteniendo credenciales: ${error.message}`);
     }
   }
+
+  /**
+   * Encripta múltiples archivos google-services.json
+   */
+  encryptMultipleGoogleServices(basePath, password) {
+    const files = [
+      {
+        input: path.join(basePath, 'app/google-services.json'),
+        output: path.join(basePath, 'app/google-services.encrypted.json')
+      },
+      {
+        input: path.join(basePath, 'android/app/google-services.json'),
+        output: path.join(basePath, 'android/app/google-services.encrypted.json')
+      }
+    ];
+
+    const results = [];
+    
+    for (const file of files) {
+      if (fs.existsSync(file.input)) {
+        console.log(`🔐 Encriptando: ${file.input}`);
+        const success = this.encryptFile(file.input, file.output, password);
+        results.push({ path: file.input, success });
+      } else {
+        console.log(`⚠️  Archivo no encontrado: ${file.input}`);
+        results.push({ path: file.input, success: false, reason: 'not_found' });
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Desencripta múltiples archivos google-services.json
+   */
+  decryptMultipleGoogleServices(basePath, password) {
+    const files = [
+      {
+        input: path.join(basePath, 'app/google-services.encrypted.json'),
+        output: path.join(basePath, 'app/google-services.json')
+      },
+      {
+        input: path.join(basePath, 'android/app/google-services.encrypted.json'),
+        output: path.join(basePath, 'android/app/google-services.json')
+      }
+    ];
+
+    const results = [];
+    
+    for (const file of files) {
+      if (fs.existsSync(file.input)) {
+        console.log(`🔓 Desencriptando: ${file.input}`);
+        const success = this.decryptFile(file.input, file.output, password);
+        results.push({ path: file.input, success });
+      } else {
+        console.log(`⚠️  Archivo encriptado no encontrado: ${file.input}`);
+        results.push({ path: file.input, success: false, reason: 'not_found' });
+      }
+    }
+
+    return results;
+  }
 }
 
-module.exports = CredentialsManager;
+module.exports = WalletCredentialsManager;

@@ -1,15 +1,54 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+# Gradle files
+.gradle/
+build/
+*/build/
+gradle-app.setting
+!gradle-wrapper.jar
+
+# Local configuration file (sdk path, etc)
 local.properties
+
+# Android Studio generated files and folders
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+output.json
+
+# IntelliJ
+*.iml
+.idea/
+misc.xml
+deploymentTargetDropDown.xml
+render.experimental.xml
+
+# Keystore files
+*.jks
+*.keystore
+
+# Google Services (original files - NO ENCRIPTAR)
+app/google-services.json
+android/app/google-services.json
+
+# PERMITIR: Archivos encriptados (seguros para GitHub)
+# app/google-services.encrypted.json  <- ESTE SE PUEDE SUBIR
+# android/app/google-services.encrypted.json  <- ESTE SE PUEDE SUBIR
+
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Node modules (para scripts de Node.js)
+node_modules/
+
+# Variables de entorno
+.env
+.env.local
+
+# Logs
+*.log
