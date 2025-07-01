@@ -14,7 +14,7 @@ async function encryptCredentials() {
   const outputFile = path.join(__dirname, '../config/google-credentials.encrypted.json');
   
   // Contraseña de encriptación (puedes cambiarla)
-  const password = process.env.ENCRYPTION_PASSWORD || 'fisgo-2025-secure-key';
+  const password = process.env.ENCRYPTION_PASSWORD;
   
   console.log('Encriptando credenciales de Google Cloud...');
   console.log(`Archivo origen: ${inputFile}`);

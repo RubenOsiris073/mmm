@@ -2,7 +2,7 @@ const admin = require('firebase-admin');
 const dotenv = require('dotenv');
 const path = require('path');
 const fs = require('fs');
-const CredentialsManager = require('../utils/credentialsManager');
+const { DoubleEncryptionManager } = require('../scripts/doubleEncryption');
 
 dotenv.config();
 
@@ -18,12 +18,30 @@ if (!admin.apps.length) {
       serviceAccount = JSON.parse(credentialsBuffer.toString('utf8'));
     }
     
-    // Método 2: Archivo encriptado (NUEVO)
+    // Método 2: Archivo con doble encriptación AES (NUEVO)
+    else if (fs.existsSync(path.join(__dirname, '../config/google-credentials.double-encrypted.json'))) {
+      console.log('Usando credenciales con doble encriptación AES para Firebase Admin');
+      const doubleEncryption = new DoubleEncryptionManager();
+      const encryptedFilePath = path.join(__dirname, '../config/google-credentials.double-encrypted.json');
+      const masterPassword = process.env.MASTER_ENCRYPTION_KEY;
+      
+      try {
+        const doubleEncryptedData = JSON.parse(fs.readFileSync(encryptedFilePath, 'utf8'));
+        serviceAccount = doubleEncryption.doubleDecrypt(doubleEncryptedData, masterPassword);
+        console.log('Credenciales de Firebase Admin desencriptadas exitosamente');
+      } catch (error) {
+        console.error('Error desencriptando credenciales:', error.message);
+        throw new Error('No se pudieron desencriptar las credenciales de Firebase Admin');
+      }
+    }
+    
+    // Método 3: Archivo encriptado simple (FALLBACK)
     else if (fs.existsSync(path.join(__dirname, '../config/google-credentials.encrypted.json'))) {
       console.log('Usando credenciales encriptadas para Firebase Admin');
+      const CredentialsManager = require('../utils/credentialsManager');
       const credentialsManager = new CredentialsManager();
       const encryptedFilePath = path.join(__dirname, '../config/google-credentials.encrypted.json');
-      const password = process.env.ENCRYPTION_PASSWORD || 'mmm-aguachile-2025-secure-key';
+      const password = process.env.ENCRYPTION_PASSWORD;
       
       serviceAccount = credentialsManager.getDecryptedCredentials(encryptedFilePath, password);
       console.log('Credenciales de Firebase Admin desencriptadas exitosamente');

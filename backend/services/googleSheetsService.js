@@ -1,14 +1,14 @@
 const { google } = require('googleapis');
 const path = require('path');
 const fs = require('fs');
-const CredentialsManager = require('../utils/credentialsManager');
+const { DoubleEncryptionManager } = require('../scripts/doubleEncryption');
 
 class GoogleSheetsService {
   constructor() {
     this.sheets = null;
     this.spreadsheetId = process.env.GOOGLE_SHEETS_ID;
     this.initialized = false;
-    this.credentialsManager = new CredentialsManager();
+    this.doubleEncryption = new DoubleEncryptionManager();
   }
 
   async initialize() {
@@ -28,14 +28,15 @@ class GoogleSheetsService {
         });
       }
       
-      // Método 2: Archivo encriptado (NUEVO)
-      else if (fs.existsSync(path.join(__dirname, '../config/google-credentials.encrypted.json'))) {
-        console.log('Usando credenciales encriptadas desde archivo local');
-        const encryptedFilePath = path.join(__dirname, '../config/google-credentials.encrypted.json');
-        const password = process.env.ENCRYPTION_PASSWORD || 'mmm-aguachile-2025-secure-key';
+      // Método 2: Archivo con doble encriptación AES (NUEVO)
+      else if (fs.existsSync(path.join(__dirname, '../config/google-credentials.double-encrypted.json'))) {
+        console.log('Usando credenciales con doble encriptación AES');
+        const encryptedFilePath = path.join(__dirname, '../config/google-credentials.double-encrypted.json');
+        const masterPassword = process.env.MASTER_ENCRYPTION_KEY;
         
         try {
-          const credentials = this.credentialsManager.getDecryptedCredentials(encryptedFilePath, password);
+          const doubleEncryptedData = JSON.parse(fs.readFileSync(encryptedFilePath, 'utf8'));
+          const credentials = this.doubleEncryption.doubleDecrypt(doubleEncryptedData, masterPassword);
           console.log('Credenciales desencriptadas exitosamente');
           
           auth = new google.auth.GoogleAuth({
@@ -48,7 +49,29 @@ class GoogleSheetsService {
         }
       }
       
-      // Método 3: Variable de entorno con ruta al archivo
+      // Método 3: Archivo encriptado simple (FALLBACK)
+      else if (fs.existsSync(path.join(__dirname, '../config/google-credentials.encrypted.json'))) {
+        console.log('Usando credenciales encriptadas desde archivo local');
+        const CredentialsManager = require('../utils/credentialsManager');
+        const credentialsManager = new CredentialsManager();
+        const encryptedFilePath = path.join(__dirname, '../config/google-credentials.encrypted.json');
+        const password = process.env.ENCRYPTION_PASSWORD;
+        
+        try {
+          const credentials = credentialsManager.getDecryptedCredentials(encryptedFilePath, password);
+          console.log('Credenciales desencriptadas exitosamente');
+          
+          auth = new google.auth.GoogleAuth({
+            credentials: credentials,
+            scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
+          });
+        } catch (error) {
+          console.error('Error desencriptando credenciales:', error.message);
+          throw new Error('No se pudieron desencriptar las credenciales de Google');
+        }
+      }
+      
+      // Método 4: Variable de entorno con ruta al archivo
       else if (process.env.GOOGLE_SERVICE_ACCOUNT_PATH) {
         console.log('Usando archivo de credenciales desde variable de entorno (GOOGLE_SERVICE_ACCOUNT_PATH)');
         auth = new google.auth.GoogleAuth({
@@ -57,7 +80,7 @@ class GoogleSheetsService {
         });
       }
       
-      // Método 4: Archivo local (fallback para desarrollo)
+      // Método 5: Archivo local (fallback para desarrollo)
       else {
         console.log('Buscando archivo de credenciales local...');
         const possiblePaths = [

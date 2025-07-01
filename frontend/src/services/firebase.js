@@ -51,7 +51,21 @@ export const initializeFirebase = async () => {
       appId: process.env.REACT_APP_FIREBASE_APP_ID,
     };
 
+    console.log('Configuración Firebase:', {
+      apiKey: process.env.REACT_APP_FIREBASE_API_KEY ? 'OK' : 'MISSING',
+      authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN ? 'OK' : 'MISSING',
+      projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID ? 'OK' : 'MISSING',
+      storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET ? 'OK' : 'MISSING',
+      messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID ? 'OK' : 'MISSING',
+      appId: process.env.REACT_APP_FIREBASE_APP_ID ? 'OK' : 'MISSING'
+    });
+    
     console.log('Inicializando Firebase con proyecto:', firebaseConfig.projectId);
+
+    // Validar que todas las configuraciones necesarias estén presentes
+    if (!firebaseConfig.apiKey || !firebaseConfig.authDomain || !firebaseConfig.projectId) {
+      throw new Error('Configuración de Firebase incompleta. Verifica las variables de entorno.');
+    }
     
     firebaseApp = initializeApp(firebaseConfig);
     db = getFirestore(firebaseApp);

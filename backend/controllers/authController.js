@@ -81,7 +81,7 @@ const register = async (req, res) => {
       return res.status(400).json({ error: 'Email y contraseña son requeridos' });
     }
 
-    console.log('📝 Intento de registro para:', email);
+    console.log('Intento de registro para:', email);
 
     // Crear usuario en Firebase
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
