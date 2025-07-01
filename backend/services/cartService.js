@@ -1,6 +1,6 @@
 // Servicio para gestionar carritos compartidos entre POS y wallet móvil
 const admin = require('firebase-admin');
-const { db } = require('../scripts/config/firebase');
+const { db } = require('../config/firebase');
 const {
   collection,
   addDoc,

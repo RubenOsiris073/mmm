@@ -114,7 +114,7 @@ node_modules/
 # Credenciales de Google Cloud (solo archivos no encriptados)
 backend/config/google-service-account.json
 backend/config/google-credentials-base64.txt
-backend/scripts/config/google-service-account.json
+backend/config/google-service-account.json
 
 # PERMITIR: Archivo encriptado (seguro para GitHub)
 # backend/config/google-credentials.encrypted.json  <- ESTE SE PUEDE SUBIR

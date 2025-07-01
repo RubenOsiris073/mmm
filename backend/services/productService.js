@@ -1,4 +1,4 @@
-const { db, COLLECTIONS } = require('../scripts/config/firebase');
+const { db, COLLECTIONS } = require('../config/firebase');
 const { collection, doc, addDoc, getDocs, query, serverTimestamp, getDoc, updateDoc, increment } = require('firebase/firestore');
 const { queryDocuments, searchByField, getServerTimestamp, getDocumentById } = require('../utils/firebaseUtils');
 

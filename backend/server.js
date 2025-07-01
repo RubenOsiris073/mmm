@@ -4,8 +4,8 @@ const path = require('path');
 const cors = require('cors');
 
 // Importar configuraciones
-const config = require('./scripts/config/config');
-const corsOptions = require('./scripts/config/cors');
+const config = require('./config/config');
+const corsOptions = require('./config/cors');
 
 // Importar middleware
 const { verifyToken } = require('./middleware/auth');

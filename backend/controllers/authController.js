@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { signInWithEmailAndPassword, createUserWithEmailAndPassword } = require('firebase/auth');
-const { auth } = require('../scripts/config/firebase');
+const { auth } = require('../config/firebase');
 const { JWT_SECRET } = require('../middleware/auth');
 
 // Controlador para login

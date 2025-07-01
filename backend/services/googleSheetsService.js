@@ -16,20 +16,8 @@ class GoogleSheetsService {
       // Usar Service Account Key con múltiples métodos de configuración
       let auth;
       
-      // Método 1: Variable de entorno con credenciales completas en Base64
-      if (process.env.GOOGLE_SERVICE_ACCOUNT_BASE64) {
-        console.log('Usando credenciales desde variable de entorno (GOOGLE_SERVICE_ACCOUNT_BASE64)');
-        const credentialsBuffer = Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_BASE64, 'base64');
-        const credentials = JSON.parse(credentialsBuffer.toString('utf8'));
-        
-        auth = new google.auth.GoogleAuth({
-          credentials: credentials,
-          scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
-        });
-      }
-      
-      // Método 2: Archivo con doble encriptación AES (NUEVO)
-      else if (fs.existsSync(path.join(__dirname, '../config/google-credentials.double-encrypted.json'))) {
+      // Método 1: Archivo con doble encriptación AES
+      if (fs.existsSync(path.join(__dirname, '../config/google-credentials.double-encrypted.json'))) {
         console.log('Usando credenciales con doble encriptación AES');
         const encryptedFilePath = path.join(__dirname, '../config/google-credentials.double-encrypted.json');
         const masterPassword = process.env.MASTER_ENCRYPTION_KEY;
@@ -49,7 +37,7 @@ class GoogleSheetsService {
         }
       }
       
-      // Método 3: Archivo encriptado simple (FALLBACK)
+      // Método 2: Archivo encriptado simple (FALLBACK)
       else if (fs.existsSync(path.join(__dirname, '../config/google-credentials.encrypted.json'))) {
         console.log('Usando credenciales encriptadas desde archivo local');
         const CredentialsManager = require('../utils/credentialsManager');
@@ -71,7 +59,7 @@ class GoogleSheetsService {
         }
       }
       
-      // Método 4: Variable de entorno con ruta al archivo
+      // Método 3: Variable de entorno con ruta al archivo
       else if (process.env.GOOGLE_SERVICE_ACCOUNT_PATH) {
         console.log('Usando archivo de credenciales desde variable de entorno (GOOGLE_SERVICE_ACCOUNT_PATH)');
         auth = new google.auth.GoogleAuth({
@@ -80,7 +68,7 @@ class GoogleSheetsService {
         });
       }
       
-      // Método 5: Archivo local (fallback para desarrollo)
+      // Método 4: Archivo local (fallback para desarrollo)
       else {
         console.log('Buscando archivo de credenciales local...');
         const possiblePaths = [
@@ -99,7 +87,7 @@ class GoogleSheetsService {
         }
         
         if (!keyFile) {
-          throw new Error('No se encontraron credenciales de Google. Configura GOOGLE_SERVICE_ACCOUNT_BASE64, ENCRYPTION_PASSWORD, o coloca el archivo encriptado');
+          throw new Error('No se encontraron credenciales de Google. Configura ENCRYPTION_PASSWORD o coloca el archivo encriptado');
         }
         
         auth = new google.auth.GoogleAuth({

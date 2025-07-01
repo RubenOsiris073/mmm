@@ -11,15 +11,8 @@ if (!admin.apps.length) {
   let serviceAccount;
   
   try {
-    // Método 1: Variable de entorno con credenciales completas en Base64
-    if (process.env.GOOGLE_SERVICE_ACCOUNT_BASE64) {
-      console.log('Usando credenciales desde variable de entorno (Base64)');
-      const credentialsBuffer = Buffer.from(process.env.GOOGLE_SERVICE_ACCOUNT_BASE64, 'base64');
-      serviceAccount = JSON.parse(credentialsBuffer.toString('utf8'));
-    }
-    
-    // Método 2: Archivo con doble encriptación AES (NUEVO)
-    else if (fs.existsSync(path.join(__dirname, '../config/google-credentials.double-encrypted.json'))) {
+    // Método 1: Archivo con doble encriptación AES
+    if (fs.existsSync(path.join(__dirname, '../config/google-credentials.double-encrypted.json'))) {
       console.log('Usando credenciales con doble encriptación AES para Firebase Admin');
       const doubleEncryption = new DoubleEncryptionManager();
       const encryptedFilePath = path.join(__dirname, '../config/google-credentials.double-encrypted.json');
@@ -52,7 +45,7 @@ if (!admin.apps.length) {
       console.log('Buscando archivo de credenciales local para Firebase Admin...');
       const possiblePaths = [
         '../config/google-service-account.json',
-        '../scripts/config/google-service-account.json'
+        '../config/google-service-account.json'
       ];
       
       let foundPath = null;
@@ -65,7 +58,7 @@ if (!admin.apps.length) {
       }
       
       if (!foundPath) {
-        throw new Error('No se encontraron credenciales de Google para Firebase Admin. Configura GOOGLE_SERVICE_ACCOUNT_BASE64, ENCRYPTION_PASSWORD, o coloca el archivo encriptado');
+        throw new Error('No se encontraron credenciales de Google para Firebase Admin. Configura ENCRYPTION_PASSWORD o coloca el archivo encriptado');
       }
       
       serviceAccount = require(foundPath);
