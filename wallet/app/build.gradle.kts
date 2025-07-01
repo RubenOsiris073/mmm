@@ -16,7 +16,7 @@ tasks.register("decryptCredentials") {
     group = "build setup"
     
     doLast {
-        println("🔐 Verificando credenciales de Firebase...")
+        println("Verificando credenciales de Firebase...")
         CredentialsDecryptor.decryptCredentialsIfNeeded(project.projectDir.parent, walletEncryptionPassword)
     }
 }

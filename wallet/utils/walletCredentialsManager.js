@@ -85,10 +85,10 @@ class WalletCredentialsManager {
       
       fs.writeFileSync(outputPath, JSON.stringify(encrypted, null, 2));
       
-      console.log(`✅ Archivo encriptado guardado en: ${outputPath}`);
+      console.log(`Archivo encriptado guardado en: ${outputPath}`);
       return true;
     } catch (error) {
-      console.error(`❌ Error encriptando archivo: ${error.message}`);
+      console.error(`Error encriptando archivo: ${error.message}`);
       return false;
     }
   }
@@ -107,10 +107,10 @@ class WalletCredentialsManager {
       
       fs.writeFileSync(outputPath, JSON.stringify(decrypted, null, 2));
       
-      console.log(`✅ Archivo desencriptado guardado en: ${outputPath}`);
+      console.log(`Archivo desencriptado guardado en: ${outputPath}`);
       return true;
     } catch (error) {
-      console.error(`❌ Error desencriptando archivo: ${error.message}`);
+      console.error(`Error desencriptando archivo: ${error.message}`);
       return false;
     }
   }
@@ -150,11 +150,11 @@ class WalletCredentialsManager {
     
     for (const file of files) {
       if (fs.existsSync(file.input)) {
-        console.log(`🔐 Encriptando: ${file.input}`);
+        console.log(`Encriptando: ${file.input}`);
         const success = this.encryptFile(file.input, file.output, password);
         results.push({ path: file.input, success });
       } else {
-        console.log(`⚠️  Archivo no encontrado: ${file.input}`);
+        console.log(`Archivo no encontrado: ${file.input}`);
         results.push({ path: file.input, success: false, reason: 'not_found' });
       }
     }
@@ -181,11 +181,11 @@ class WalletCredentialsManager {
     
     for (const file of files) {
       if (fs.existsSync(file.input)) {
-        console.log(`🔓 Desencriptando: ${file.input}`);
+        console.log(`Desencriptando: ${file.input}`);
         const success = this.decryptFile(file.input, file.output, password);
         results.push({ path: file.input, success });
       } else {
-        console.log(`⚠️  Archivo encriptado no encontrado: ${file.input}`);
+        console.log(`Archivo encriptado no encontrado: ${file.input}`);
         results.push({ path: file.input, success: false, reason: 'not_found' });
       }
     }
