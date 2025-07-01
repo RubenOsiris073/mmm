@@ -117,7 +117,7 @@ class GoogleSheetsService {
     }
   }
 
-  async getSalesData(range = 'A:Z') {
+  async getSalesData(range = 'A:Z', limit = 100, offset = 0) {
     if (!this.initialized) {
       await this.initialize();
     }
@@ -145,12 +145,20 @@ class GoogleSheetsService {
 
       const rows = response.data.values;
       if (!rows || rows.length === 0) {
-        return { data: [], headers: [] };
+        return { data: [], headers: [], total: 0 };
       }
 
       // Primera fila son los headers
       const headers = rows[0];
-      const data = rows.slice(1).map(row => {
+      const dataRows = rows.slice(1);
+      const total = dataRows.length;
+      
+      // Aplicar paginación
+      const startIndex = offset;
+      const endIndex = offset + limit;
+      const paginatedRows = dataRows.slice(startIndex, endIndex);
+      
+      const data = paginatedRows.map(row => {
         const item = {};
         headers.forEach((header, index) => {
           item[header] = row[index] || '';
@@ -158,7 +166,8 @@ class GoogleSheetsService {
         return item;
       });
 
-      return { data, headers };
+      console.log(`Retornando ${data.length} de ${total} registros (offset: ${offset}, limit: ${limit})`);
+      return { data, headers, total };
     } catch (error) {
       console.error('Error fetching sales data from Google Sheets:', error);
       throw error;
@@ -167,18 +176,20 @@ class GoogleSheetsService {
 
   async getDashboardMetrics() {
     try {
-      const salesData = await this.getSalesData();
+      // Para las métricas necesitamos todos los datos, pero podemos optimizar obteniendo solo los últimos 1000
+      const salesData = await this.getSalesData('A:Z', 1000, 0);
       
       // Procesar datos para métricas del dashboard
       const metrics = {
-        totalSales: salesData.data.length,
+        totalSales: salesData.total, // Usar el total real de registros
         totalRevenue: salesData.data.reduce((sum, sale) => {
           const amount = parseFloat(sale.Total || sale.Monto || sale.Importe || 0);
           return sum + amount;
         }, 0),
         salesByMonth: this.groupSalesByMonth(salesData.data),
         topProducts: this.getTopProducts(salesData.data),
-        lastUpdated: new Date().toISOString()
+        lastUpdated: new Date().toISOString(),
+        note: `Métricas calculadas con los últimos ${salesData.data.length} registros de ${salesData.total} totales`
       };
 
       return metrics;

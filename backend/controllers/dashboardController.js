@@ -21,12 +21,28 @@ const dashboardController = {
 
   async getSalesData(req, res) {
     try {
-      const { range } = req.query;
-      const salesData = await googleSheetsService.getSalesData(range);
+      const { range, limit = 25, offset = 0 } = req.query; // Límite más conservador
+      const limitNum = parseInt(limit);
+      const offsetNum = parseInt(offset);
+      
+      // Validar límites
+      if (limitNum > 1000) {
+        return res.status(400).json({
+          success: false,
+          message: 'Límite máximo de 1000 registros por consulta'
+        });
+      }
+      
+      const salesData = await googleSheetsService.getSalesData(range, limitNum, offsetNum);
       
       res.json({
         success: true,
-        data: salesData
+        data: salesData,
+        pagination: {
+          limit: limitNum,
+          offset: offsetNum,
+          total: salesData.total
+        }
       });
     } catch (error) {
       console.error('Error fetching sales data:', error);
