@@ -1,4 +1,5 @@
-const path = require('path');
+const { COLLECTIONS } = require('../config/firebase');
+const firestore = require('../utils/firestoreAdmin'); path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 const { db, COLLECTIONS } = require('./config/firebase');

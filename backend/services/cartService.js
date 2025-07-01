@@ -1,16 +1,6 @@
 // Servicio para gestionar carritos compartidos entre POS y wallet móvil
-const admin = require('firebase-admin');
-const { db } = require('../config/firebase');
-const {
-  collection,
-  addDoc,
-  doc,
-  getDoc,
-  updateDoc,
-  query,
-  where,
-  getDocs
-} = require('firebase/firestore');
+const { COLLECTIONS } = require('../config/firebase');
+const firestore = require('../utils/firestoreAdmin');
 
 /**
  * Genera un código alfanumérico aleatorio de la longitud especificada

@@ -1,5 +1,5 @@
-const { db, COLLECTIONS } = require('../config/firebase');
-const { collection, addDoc, getDocs, query, orderBy, serverTimestamp } = require('firebase/firestore');
+const { COLLECTIONS } = require('../config/firebase');
+const firestore = require('../utils/firestoreAdmin');
 const productService = require('./productService'); // Cambiar a productService
 const { processTimestamp } = require('../utils/helpers');
 

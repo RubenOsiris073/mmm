@@ -1,20 +1,5 @@
-const { db, COLLECTIONS } = require('../config/firebase');
-const { 
-  collection, 
-  doc, 
-  getDoc, 
-  getDocs, 
-  setDoc, 
-  updateDoc, 
-  query, 
-  serverTimestamp, 
-  increment, 
-  addDoc,
-  where,
-  orderBy,
-  limit 
-} = require('firebase/firestore');
-const { queryDocuments, getDocumentById, getServerTimestamp } = require('../utils/firebaseUtils');
+const { COLLECTIONS } = require('../config/firebase');
+const firestore = require('../utils/firestoreAdmin');
 const { processTimestamp } = require('../utils/helpers');
 
 class InventoryService {
@@ -217,12 +202,10 @@ class InventoryService {
   async initializeInventory() {
     try {
       console.log("Verificando inicialización del inventario...");
-      const inventoryRef = collection(db, COLLECTIONS.INVENTORY);
-      const inventorySnapshot = await getDocs(inventoryRef);
+      const inventoryDocs = await firestore.getDocs(COLLECTIONS.INVENTORY);
       
       // Obtener todos los productos del catálogo
-      const productsRef = collection(db, COLLECTIONS.PRODUCTS);
-      const productsSnapshot = await getDocs(productsRef);
+      const productsDocs = await firestore.getDocs(COLLECTIONS.PRODUCTS);
       
       console.log(`Productos en catálogo: ${productsSnapshot.size}`);
       console.log(`Productos en inventario: ${inventorySnapshot.size}`);

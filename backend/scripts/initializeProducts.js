@@ -1,23 +1,11 @@
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
-// Importar solo Firestore, no Auth
-const { initializeApp } = require('firebase/app');
-const { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } = require('firebase/firestore');
+// Usar firebase-admin en lugar de client SDK
+const { admin } = require('../config/firebase');
 
-// Configuración de Firebase sin Auth
-const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.FIREBASE_APP_ID
-};
-
-// Inicializar Firebase y Firestore directamente
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+// Obtener referencia a Firestore
+const db = admin.firestore();
 
 // Colecciones
 const COLLECTIONS = {

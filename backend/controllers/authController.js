@@ -1,134 +1,123 @@
 const jwt = require('jsonwebtoken');
-const { signInWithEmailAndPassword, createUserWithEmailAndPassword } = require('firebase/auth');
-const { auth } = require('../config/firebase');
+const { admin } = require('../config/firebase');
 const { JWT_SECRET } = require('../middleware/auth');
 
-// Controlador para login
-const login = async (req, res) => {
+// Controlador para verificar token de Firebase
+const verifyToken = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { idToken } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email y contraseña son requeridos' });
+    if (!idToken) {
+      return res.status(400).json({ error: 'Token de Firebase es requerido' });
     }
 
-    console.log('Intento de login para:', email);
+    console.log('Verificando token de Firebase');
 
-    // Autenticar con Firebase
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+    // Verificar token con Firebase Admin
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const uid = decodedToken.uid;
 
-    // Generar JWT token
+    // Obtener información adicional del usuario
+    const userRecord = await admin.auth().getUser(uid);
+
+    // Generar JWT token personalizado
     const token = jwt.sign(
       { 
-        uid: user.uid, 
-        email: user.email,
-        emailVerified: user.emailVerified
+        uid: userRecord.uid, 
+        email: userRecord.email,
+        emailVerified: userRecord.emailVerified
       },
       JWT_SECRET,
       { expiresIn: '24h' }
     );
 
-    console.log('Login exitoso para:', email);
+    console.log('Token verificado exitosamente para:', userRecord.email);
 
     res.json({
       success: true,
-      message: 'Login exitoso',
+      message: 'Token verificado exitosamente',
       token,
       user: {
-        uid: user.uid,
-        email: user.email,
-        emailVerified: user.emailVerified,
-        displayName: user.displayName
+        uid: userRecord.uid,
+        email: userRecord.email,
+        emailVerified: userRecord.emailVerified,
+        displayName: userRecord.displayName
       }
     });
 
   } catch (error) {
-    console.error('Error en login:', error.message);
+    console.error('Error verificando token:', error.message);
     
-    let errorMessage = 'Error al iniciar sesión';
+    let errorMessage = 'Error al verificar token';
     
-    switch (error.code) {
-      case 'auth/user-not-found':
-        errorMessage = 'Usuario no encontrado';
-        break;
-      case 'auth/wrong-password':
-        errorMessage = 'Contraseña incorrecta';
-        break;
-      case 'auth/invalid-email':
-        errorMessage = 'Email inválido';
-        break;
-      case 'auth/too-many-requests':
-        errorMessage = 'Demasiados intentos. Intenta más tarde';
-        break;
-      default:
-        errorMessage = error.message;
+    if (error.code === 'auth/id-token-expired') {
+      errorMessage = 'Token expirado';
+    } else if (error.code === 'auth/invalid-id-token') {
+      errorMessage = 'Token inválido';
     }
 
-    res.status(400).json({ 
+    res.status(401).json({
       success: false,
-      error: errorMessage 
+      error: errorMessage
     });
   }
 };
 
-// Controlador para registro
-const register = async (req, res) => {
+// Controlador para crear usuario (registro)
+const createUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, displayName } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email y contraseña son requeridos' });
     }
 
-    console.log('Intento de registro para:', email);
+    console.log('Intento de crear usuario para:', email);
 
-    // Crear usuario en Firebase
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+    // Crear usuario con Firebase Admin
+    const userRecord = await admin.auth().createUser({
+      email: email,
+      password: password,
+      displayName: displayName || null,
+      emailVerified: false
+    });
 
     // Generar JWT token
     const token = jwt.sign(
       { 
-        uid: user.uid, 
-        email: user.email,
-        emailVerified: user.emailVerified
+        uid: userRecord.uid, 
+        email: userRecord.email,
+        emailVerified: userRecord.emailVerified
       },
       JWT_SECRET,
       { expiresIn: '24h' }
     );
 
-    console.log('Registro exitoso para:', email);
+    console.log('Usuario creado exitosamente:', email);
 
     res.json({
       success: true,
       message: 'Usuario creado exitosamente',
       token,
       user: {
-        uid: user.uid,
-        email: user.email,
-        emailVerified: user.emailVerified,
-        displayName: user.displayName
+        uid: userRecord.uid,
+        email: userRecord.email,
+        emailVerified: userRecord.emailVerified,
+        displayName: userRecord.displayName
       }
     });
 
   } catch (error) {
-    console.error('Error en registro:', error.message);
+    console.error('Error creando usuario:', error.message);
     
     let errorMessage = 'Error al crear usuario';
     
-    switch (error.code) {
-      case 'auth/email-already-in-use':
-        errorMessage = 'El email ya está en uso';
-        break;
-      case 'auth/invalid-email':
-        errorMessage = 'Email inválido';
-        break;
-      case 'auth/weak-password':
-        errorMessage = 'La contraseña debe tener al menos 6 caracteres';
-        break;
-      default:
-        errorMessage = error.message;
+    if (error.code === 'auth/email-already-exists') {
+      errorMessage = 'El email ya está en uso';
+    } else if (error.code === 'auth/invalid-email') {
+      errorMessage = 'Email inválido';
+    } else if (error.code === 'auth/weak-password') {
+      errorMessage = 'La contraseña debe tener al menos 6 caracteres';
     }
 
     res.status(400).json({ 
@@ -156,8 +145,8 @@ const logout = (req, res) => {
 };
 
 module.exports = {
-  login,
-  register,
+  verifyToken,
+  createUser,
   verify,
   logout
 };

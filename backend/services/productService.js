@@ -1,6 +1,5 @@
-const { db, COLLECTIONS } = require('../config/firebase');
-const { collection, doc, addDoc, getDocs, query, serverTimestamp, getDoc, updateDoc, increment } = require('firebase/firestore');
-const { queryDocuments, searchByField, getServerTimestamp, getDocumentById } = require('../utils/firebaseUtils');
+const { COLLECTIONS } = require('../config/firebase');
+const firestore = require('../utils/firestoreAdmin');
 
 /**
  * Obtiene todos los productos directamente desde Firebase
@@ -11,7 +10,7 @@ async function getAllProducts() {
     console.log("Obteniendo productos directamente desde Firebase PRODUCTS...");
     
     // Obtener productos del catálogo con stock incluido
-    const products = await queryDocuments(COLLECTIONS.PRODUCTS);
+    const products = await firestore.getDocs(COLLECTIONS.PRODUCTS);
     
     if (products.length === 0) {
       console.log("No hay productos en el catálogo");
@@ -28,11 +27,9 @@ async function getAllProducts() {
         
         // Actualizar en Firebase
         try {
-          const productRef = doc(db, COLLECTIONS.PRODUCTS, product.id);
-          await updateDoc(productRef, { 
+          await firestore.updateDoc(COLLECTIONS.PRODUCTS, product.id, { 
             cantidad,
             stock: cantidad, // Mantener compatibilidad
-            updatedAt: serverTimestamp(),
             stockInitialized: true
           });
           console.log(`Stock inicializado para ${product.nombre}: ${cantidad}`);
@@ -179,12 +176,11 @@ async function createProduct(productData) {
       precio: parseFloat(precio),
       categoria: categoria || "",
       label: label || nombre.toLowerCase(),
-      createdAt: getServerTimestamp(), // Usar utilidad
-      updatedAt: getServerTimestamp() // Usar utilidad
+      createdAt: firestore.serverTimestamp(),
+      updatedAt: firestore.serverTimestamp()
     };
     
-    const productsRef = collection(db, COLLECTIONS.PRODUCTS);
-    const docRef = await addDoc(productsRef, newProduct);
+    const docRef = await firestore.addDoc(COLLECTIONS.PRODUCTS, newProduct);
     
     return { 
       id: docRef.id,

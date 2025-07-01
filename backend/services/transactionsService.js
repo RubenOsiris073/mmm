@@ -1,5 +1,5 @@
-const { db } = require('../config/firebase');
-const { collection, query, orderBy, limit, getDocs, addDoc, serverTimestamp, where, doc, getDoc, updateDoc } = require('firebase/firestore');
+const { COLLECTIONS } = require('../config/firebase');
+const firestore = require('../utils/firestoreAdmin');
 
 // Obtener transacciones con un límite
 const getTransactions = async (limitVal) => {

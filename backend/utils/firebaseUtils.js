@@ -1,15 +1,5 @@
-const { db, COLLECTIONS } = require('../config/firebase');
-const { 
-  doc, 
-  getDoc, 
-  getDocs, 
-  collection, 
-  query, 
-  where, 
-  orderBy, 
-  limit, 
-  serverTimestamp 
-} = require('firebase/firestore');
+const { COLLECTIONS } = require('../config/firebase');
+const firestore = require('./firestoreAdmin');
 const { processTimestamp } = require('./helpers');
 
 /**

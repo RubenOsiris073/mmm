@@ -56,7 +56,8 @@ apiRouter.get('/firebase-config', systemController.firebaseConfig);
 // =========================================================
 // ENDPOINTS DE AUTENTICACIÓN
 // =========================================================
-apiRouter.post('/auth/login', authController.login);
+apiRouter.post('/auth/verify-token', authController.verifyToken);
+apiRouter.post('/auth/create-user', authController.createUser);
 apiRouter.get('/auth/verify', verifyToken, authController.verify);
 apiRouter.post('/auth/logout', verifyToken, authController.logout);
 

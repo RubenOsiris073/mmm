@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { db, COLLECTIONS } = require('../config/firebase');
-const { collection, getDocs, doc, getDoc, deleteDoc, updateDoc, serverTimestamp } = require('firebase/firestore');
+const { COLLECTIONS } = require('../config/firebase');
+const firestore = require('../utils/firestoreAdmin');
 const productService = require('../services/productService');
 const inventoryService = require('../services/inventoryService');
 
