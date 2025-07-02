@@ -70,10 +70,21 @@ const POSView = () => {
           </Alert>
         )}
 
-        {/* Layout principal - 70/30 split exacto como la imagen */}
+        {/* Layout principal - Productos a la izquierda, carrito a la derecha */}
         <div className="pos-main-row g-0">
-          {/* Panel izquierdo - Shopping Bag (70%) */}
-          <div className="shopping-bag-panel">
+          {/* Panel izquierdo - Productos (70%) */}
+          <div className="products-panel">
+            <ProductList
+              products={filteredProducts}
+              loading={productsLoading}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              addToCart={addToCart}
+            />
+          </div>
+          
+          {/* Panel derecho - Carrito y resumen (30%) */}
+          <div className="cart-sidebar-panel">
             <CartPanel
               cartItems={cartItems}
               onRemove={removeFromCart}
@@ -81,62 +92,42 @@ const POSView = () => {
               calculateTotal={calculateTotal}
               onOpenPayment={() => setShowPaymentModal(true)}
               loading={loading}
-              isMainView={true}
+              isMainView={false}
             />
-          </div>
-          
-          {/* Panel derecho - Cart Total únicamente */}
-          <div className="sidebar-panel">
-            <div className="sidebar-content">
-              {/* Cart Total Section - Estilo original mejorado */}
-              <div className="cart-total-section">
-                <h5 className="section-title">Cart Total</h5>
-                
-                <div className="total-breakdown">
-                  <div className="total-line">
-                    <span>Cart Subtotal</span>
-                    <span>${calculateTotal().toFixed(2)}</span>
-                  </div>
-                  <div className="total-line">
-                    <span>Shipping</span>
-                    <span>Free</span>
-                  </div>
-                  <div className="total-line">
-                    <span>Discount</span>
-                    <span>--</span>
-                  </div>
-                  <div className="total-line final-total">
-                    <span>Cart Total</span>
-                    <span>${calculateTotal().toFixed(2)}</span>
-                  </div>
+            
+            {/* Cart Total Section adicional en el sidebar */}
+            <div className="cart-total-section">
+              <h5 className="section-title">Cart Total</h5>
+              
+              <div className="total-breakdown">
+                <div className="total-line">
+                  <span>Cart Subtotal</span>
+                  <span>${calculateTotal().toFixed(2)}</span>
                 </div>
-                
-                <button 
-                  className="checkout-btn"
-                  onClick={() => setShowPaymentModal(true)}
-                  disabled={cartItems.length === 0 || loading}
-                >
-                  {loading ? 'Processing...' : 'Apply'}
-                </button>
+                <div className="total-line">
+                  <span>Shipping</span>
+                  <span>Free</span>
+                </div>
+                <div className="total-line">
+                  <span>Discount</span>
+                  <span>--</span>
+                </div>
+                <div className="total-line final-total">
+                  <span>Cart Total</span>
+                  <span>${calculateTotal().toFixed(2)}</span>
+                </div>
               </div>
+              
+              <button 
+                className="checkout-btn"
+                onClick={() => setShowPaymentModal(true)}
+                disabled={cartItems.length === 0 || loading}
+              >
+                {loading ? 'Processing...' : 'Proceed to Checkout'}
+              </button>
             </div>
           </div>
         </div>
-
-        {/* ProductList para testing - oculto por defecto */}
-        {showProductList && (
-          <div className="mt-4">
-            <div>
-              <ProductList
-                products={filteredProducts}
-                loading={productsLoading}
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                addToCart={addToCart}
-              />
-            </div>
-          </div>
-        )}
 
         <PaymentModal
           show={showPaymentModal}

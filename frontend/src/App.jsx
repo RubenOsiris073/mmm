@@ -11,9 +11,9 @@ import './styles/themes.css';
 import './styles/products-modern.css';
 
 // Importar el contexto de tema
-import { ThemeProvider } from './contexts/ThemeContext';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { ProductVisibilityProvider } from './contexts/ProductVisibilityContext';
+import { ThemeProvider } from './contexts/ThemeContext.jsx';
+import { AuthProvider, useAuth } from './contexts/AuthContext.jsx';
+import { ProductVisibilityProvider } from './contexts/ProductVisibilityContext.jsx';
 
 // Importar componentes de autenticación (críticos - no lazy)
 import { AuthenticationPage, ProtectedRoute } from './components/auth';

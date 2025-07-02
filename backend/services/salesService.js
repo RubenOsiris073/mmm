@@ -1,32 +1,25 @@
-const { COLLECTIONS } = require('../config/firebase');
-const firestore = require('../utils/firestoreAdmin');
-const productService = require('./productService'); // Cambiar a productService
+const { COLLECTIONS } = require('../config/firebaseManager');
+const firestoreAdmin = require('../utils/firestoreAdmin');
+const productService = require('./productService');
 const { processTimestamp } = require('../utils/helpers');
+const Logger = require('../utils/logger');
 
 /**
  * Obtiene todas las ventas
  */
 async function getAllSales() {
   try {
-    const salesRef = collection(db, COLLECTIONS.SALES);
-    const q = query(salesRef, orderBy('timestamp', 'desc'));
-    const snapshot = await getDocs(q);
+    const sales = await firestoreAdmin.queryDocs(COLLECTIONS.SALES, [], 'timestamp', 'desc');
 
-    const sales = [];
-    
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      sales.push({
-        id: doc.id,
-        ...data,
-        timestamp: processTimestamp(data.timestamp)
-      });
-    });
+    const processedSales = sales.map(sale => ({
+      ...sale,
+      timestamp: processTimestamp(sale.timestamp)
+    }));
 
-    console.log(`Obtenidas ${sales.length} ventas desde Firebase`);
-    return sales;
+    Logger.info(`Obtenidas ${processedSales.length} ventas desde Firebase`);
+    return processedSales;
   } catch (error) {
-    console.error("Error al obtener ventas:", error);
+    Logger.error("Error al obtener ventas", { error: error.message });
     throw error;
   }
 }
@@ -38,7 +31,7 @@ async function createSale(saleData) {
   try {
     const { items, total, paymentMethod, amountReceived = 0, change = 0, clientName } = saleData;
     
-    console.log("Procesando nueva venta:", { items: items.length, total });
+    Logger.info("Procesando nueva venta:", { items: items.length, total });
     
     if (!items || !Array.isArray(items) || items.length === 0) {
       throw new Error("La venta debe tener al menos un producto");
@@ -72,11 +65,11 @@ async function createSale(saleData) {
     const salesRef = collection(db, COLLECTIONS.SALES);
     const docRef = await addDoc(salesRef, saleRecord);
     
-    console.log("Venta creada correctamente, actualizando stock en PRODUCTS...");
+    Logger.info("Venta creada correctamente, actualizando stock en PRODUCTS...");
     
     // Actualizar stock usando productService (PRODUCTS collection)
     try {
-      console.log("Iniciando actualización de stock...");
+      Logger.info("Iniciando actualización de stock...");
       
       const stockUpdates = [];
       
@@ -84,7 +77,7 @@ async function createSale(saleData) {
         const productId = item.productId || item.id;
         const quantitySold = parseInt(item.cantidad, 10);
         
-        console.log(`Actualizando stock para producto ${productId}: -${quantitySold}`);
+        Logger.info(`Actualizando stock para producto ${productId}: -${quantitySold}`);
         
         try {
           // Usar productService para actualizar stock directamente en PRODUCTS
@@ -102,10 +95,10 @@ async function createSale(saleData) {
             success: true
           });
           
-          console.log(`Stock actualizado: ${updateResult.productName} - Nuevo stock: ${updateResult.newStock}`);
+          Logger.info(`Stock actualizado: ${updateResult.productName} - Nuevo stock: ${updateResult.newStock}`);
           
         } catch (stockError) {
-          console.error(`Error actualizando stock para ${productId}:`, stockError);
+          Logger.error(`Error actualizando stock para ${productId}:`, stockError);
           stockUpdates.push({
             productId,
             quantitySold,
@@ -115,16 +108,16 @@ async function createSale(saleData) {
         }
       }
       
-      console.log("Resumen de actualizaciones de stock:", stockUpdates);
+      Logger.info("Resumen de actualizaciones de stock:", stockUpdates);
       
       // Verificar si hubo errores críticos
       const failedUpdates = stockUpdates.filter(update => !update.success);
       if (failedUpdates.length > 0) {
-        console.warn(`${failedUpdates.length} productos no pudieron actualizar su stock`);
+        Logger.warn(`${failedUpdates.length} productos no pudieron actualizar su stock`);
       }
       
     } catch (inventoryError) {
-      console.error("Error general actualizando stock:", inventoryError);
+      Logger.error("Error general actualizando stock:", inventoryError);
       // No lanzar error para no cancelar la venta, pero registrar el problema
     }
     
@@ -134,11 +127,11 @@ async function createSale(saleData) {
       timestamp: new Date().toISOString()
     };
     
-    console.log(`Venta procesada exitosamente: ${docRef.id}`);
+    Logger.info(`Venta procesada exitosamente: ${docRef.id}`);
     return newSale;
     
   } catch (error) {
-    console.error("Error al crear venta:", error);
+    Logger.error("Error al crear venta:", error);
     throw error;
   }
 }

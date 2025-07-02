@@ -1,152 +1,133 @@
 const jwt = require('jsonwebtoken');
-const { admin } = require('../config/firebase');
-const { JWT_SECRET } = require('../middleware/auth');
+const { firebaseManager } = require('../config/firebaseManager');
+const Logger = require('../utils/logger.js');
 
-// Controlador para verificar token de Firebase
-const verifyToken = async (req, res) => {
-  try {
-    const { idToken } = req.body;
-
-    if (!idToken) {
-      return res.status(400).json({ error: 'Token de Firebase es requerido' });
-    }
-
-    console.log('Verificando token de Firebase');
-
-    // Verificar token con Firebase Admin
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    const uid = decodedToken.uid;
-
-    // Obtener información adicional del usuario
-    const userRecord = await admin.auth().getUser(uid);
-
-    // Generar JWT token personalizado
-    const token = jwt.sign(
-      { 
-        uid: userRecord.uid, 
-        email: userRecord.email,
-        emailVerified: userRecord.emailVerified
-      },
-      JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
-    console.log('Token verificado exitosamente para:', userRecord.email);
-
-    res.json({
-      success: true,
-      message: 'Token verificado exitosamente',
-      token,
-      user: {
-        uid: userRecord.uid,
-        email: userRecord.email,
-        emailVerified: userRecord.emailVerified,
-        displayName: userRecord.displayName
-      }
-    });
-
-  } catch (error) {
-    console.error('Error verificando token:', error.message);
-    
-    let errorMessage = 'Error al verificar token';
-    
-    if (error.code === 'auth/id-token-expired') {
-      errorMessage = 'Token expirado';
-    } else if (error.code === 'auth/invalid-id-token') {
-      errorMessage = 'Token inválido';
-    }
-
-    res.status(401).json({
-      success: false,
-      error: errorMessage
-    });
+/**
+ * Lista de usuarios autorizados para el sistema
+ * En producción, esto debería estar en una base de datos con passwords hasheados
+ */
+const AUTHORIZED_USERS = [
+  {
+    uid: 'ruben-osiris-073',
+    email: 'rubenosiris073@gmail.com',
+    password: 'mmm-aguachile-2025', // En producción usar hash
+    emailVerified: true,
+    displayName: 'Ruben Osiris',
+    role: 'admin'
   }
-};
+];
 
-// Controlador para crear usuario (registro)
-const createUser = async (req, res) => {
-  try {
-    const { email, password, displayName } = req.body;
+class AuthController {
+  // Login con email y password usando verificación local
+  async login(req, res) {
+    try {
+      const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email y contraseña son requeridos' });
-    }
-
-    console.log('Intento de crear usuario para:', email);
-
-    // Crear usuario con Firebase Admin
-    const userRecord = await admin.auth().createUser({
-      email: email,
-      password: password,
-      displayName: displayName || null,
-      emailVerified: false
-    });
-
-    // Generar JWT token
-    const token = jwt.sign(
-      { 
-        uid: userRecord.uid, 
-        email: userRecord.email,
-        emailVerified: userRecord.emailVerified
-      },
-      JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
-    console.log('Usuario creado exitosamente:', email);
-
-    res.json({
-      success: true,
-      message: 'Usuario creado exitosamente',
-      token,
-      user: {
-        uid: userRecord.uid,
-        email: userRecord.email,
-        emailVerified: userRecord.emailVerified,
-        displayName: userRecord.displayName
+      if (!email || !password) {
+        return res.status(400).json({
+          error: 'Datos requeridos',
+          message: 'Email y password son requeridos'
+        });
       }
-    });
 
-  } catch (error) {
-    console.error('Error creando usuario:', error.message);
-    
-    let errorMessage = 'Error al crear usuario';
-    
-    if (error.code === 'auth/email-already-exists') {
-      errorMessage = 'El email ya está en uso';
-    } else if (error.code === 'auth/invalid-email') {
-      errorMessage = 'Email inválido';
-    } else if (error.code === 'auth/weak-password') {
-      errorMessage = 'La contraseña debe tener al menos 6 caracteres';
+      // Buscar usuario en la lista autorizada
+      const user = AUTHORIZED_USERS.find(u => 
+        u.email === email && u.password === password
+      );
+
+      if (!user) {
+        return res.status(401).json({
+          error: 'Credenciales inválidas',
+          message: 'Email o password incorrectos'
+        });
+      }
+
+      // Crear JWT para el frontend
+      const jwtToken = jwt.sign(
+        {
+          uid: user.uid,
+          email: user.email,
+          emailVerified: user.emailVerified,
+          role: user.role
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.TOKEN_EXPIRATION || '1h' }
+      );
+
+      res.json({
+        success: true,
+        token: jwtToken,
+        user: {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          emailVerified: user.emailVerified,
+          role: user.role
+        },
+        message: 'Login exitoso'
+      });
+
+    } catch (error) {
+      Logger.error('Error en login:', error);
+      res.status(500).json({
+        error: 'Error interno del servidor',
+        message: 'Error procesando el login'
+      });
     }
-
-    res.status(400).json({ 
-      success: false,
-      error: errorMessage 
-    });
   }
-};
 
-// Controlador para verificar token
-const verify = (req, res) => {
-  res.json({
-    success: true,
-    message: 'Token válido',
-    user: req.user
-  });
-};
+  // Verificar token JWT
+  async verify(req, res) {
+    try {
+      // El token ya fue verificado por el middleware verifyToken
+      const user = req.user;
 
-// Controlador para logout
-const logout = (req, res) => {
-  res.json({
-    success: true,
-    message: 'Logout exitoso'
-  });
-};
+      res.json({
+        success: true,
+        user: {
+          uid: user.uid,
+          email: user.email,
+          emailVerified: user.emailVerified,
+          role: user.role || 'user'
+        },
+        message: 'Token válido'
+      });
+
+    } catch (error) {
+      Logger.error('Error verificando token:', error);
+      res.status(500).json({
+        error: 'Error interno del servidor',
+        message: 'Error verificando token'
+      });
+    }
+  }
+
+  // Logout (invalidar token del lado del cliente)
+  async logout(req, res) {
+    try {
+      // En un sistema JWT stateless, el logout se maneja del lado del cliente
+      // eliminando el token del almacenamiento local
+      
+      res.json({
+        success: true,
+        message: 'Logout exitoso. Token invalidado del lado del cliente.'
+      });
+
+    } catch (error) {
+      Logger.error('Error en logout:', error);
+      res.status(500).json({
+        error: 'Error interno del servidor',
+        message: 'Error procesando logout'
+      });
+    }
+  }
+}
+
+// Crear instancia del controlador
+const authController = new AuthController();
 
 module.exports = {
-  verifyToken,
-  createUser,
-  verify,
-  logout
+  login: authController.login.bind(authController),
+  verify: authController.verify.bind(authController),
+  logout: authController.logout.bind(authController)
 };

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const salesService = require('../services/salesService');
+const Logger = require('../utils/logger.js');
 
 // Obtener todas las ventas
 router.get('/', async (req, res) => {
@@ -9,7 +10,7 @@ router.get('/', async (req, res) => {
     // Asegúrate de devolver un objeto con una propiedad sales que contenga el array
     res.json({ sales }); 
   } catch (error) {
-    console.error("Error al obtener ventas:", error);
+    Logger.error("Error al obtener ventas:", error);
     res.status(500).json({ error: "Error al obtener ventas", sales: [] });
   }
 });
@@ -20,7 +21,7 @@ router.post('/', async (req, res) => {
     const result = await salesService.createSale(req.body);
     res.json(result);
   } catch (error) {
-    console.error("Error al crear venta:", error);
+    Logger.error("Error al crear venta:", error);
     res.status(500).json({ error: error.message || "Error al crear venta" });
   }
 });

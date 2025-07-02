@@ -1,4 +1,5 @@
 const Stripe = require('stripe');
+const Logger = require('../utils/logger.js');
 
 class StripeService {
   constructor() {
@@ -8,7 +9,7 @@ class StripeService {
   // Crear Payment Intent para pagos con tarjeta
   async createPaymentIntent(amount, currency = 'mxn', metadata = {}) {
     try {
-      console.log(`Creando Payment Intent por $${amount} ${currency.toUpperCase()}`);
+      Logger.info(`Creando Payment Intent por ${amount} ${currency.toUpperCase()}`);
       
       const paymentIntent = await this.stripe.paymentIntents.create({
         amount: Math.round(amount * 100), // Stripe espera centavos
@@ -22,7 +23,7 @@ class StripeService {
         },
       });
 
-      console.log(`Payment Intent creado: ${paymentIntent.id}`);
+      Logger.info(`Payment Intent creado: ${paymentIntent.id}`);
       return {
         clientSecret: paymentIntent.client_secret,
         paymentIntentId: paymentIntent.id,
@@ -31,7 +32,7 @@ class StripeService {
         status: paymentIntent.status
       };
     } catch (error) {
-      console.error('Error creando Payment Intent:', error);
+      Logger.error('Error creando Payment Intent:', error);
       throw new Error(`Error creando Payment Intent: ${error.message}`);
     }
   }
@@ -39,11 +40,11 @@ class StripeService {
   // Confirmar pago
   async confirmPayment(paymentIntentId) {
     try {
-      console.log(`Confirmando pago: ${paymentIntentId}`);
+      Logger.info(`Confirmando pago: ${paymentIntentId}`);
       
       const paymentIntent = await this.stripe.paymentIntents.retrieve(paymentIntentId);
       
-      console.log(`Estado del pago: ${paymentIntent.status}`);
+      Logger.info(`Estado del pago: ${paymentIntent.status}`);
       return {
         id: paymentIntent.id,
         status: paymentIntent.status,
@@ -53,7 +54,7 @@ class StripeService {
         metadata: paymentIntent.metadata
       };
     } catch (error) {
-      console.error('Error confirmando pago:', error);
+      Logger.error('Error confirmando pago:', error);
       throw new Error(`Error confirmando pago: ${error.message}`);
     }
   }
@@ -73,7 +74,7 @@ class StripeService {
         charges: paymentIntent.charges
       };
     } catch (error) {
-      console.error('Error obteniendo pago:', error);
+      Logger.error('Error obteniendo pago:', error);
       throw new Error(`Error obteniendo pago: ${error.message}`);
     }
   }
@@ -87,22 +88,22 @@ class StripeService {
         process.env.STRIPE_WEBHOOK_SECRET
       );
 
-      console.log(`Webhook recibido: ${event.type}`);
+      Logger.info(`Webhook recibido: ${event.type}`);
 
       switch (event.type) {
         case 'payment_intent.succeeded':
-          console.log('Pago exitoso:', event.data.object.id);
+          Logger.info('Pago exitoso:', event.data.object.id);
           break;
         case 'payment_intent.payment_failed':
-          console.log('Pago fallido:', event.data.object.id);
+          Logger.info('Pago fallido:', event.data.object.id);
           break;
         default:
-          console.log(`Evento no manejado: ${event.type}`);
+          Logger.info(`Evento no manejado: ${event.type}`);
       }
 
       return { received: true, type: event.type, data: event.data };
     } catch (error) {
-      console.error('Error procesando webhook:', error);
+      Logger.error('Error procesando webhook:', error);
       throw new Error(`Error procesando webhook: ${error.message}`);
     }
   }
@@ -116,10 +117,10 @@ class StripeService {
         metadata
       });
 
-      console.log(`Cliente creado: ${customer.id}`);
+      Logger.info(`Cliente creado: ${customer.id}`);
       return customer;
     } catch (error) {
-      console.error('Error creando cliente:', error);
+      Logger.error('Error creando cliente:', error);
       throw new Error(`Error creando cliente: ${error.message}`);
     }
   }

@@ -1,5 +1,6 @@
-const { COLLECTIONS } = require('../config/firebase');
+const { COLLECTIONS } = require('../config/firebaseManager');
 const firestore = require('../utils/firestoreAdmin');
+const Logger = require('../utils/logger.js');
 
 /**
  * Obtiene todos los productos directamente desde Firebase
@@ -7,13 +8,13 @@ const firestore = require('../utils/firestoreAdmin');
  */
 async function getAllProducts() {
   try {
-    console.log("Obteniendo productos directamente desde Firebase PRODUCTS...");
+    Logger.info("Obteniendo productos directamente desde Firebase PRODUCTS...");
     
     // Obtener productos del catálogo con stock incluido
     const products = await firestore.getDocs(COLLECTIONS.PRODUCTS);
     
     if (products.length === 0) {
-      console.log("No hay productos en el catálogo");
+      Logger.info("No hay productos en el catálogo");
       return [];
     }
     
@@ -32,9 +33,9 @@ async function getAllProducts() {
             stock: cantidad, // Mantener compatibilidad
             stockInitialized: true
           });
-          console.log(`Stock inicializado para ${product.nombre}: ${cantidad}`);
+          Logger.info(`Stock inicializado para ${product.nombre}: ${cantidad}`);
         } catch (error) {
-          console.error(`Error inicializando stock para ${product.id}:`, error);
+          Logger.error(`Error inicializando stock para ${product.id}:`, error);
         }
       }
       
@@ -45,17 +46,17 @@ async function getAllProducts() {
       };
     }));
     
-    console.log(`Productos obtenidos: ${productsWithStock.length} (stock desde PRODUCTS)`);
+    Logger.info(`Productos obtenidos: ${productsWithStock.length} (stock desde PRODUCTS)`);
     
     // Mostrar resumen de stock
     const productsWithStock_count = productsWithStock.filter(p => (p.cantidad || 0) > 0).length;
     const productsWithoutStock_count = productsWithStock.filter(p => (p.cantidad || 0) === 0).length;
     
-    console.log(`Resumen: ${productsWithStock_count} con stock, ${productsWithoutStock_count} sin stock`);
+    Logger.info(`Resumen: ${productsWithStock_count} con stock, ${productsWithoutStock_count} sin stock`);
     
     return productsWithStock;
   } catch (error) {
-    console.error("Error al obtener productos:", error);
+    Logger.error("Error al obtener productos:", error);
     throw error;
   }
 }
@@ -66,7 +67,7 @@ async function getAllProducts() {
  */
 async function updateProductStock(productId, adjustment, reason = 'Ajuste de stock') {
   try {
-    console.log(`Actualizando stock en PRODUCTS - ID: ${productId}, Ajuste: ${adjustment}`);
+    Logger.info(`Actualizando stock en PRODUCTS - ID: ${productId}, Ajuste: ${adjustment}`);
     
     const productRef = doc(db, COLLECTIONS.PRODUCTS, productId);
     const productDoc = await getDoc(productRef);
@@ -94,7 +95,7 @@ async function updateProductStock(productId, adjustment, reason = 'Ajuste de sto
       }
     });
     
-    console.log(`Stock actualizado: ${productData.nombre} - ${currentStock} → ${newStock}`);
+    Logger.info(`Stock actualizado: ${productData.nombre} - ${currentStock} → ${newStock}`);
     
     return {
       success: true,
@@ -105,7 +106,7 @@ async function updateProductStock(productId, adjustment, reason = 'Ajuste de sto
       adjustment
     };
   } catch (error) {
-    console.error(`Error actualizando stock para ${productId}:`, error);
+    Logger.error(`Error actualizando stock para ${productId}:`, error);
     throw error;
   }
 }
@@ -129,7 +130,7 @@ async function getProductStock(productId) {
       productName: productData.nombre 
     };
   } catch (error) {
-    console.error(`Error obteniendo stock para ${productId}:`, error);
+    Logger.error(`Error obteniendo stock para ${productId}:`, error);
     return { stock: 0, exists: false };
   }
 }
@@ -155,7 +156,7 @@ async function searchProducts(term) {
     
     return filteredProducts;
   } catch (error) {
-    console.error("Error buscando productos:", error);
+    Logger.error("Error buscando productos:", error);
     throw error;
   }
 }
@@ -189,7 +190,7 @@ async function createProduct(productData) {
       updatedAt: new Date().toISOString()
     };
   } catch (error) {
-    console.error("Error al crear producto:", error);
+    Logger.error("Error al crear producto:", error);
     throw error;
   }
 }

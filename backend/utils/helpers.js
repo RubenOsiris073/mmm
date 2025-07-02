@@ -1,3 +1,4 @@
+const Logger = require('./logger.js');
 /**
  * Procesa diferentes tipos de timestamp a formato ISO
  */
@@ -15,7 +16,7 @@ function processTimestamp(timestamp) {
         return new Date(timestamp).toISOString();
       }
     } catch (e) {
-      console.error("Error procesando timestamp:", e);
+      Logger.error("Error procesando timestamp:", e);
     }
     
     return new Date().toISOString();

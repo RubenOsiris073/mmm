@@ -1,4 +1,5 @@
 const config = require('../config/config');
+const { firebaseManager } = require('../config/firebaseManager');
 
 /**
  * Endpoint de salud del sistema
@@ -41,22 +42,7 @@ const serverStatus = (req, res) => {
   });
 };
 
-/**
- * Configuración de Firebase para el cliente
- */
-const firebaseConfig = (req, res) => {
-  res.json({
-    apiKey: process.env.FIREBASE_API_KEY,
-    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.FIREBASE_APP_ID
-  });
-};
-
 module.exports = {
   healthCheck,
-  serverStatus,
-  firebaseConfig
+  serverStatus
 };

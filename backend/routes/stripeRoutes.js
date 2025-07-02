@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const stripeService = require('../services/stripeService');
+const Logger = require('../utils/logger.js');
 
 // Crear Payment Intent
 router.post('/create-payment-intent', async (req, res) => {
@@ -14,7 +15,7 @@ router.post('/create-payment-intent', async (req, res) => {
       });
     }
 
-    console.log(`Solicitud de Payment Intent - Monto: $${amount}`);
+    Logger.info(`Solicitud de Payment Intent - Monto: $${amount}`);
 
     const paymentIntent = await stripeService.createPaymentIntent(amount, currency, metadata);
 
@@ -24,7 +25,7 @@ router.post('/create-payment-intent', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error en /create-payment-intent:', error);
+    Logger.error('Error en /create-payment-intent:', error);
     res.status(500).json({
       success: false,
       error: error.message
@@ -44,7 +45,7 @@ router.post('/confirm-payment', async (req, res) => {
       });
     }
 
-    console.log(`Confirmando pago: ${paymentIntentId}`);
+    Logger.info(`Confirmando pago: ${paymentIntentId}`);
 
     const payment = await stripeService.confirmPayment(paymentIntentId);
 
@@ -54,7 +55,7 @@ router.post('/confirm-payment', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error en /confirm-payment:', error);
+    Logger.error('Error en /confirm-payment:', error);
     res.status(500).json({
       success: false,
       error: error.message
@@ -67,7 +68,7 @@ router.get('/payment/:paymentIntentId', async (req, res) => {
   try {
     const { paymentIntentId } = req.params;
 
-    console.log(`Obteniendo información del pago: ${paymentIntentId}`);
+    Logger.info(`Obteniendo información del pago: ${paymentIntentId}`);
 
     const payment = await stripeService.getPayment(paymentIntentId);
 
@@ -77,7 +78,7 @@ router.get('/payment/:paymentIntentId', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error en /payment/:id:', error);
+    Logger.error('Error en /payment/:id:', error);
     res.status(500).json({
       success: false,
       error: error.message
@@ -99,7 +100,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     res.json({ received: true });
 
   } catch (error) {
-    console.error('Error en webhook:', error);
+    Logger.error('Error en webhook:', error);
     res.status(400).send(`Webhook Error: ${error.message}`);
   }
 });
@@ -116,7 +117,7 @@ router.post('/create-customer', async (req, res) => {
       });
     }
 
-    console.log(`Creando cliente: ${email}`);
+    Logger.info(`Creando cliente: ${email}`);
 
     const customer = await stripeService.createCustomer(email, name, metadata);
 
@@ -126,7 +127,7 @@ router.post('/create-customer', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error en /create-customer:', error);
+    Logger.error('Error en /create-customer:', error);
     res.status(500).json({
       success: false,
       error: error.message

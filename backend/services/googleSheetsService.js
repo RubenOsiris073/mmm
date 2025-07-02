@@ -2,6 +2,7 @@ const { google } = require('googleapis');
 const path = require('path');
 const fs = require('fs');
 const { DoubleEncryptionManager } = require('../scripts/doubleEncryption');
+const Logger = require('../utils/logger.js');
 
 class GoogleSheetsService {
   constructor() {
@@ -18,28 +19,28 @@ class GoogleSheetsService {
       
       // Archivo con doble encriptación AES
       if (fs.existsSync(path.join(__dirname, '../config/google-credentials.double-encrypted.json'))) {
-        console.log('Usando credenciales con doble encriptación AES');
+        Logger.info('Usando credenciales con doble encriptación AES');
         const encryptedFilePath = path.join(__dirname, '../config/google-credentials.double-encrypted.json');
         const masterPassword = process.env.MASTER_ENCRYPTION_KEY;
         
         try {
           const doubleEncryptedData = JSON.parse(fs.readFileSync(encryptedFilePath, 'utf8'));
           const credentials = this.doubleEncryption.doubleDecrypt(doubleEncryptedData, masterPassword);
-          console.log('Credenciales desencriptadas exitosamente');
+          Logger.info('Credenciales desencriptadas exitosamente');
           
           auth = new google.auth.GoogleAuth({
             credentials: credentials,
             scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
           });
         } catch (error) {
-          console.error('Error desencriptando credenciales:', error.message);
+          Logger.error('Error desencriptando credenciales:', error.message);
           throw new Error('No se pudieron desencriptar las credenciales de Google');
         }
       }
       
       // Variable de entorno con ruta al archivo
       else if (process.env.GOOGLE_SERVICE_ACCOUNT_PATH) {
-        console.log('Usando archivo de credenciales desde variable de entorno (GOOGLE_SERVICE_ACCOUNT_PATH)');
+        Logger.info('Usando archivo de credenciales desde variable de entorno (GOOGLE_SERVICE_ACCOUNT_PATH)');
         auth = new google.auth.GoogleAuth({
           keyFile: process.env.GOOGLE_SERVICE_ACCOUNT_PATH,
           scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly']
@@ -48,7 +49,7 @@ class GoogleSheetsService {
       
       // Método 4: Archivo local (fallback para desarrollo)
       else {
-        console.log('Buscando archivo de credenciales local...');
+        Logger.info('Buscando archivo de credenciales local...');
         const possiblePaths = [
           './config/google-service-account.json',
           path.join(__dirname, '../config/google-service-account.json')
@@ -59,7 +60,7 @@ class GoogleSheetsService {
           const fullPath = path.resolve(filePath);
           if (fs.existsSync(fullPath)) {
             keyFile = fullPath;
-            console.log(`Encontrado archivo local: ${keyFile}`);
+            Logger.info(`Encontrado archivo local: ${keyFile}`);
             break;
           }
         }
@@ -76,9 +77,9 @@ class GoogleSheetsService {
 
       this.sheets = google.sheets({ version: 'v4', auth });
       this.initialized = true;
-      console.log('Google Sheets service initialized successfully');
+      Logger.info('Google Sheets service initialized successfully');
     } catch (error) {
-      console.error('Error initializing Google Sheets service:', error);
+      Logger.error('Error initializing Google Sheets service:', error);
       throw error;
     }
   }
@@ -100,7 +101,7 @@ class GoogleSheetsService {
         if (spreadsheetInfo.data.sheets && spreadsheetInfo.data.sheets.length > 0) {
           const firstSheetName = spreadsheetInfo.data.sheets[0].properties.title;
           finalRange = `${firstSheetName}!${range}`;
-          console.log(`Usando hoja: ${firstSheetName}`);
+          Logger.info(`Usando hoja: ${firstSheetName}`);
         }
       }
 
@@ -132,10 +133,10 @@ class GoogleSheetsService {
         return item;
       });
 
-      console.log(`Retornando ${data.length} de ${total} registros (offset: ${offset}, limit: ${limit})`);
+      Logger.info(`Retornando ${data.length} de ${total} registros (offset: ${offset}, limit: ${limit})`);
       return { data, headers, total };
     } catch (error) {
-      console.error('Error fetching sales data from Google Sheets:', error);
+      Logger.error('Error fetching sales data from Google Sheets:', error);
       throw error;
     }
   }
@@ -160,7 +161,7 @@ class GoogleSheetsService {
 
       return metrics;
     } catch (error) {
-      console.error('Error calculating dashboard metrics:', error);
+      Logger.error('Error calculating dashboard metrics:', error);
       throw error;
     }
   }

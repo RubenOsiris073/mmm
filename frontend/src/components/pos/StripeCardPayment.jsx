@@ -12,9 +12,9 @@ import './styles/StripeCardPayment.css';
 
 // Función para obtener la clave de Stripe de forma segura
 const getStripeKey = () => {
-  const key = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
+  const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
   if (!key) {
-    console.error('REACT_APP_STRIPE_PUBLISHABLE_KEY no está definida');
+    console.error('VITE_STRIPE_PUBLISHABLE_KEY no está definida');
     return null;
   }
   console.log('Stripe Key encontrada:', key.slice(0, 20) + '...');

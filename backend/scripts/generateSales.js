@@ -1,9 +1,8 @@
-const { COLLECTIONS } = require('../config/firebase');
-const firestore = require('../utils/firestoreAdmin'); path = require('path');
+const { COLLECTIONS } = require('../config/firebaseManager');
+const firestore = require('../utils/firestoreAdmin');
+const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
-
-const { db, COLLECTIONS } = require('./config/firebase');
-const { collection, addDoc, getDocs, serverTimestamp } = require('firebase/firestore');
+const Logger = require('../utils/logger.js');
 
 // Métodos de pago posibles
 const metodosDepago = [
@@ -253,10 +252,10 @@ function generarVentaAleatoria(productos) {
  */
 async function generateSales() {
   try {
-    console.log('Iniciando generación de 5000 ventas aleatorias...');
+    Logger.info('Iniciando generación de 5000 ventas aleatorias...');
     
     // Obtener productos existentes
-    console.log('Obteniendo productos desde Firebase...');
+    Logger.info('Obteniendo productos desde Firebase...');
     const productosSnapshot = await getDocs(collection(db, COLLECTIONS.PRODUCTS));
     
     if (productosSnapshot.empty) {
@@ -271,17 +270,17 @@ async function generateSales() {
       });
     });
     
-    console.log(`Se encontraron ${productos.length} productos disponibles`);
+    Logger.info(`Se encontraron ${productos.length} productos disponibles`);
     
     // Limpiar ventas existentes (opcional)
-    console.log('🧹 Limpiando ventas existentes...');
+    Logger.info('🧹 Limpiando ventas existentes...');
     const existingSales = await getDocs(collection(db, COLLECTIONS.SALES));
     if (!existingSales.empty) {
-      console.log(`⚠️ Se encontraron ${existingSales.size} ventas existentes. Se agregarán las nuevas ventas.`);
+      Logger.info(`⚠️ Se encontraron ${existingSales.size} ventas existentes. Se agregarán las nuevas ventas.`);
     }
     
     // Generar y agregar ventas
-    console.log('💰 Generando 1000 ventas aleatorias...');
+    Logger.info('💰 Generando 1000 ventas aleatorias...');
     const batchSize = 50; // Procesar en lotes para evitar sobrecarga
     const totalVentas = 5000;
     let ventasCreadas = 0;
@@ -294,7 +293,7 @@ async function generateSales() {
       const ventasLote = [];
       const ventasEnEsteLote = Math.min(batchSize, totalVentas - ventasCreadas);
       
-      console.log(`Procesando lote ${lote + 1}: ${ventasEnEsteLote} ventas...`);
+      Logger.info(`Procesando lote ${lote + 1}: ${ventasEnEsteLote} ventas...`);
       
       for (let i = 0; i < ventasEnEsteLote; i++) {
         const venta = generarVentaAleatoria(productos);
@@ -334,7 +333,7 @@ async function generateSales() {
           const docRef = await addDoc(collection(db, COLLECTIONS.SALES), venta);
           return { id: docRef.id, ...venta };
         } catch (error) {
-          console.error(`Error creando venta ${ventasCreadas + index + 1}:`, error);
+          Logger.error(`Error creando venta ${ventasCreadas + index + 1}:`, error);
           throw error;
         }
       });
@@ -342,7 +341,7 @@ async function generateSales() {
       const ventasGuardadas = await Promise.all(promesasVentas);
       ventasCreadas += ventasGuardadas.length;
       
-      console.log(`Lote ${lote + 1} completado: ${ventasGuardadas.length} ventas guardadas`);
+      Logger.info(`Lote ${lote + 1} completado: ${ventasGuardadas.length} ventas guardadas`);
     }
     
     // Resumen de productos más vendidos
@@ -350,29 +349,29 @@ async function generateSales() {
       .sort((a, b) => b[1].cantidad - a[1].cantidad)
       .slice(0, 10);
     
-    console.log('\n📊 RESUMEN DE VENTAS GENERADAS:');
-    console.log(`💰 Total de ventas: ${ventasCreadas}`);
-    console.log(`💵 Monto total: $${montoTotalVentas.toFixed(2)}`);
-    console.log(`📈 Ticket promedio: $${(montoTotalVentas / ventasCreadas).toFixed(2)}`);
+    Logger.info('\n📊 RESUMEN DE VENTAS GENERADAS:');
+    Logger.info(`💰 Total de ventas: ${ventasCreadas}`);
+    Logger.info(`💵 Monto total: $${montoTotalVentas.toFixed(2)}`);
+    Logger.info(`📈 Ticket promedio: $${(montoTotalVentas / ventasCreadas).toFixed(2)}`);
     
-    console.log('\n📅 VENTAS POR MES:');
+    Logger.info('\n📅 VENTAS POR MES:');
     Object.entries(estadisticasPorMes).forEach(([mes, stats]) => {
-      console.log(`  ${mes}: ${stats.ventas} ventas - $${stats.monto.toFixed(2)}`);
+      Logger.info(`  ${mes}: ${stats.ventas} ventas - $${stats.monto.toFixed(2)}`);
     });
     
-    console.log('\n💳 VENTAS POR MÉTODO DE PAGO:');
+    Logger.info('\n💳 VENTAS POR MÉTODO DE PAGO:');
     Object.entries(estadisticasPorMetodo).forEach(([metodo, stats]) => {
       const porcentaje = ((stats.ventas / ventasCreadas) * 100).toFixed(1);
-      console.log(`  ${metodo}: ${stats.ventas} ventas (${porcentaje}%) - $${stats.monto.toFixed(2)}`);
+      Logger.info(`  ${metodo}: ${stats.ventas} ventas (${porcentaje}%) - $${stats.monto.toFixed(2)}`);
     });
     
-    console.log('\n🏆 TOP 10 PRODUCTOS MÁS VENDIDOS:');
+    Logger.info('\n🏆 TOP 10 PRODUCTOS MÁS VENDIDOS:');
     topProductos.forEach(([nombre, stats], index) => {
-      console.log(`  ${index + 1}. ${nombre}: ${stats.cantidad} unidades - $${stats.monto.toFixed(2)}`);
+      Logger.info(`  ${index + 1}. ${nombre}: ${stats.cantidad} unidades - $${stats.monto.toFixed(2)}`);
     });
     
-    console.log(`\n🎉 ¡Generación de ventas completada exitosamente!`);
-    console.log(`📊 Se generaron ${ventasCreadas} ventas desde enero hasta junio de 2025`);
+    Logger.info(`\n🎉 ¡Generación de ventas completada exitosamente!`);
+    Logger.info(`📊 Se generaron ${ventasCreadas} ventas desde enero hasta junio de 2025`);
     
     return {
       success: true,
@@ -384,7 +383,7 @@ async function generateSales() {
     };
     
   } catch (error) {
-    console.error('Error durante la generación de ventas:', error);
+    Logger.error('Error durante la generación de ventas:', error);
     throw error;
   }
 }
@@ -393,14 +392,14 @@ async function generateSales() {
 if (require.main === module) {
   generateSales()
     .then(result => {
-      console.log('\nScript completado exitosamente:', {
+      Logger.info('\nScript completado exitosamente:', {
         ventasGeneradas: result.ventasGeneradas,
         montoTotal: `$${result.montoTotal.toFixed(2)}`
       });
       process.exit(0);
     })
     .catch(error => {
-      console.error('\nError en el script:', error);
+      Logger.error('\nError en el script:', error);
       process.exit(1);
     });
 }

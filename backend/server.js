@@ -8,7 +8,6 @@ const config = require('./config/config');
 const corsOptions = require('./config/cors');
 
 // Importar middleware
-const { verifyToken } = require('./middleware/auth');
 const errorHandler = require('./middleware/errorHandler');
 const logger = require('./middleware/logger');
 
@@ -31,6 +30,9 @@ const logsRoutes = require('./routes/logsRoutes');
 const inventoryService = require('./services/inventoryService');
 const googleSheetsService = require('./services/googleSheetsService');
 
+// Importar logger mejorado
+const Logger = require('./utils/logger');
+
 // Configurar express
 const app = express();
 
@@ -51,15 +53,19 @@ const apiRouter = express.Router();
 // =========================================================
 apiRouter.get('/health', systemController.healthCheck);
 apiRouter.get('/status', systemController.serverStatus);
-apiRouter.get('/firebase-config', systemController.firebaseConfig);
 
 // =========================================================
 // ENDPOINTS DE AUTENTICACIÓN
 // =========================================================
-apiRouter.post('/auth/verify-token', authController.verifyToken);
-apiRouter.post('/auth/create-user', authController.createUser);
-apiRouter.get('/auth/verify', verifyToken, authController.verify);
-apiRouter.post('/auth/logout', verifyToken, authController.logout);
+apiRouter.post('/auth/login', authController.login);
+apiRouter.get('/auth/verify', (req, res, next) => {
+  const { verifyToken } = require('./middleware/auth');
+  verifyToken(req, res, next);
+}, authController.verify);
+apiRouter.post('/auth/logout', (req, res, next) => {
+  const { verifyToken } = require('./middleware/auth');
+  verifyToken(req, res, next);
+}, authController.logout);
 
 // =========================================================
 // REGISTRAR TODAS LAS RUTAS DE LA API
@@ -99,19 +105,28 @@ if (config.env === 'production') {
 app.use(errorHandler);
 
 // =========================================================
-// INICIALIZACIÓN DE DATOS
+// INICIALIZACIÓN DE FIREBASE Y DATOS
 // =========================================================
 
-// Inicializar datos necesarios
+// Inicializar Firebase y datos necesarios
 (async () => {
   try {
-    console.log("Inicializando inventario...");
+    Logger.startOperation('Backend Server Initialization');
+    
+    // Inicializar Firebase PRIMERO
+    const { firebaseManager } = require('./config/firebaseManager');
+    await firebaseManager.initialize();
+    
+    Logger.info("Inicializando inventario...");
     await inventoryService.initializeInventory();
     
-    console.log("Inicializando servicio de Google Sheets...");
+    Logger.info("Inicializando servicio de Google Sheets...");
     await googleSheetsService.initialize();
+    
+    Logger.endOperation('Backend Server Initialization', true);
   } catch (error) {
-    console.error("Error en inicialización:", error);
+    Logger.error("Error en inicialización del servidor", { error: error.message });
+    Logger.endOperation('Backend Server Initialization', false);
   }
 })();
 
@@ -124,62 +139,60 @@ const PORT = config.port;
 const HOST = '0.0.0.0'; // Escuchar en todas las interfaces de red
 
 app.listen(PORT, HOST, () => {
-  console.log('=========================================================');
-  console.log(`SERVIDOR BACKEND- ${new Date().toISOString()}`);
-  console.log('=========================================================');
-  console.log(`Servidor corriendo en http://0.0.0.0:${PORT}`);
-  console.log(`Modo: ${config.env}`);
-  console.log('=========================================================');
-  console.log('ENDPOINTS DISPONIBLES:');
-  console.log('=========================================================');
-  console.log('Sistema:');
-  console.log('  - GET /api/health - Estado de salud del API');
-  console.log('  - GET /api/status - Estado del servidor');
-  console.log('  - GET /api/firebase-config - Configuración de Firebase');
-  console.log('=========================================================');
-  console.log('Autenticación:');
-  console.log('  - POST /api/auth/login - Iniciar sesión');
-  console.log('  - GET /api/auth/verify - Verificar token');
-  console.log('  - POST /api/auth/logout - Cerrar sesión');
-  console.log('=========================================================');
-  console.log('Productos:');
-  console.log('  - GET /api/products - Listar productos');
-  console.log('  - GET /api/products/:id - Obtener producto');
-  console.log('  - POST /api/products - Crear producto');
-  console.log('  - PUT /api/products/:id - Actualizar producto');
-  console.log('  - DELETE /api/products/:id - Eliminar producto');
-  console.log('=========================================================');
-  console.log('Inventario:');
-  console.log('  - GET /api/inventory - Listar inventario');
-  console.log('  - POST /api/inventory/update - Actualizar inventario');
-  console.log('  - GET /api/inventory/movements - Movimientos de inventario');
-  console.log('  - GET /api/inventory/summary - Resumen de inventario');
-  console.log('=========================================================');
-  console.log('Ventas:');
-  console.log('  - GET /api/sales - Listar ventas');
-  console.log('  - GET /api/sales/:id - Obtener venta');
-  console.log('  - POST /api/sales - Crear venta');
-  console.log('=========================================================');
-  console.log('Carrito y Transacciones:');
-  console.log('  - GET /api/cart - Obtener carrito');
-  console.log('  - POST /api/cart - Agregar item al carrito');
-  console.log('  - DELETE /api/cart/:id - Eliminar item del carrito');
-  console.log('  - GET /api/transactions - Listar transacciones');
-  console.log('=========================================================');
-  console.log('Detección:');
-  console.log('  - POST /api/detection - Detectar objetos');
-  console.log('  - POST /api/detection/capture - Capturar imagen');
-  console.log('=========================================================');
-  console.log('Dashboard:');
-  console.log('  - GET /api/dashboard/metrics - Métricas del dashboard');
-  console.log('  - GET /api/dashboard/sales-data - Datos de ventas desde Google Sheets');
-  console.log('=========================================================');
-  console.log('Logs del Backend:');
-  console.log('  - GET /api/logs - Obtener logs recientes');
-  console.log('  - GET /api/logs/stream - Stream en tiempo real');
-  console.log('  - POST /api/logs/clear - Limpiar logs');
-  console.log('  - GET /api/logs/download - Descargar logs');
-  console.log('=========================================================');
+  Logger.separator('SERVIDOR BACKEND INICIADO');
+  Logger.system(`Servidor corriendo en http://0.0.0.0:${PORT}`);
+  Logger.system(`Modo: ${config.env}`);
+  Logger.system(`Timestamp: ${new Date().toISOString()}`);
+  Logger.separator('ENDPOINTS DISPONIBLES');
+  
+  Logger.info('Sistema:');
+  Logger.info('  - GET /api/health - Estado de salud del API');
+  Logger.info('  - GET /api/status - Estado del servidor');
+  
+  Logger.info('Autenticación:');
+  Logger.info('  - POST /api/auth/login - Iniciar sesión');
+  Logger.info('  - GET /api/auth/verify - Verificar token');
+  Logger.info('  - POST /api/auth/logout - Cerrar sesión');
+  
+  Logger.info('Productos:');
+  Logger.info('  - GET /api/products - Listar productos');
+  Logger.info('  - GET /api/products/:id - Obtener producto');
+  Logger.info('  - POST /api/products - Crear producto');
+  Logger.info('  - PUT /api/products/:id - Actualizar producto');
+  Logger.info('  - DELETE /api/products/:id - Eliminar producto');
+  
+  Logger.info('Inventario:');
+  Logger.info('  - GET /api/inventory - Listar inventario');
+  Logger.info('  - POST /api/inventory/update - Actualizar inventario');
+  Logger.info('  - GET /api/inventory/movements - Movimientos de inventario');
+  Logger.info('  - GET /api/inventory/summary - Resumen de inventario');
+  
+  Logger.info('Ventas:');
+  Logger.info('  - GET /api/sales - Listar ventas');
+  Logger.info('  - GET /api/sales/:id - Obtener venta');
+  Logger.info('  - POST /api/sales - Crear venta');
+  
+  Logger.info('Carrito y Transacciones:');
+  Logger.info('  - GET /api/cart - Obtener carrito');
+  Logger.info('  - POST /api/cart - Agregar item al carrito');
+  Logger.info('  - DELETE /api/cart/:id - Eliminar item del carrito');
+  Logger.info('  - GET /api/transactions - Listar transacciones');
+  
+  Logger.separator();
+  Logger.info('Detección:');
+  Logger.info('  - POST /api/detection - Detectar objetos');
+  Logger.info('  - POST /api/detection/capture - Capturar imagen');
+  Logger.info('=========================================================');
+  Logger.info('Dashboard:');
+  Logger.info('  - GET /api/dashboard/metrics - Métricas del dashboard');
+  Logger.info('  - GET /api/dashboard/sales-data - Datos de ventas desde Google Sheets');
+  Logger.info('=========================================================');
+  Logger.info('Logs del Backend:');
+  Logger.info('  - GET /api/logs - Obtener logs recientes');
+  Logger.info('  - GET /api/logs/stream - Stream en tiempo real');
+  Logger.info('  - POST /api/logs/clear - Limpiar logs');
+  Logger.info('  - GET /api/logs/download - Descargar logs');
+  Logger.info('=========================================================');
 });
 
 // Exportar para testing

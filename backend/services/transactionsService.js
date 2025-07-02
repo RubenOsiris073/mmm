@@ -1,5 +1,6 @@
-const { COLLECTIONS } = require('../config/firebase');
+const { COLLECTIONS } = require('../config/firebaseManager');
 const firestore = require('../utils/firestoreAdmin');
+const Logger = require('../utils/logger.js');
 
 // Obtener transacciones con un límite
 const getTransactions = async (limitVal) => {
@@ -19,7 +20,7 @@ const getTransactions = async (limitVal) => {
     
     return transactions;
   } catch (error) {
-    console.error("Error al obtener transacciones:", error);
+    Logger.error("Error al obtener transacciones:", error);
     throw new Error("Error al obtener transacciones");
   }
 };
@@ -63,7 +64,7 @@ const getUserTransactions = async (userId, limitVal = 20) => {
     
     return transactions;
   } catch (error) {
-    console.error(`Error al obtener transacciones para usuario ${userId}:`, error);
+    Logger.error(`Error al obtener transacciones para usuario ${userId}:`, error);
     throw new Error(`Error al obtener transacciones del usuario: ${error.message}`);
   }
 };
@@ -80,7 +81,7 @@ const getUserTransactions = async (userId, limitVal = 20) => {
  */
 const createTransaction = async (transactionData) => {
   try {
-    console.log("Creando nueva transacción:", transactionData);
+    Logger.info("Creando nueva transacción:", transactionData);
     
     const { userId, amount, type = 'payment', description, sessionId, paymentMethod } = transactionData;
     
@@ -112,7 +113,7 @@ const createTransaction = async (transactionData) => {
     }
     
     const docRef = await addDoc(transactionsRef, newTransaction);
-    console.log(`Transacción creada con ID: ${docRef.id}`);
+    Logger.info(`Transacción creada con ID: ${docRef.id}`);
     
     return {
       id: docRef.id,
@@ -120,7 +121,7 @@ const createTransaction = async (transactionData) => {
       timestamp: new Date().toISOString() // Convertir serverTimestamp a string ISO para la respuesta
     };
   } catch (error) {
-    console.error("Error al crear transacción:", error);
+    Logger.error("Error al crear transacción:", error);
     throw new Error(`Error al crear transacción: ${error.message}`);
   }
 };
@@ -143,7 +144,7 @@ const getTransactionById = async (transactionId) => {
       timestamp: data.timestamp?.toDate?.() || data.timestamp
     };
   } catch (error) {
-    console.error(`Error al obtener transacción ${transactionId}:`, error);
+    Logger.error(`Error al obtener transacción ${transactionId}:`, error);
     throw new Error(`Error al obtener transacción: ${error.message}`);
   }
 };
@@ -159,10 +160,10 @@ const updateTransactionStatus = async (transactionId, newStatus) => {
       updatedAt: serverTimestamp()
     });
     
-    console.log(`Transacción ${transactionId} actualizada a estado: ${newStatus}`);
+    Logger.info(`Transacción ${transactionId} actualizada a estado: ${newStatus}`);
     return true;
   } catch (error) {
-    console.error(`Error al actualizar transacción ${transactionId}:`, error);
+    Logger.error(`Error al actualizar transacción ${transactionId}:`, error);
     throw new Error(`Error al actualizar transacción: ${error.message}`);
   }
 };

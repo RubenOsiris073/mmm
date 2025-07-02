@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Sistema de caché simple para optimizar rendimiento
 const cache = new Map();
@@ -48,11 +48,11 @@ api.interceptors.request.use(
         const token = await auth.currentUser.getIdToken(true); // forzar refresh del token
         config.headers.Authorization = `Bearer ${token}`;
         
-        if (process.env.NODE_ENV === 'development') {
+        if (import.meta.env.DEV) {
           console.log('Token de autenticación agregado correctamente');
         }
       } else {
-        if (process.env.NODE_ENV === 'development') {
+        if (import.meta.env.DEV) {
           console.log('No hay usuario autenticado - sin token');
         }
       }
@@ -60,7 +60,7 @@ api.interceptors.request.use(
       console.error('Error obteniendo token de autenticación:', error.message);
     }
     
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
     }
     
@@ -72,7 +72,7 @@ api.interceptors.request.use(
 );
 
 // Interceptor optimizado para logs solo en desarrollo
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV) {
   api.interceptors.response.use(
     (response) => {
       console.log(`API Response: ${response.status} - ${response.config.url}`);

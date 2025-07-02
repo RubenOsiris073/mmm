@@ -1,11 +1,25 @@
-const { admin } = require('../config/firebase');
+const { firebaseManager, admin } = require('../config/firebaseManager');
 
 /**
  * Utilidades para Firestore usando Firebase Admin SDK
  */
 class FirestoreAdmin {
   constructor() {
-    this.db = admin.firestore();
+    // No inicializar aquí, usar el gestor centralizado
+    this._db = null;
+  }
+  
+  /**
+   * Obtener la instancia de Firestore
+   */
+  get db() {
+    if (!this._db) {
+      if (!firebaseManager.isInitialized()) {
+        throw new Error('Firebase no está inicializado. Asegúrate de llamar a firebaseManager.initialize() primero.');
+      }
+      this._db = firebaseManager.getFirestore();
+    }
+    return this._db;
   }
 
   /**

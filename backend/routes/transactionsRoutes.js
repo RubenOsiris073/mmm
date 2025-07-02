@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const transactionsService = require('../services/transactionsService');
+const Logger = require('../utils/logger.js');
 
 // Obtener todas las transacciones con límite
 router.get('/', async (req, res) => {
@@ -12,7 +13,7 @@ router.get('/', async (req, res) => {
       transactions
     });
   } catch (error) {
-    console.error("Error al obtener transacciones:", error);
+    Logger.error("Error al obtener transacciones:", error);
     res.status(500).json({
       success: false,
       error: error.message || "Error al obtener transacciones",
@@ -27,7 +28,7 @@ router.get('/user/:userId', async (req, res) => {
     const { userId } = req.params;
     const limitVal = parseInt(req.query.limit) || 20;
     
-    console.log(`Obteniendo transacciones para usuario ${userId} con límite ${limitVal}`);
+    Logger.info(`Obteniendo transacciones para usuario ${userId} con límite ${limitVal}`);
     
     const transactions = await transactionsService.getUserTransactions(userId, limitVal);
     
@@ -36,7 +37,7 @@ router.get('/user/:userId', async (req, res) => {
       transactions
     });
   } catch (error) {
-    console.error(`Error al obtener transacciones para usuario ${req.params.userId}:`, error);
+    Logger.error(`Error al obtener transacciones para usuario ${req.params.userId}:`, error);
     res.status(500).json({
       success: false,
       error: error.message || "Error al obtener transacciones del usuario",
@@ -57,7 +58,7 @@ router.get('/:transactionId/status', async (req, res) => {
       transactionId
     });
   } catch (error) {
-    console.error(`Error al verificar estado de transacción ${req.params.transactionId}:`, error);
+    Logger.error(`Error al verificar estado de transacción ${req.params.transactionId}:`, error);
     res.status(500).json({
       success: false,
       error: error.message || "Error al verificar estado de la transacción"
@@ -70,7 +71,7 @@ router.post('/', async (req, res) => {
   try {
     const transactionData = req.body;
     
-    console.log('Creando transacción:', transactionData);
+    Logger.info('Creando transacción:', transactionData);
     
     const transaction = await transactionsService.createTransaction(transactionData);
     
@@ -79,7 +80,7 @@ router.post('/', async (req, res) => {
       transaction
     });
   } catch (error) {
-    console.error('Error al crear transacción:', error);
+    Logger.error('Error al crear transacción:', error);
     res.status(500).json({
       success: false,
       error: error.message || "Error al crear transacción"
@@ -92,7 +93,7 @@ router.get('/:transactionId', async (req, res) => {
   try {
     const { transactionId } = req.params;
     
-    console.log(`Obteniendo transacción con ID: ${transactionId}`);
+    Logger.info(`Obteniendo transacción con ID: ${transactionId}`);
     
     const transaction = await transactionsService.getTransactionById(transactionId);
     
@@ -108,7 +109,7 @@ router.get('/:transactionId', async (req, res) => {
       transaction
     });
   } catch (error) {
-    console.error(`Error al obtener transacción ${req.params.transactionId}:`, error);
+    Logger.error(`Error al obtener transacción ${req.params.transactionId}:`, error);
     res.status(500).json({
       success: false,
       error: error.message || "Error al obtener la transacción"
@@ -122,7 +123,7 @@ router.post('/:transactionId/refund', async (req, res) => {
     const { transactionId } = req.params;
     const { reason, amount } = req.body;
     
-    console.log(`Procesando reembolso para transacción ${transactionId}`);
+    Logger.info(`Procesando reembolso para transacción ${transactionId}`);
     
     // Primero obtener la transacción original
     const originalTransaction = await transactionsService.getTransactionById(transactionId);
@@ -182,7 +183,7 @@ router.post('/:transactionId/refund', async (req, res) => {
     });
     
   } catch (error) {
-    console.error(`Error procesando reembolso:`, error);
+    Logger.error(`Error procesando reembolso:`, error);
     res.status(500).json({
       success: false,
       error: error.message || "Error al procesar el reembolso"

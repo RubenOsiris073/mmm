@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, getDocs, doc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { getAuth as getFirebaseAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getAuth as getFirebaseAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut as firebaseSignOut, onAuthStateChanged, createUserWithEmailAndPassword } from 'firebase/auth';
 
 // Colecciones de Firebase
 export const COLLECTIONS = {
@@ -43,21 +43,21 @@ export const initializeFirebase = async () => {
     }
 
     const firebaseConfig = {
-      apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-      authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-      projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-      storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-      messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-      appId: process.env.REACT_APP_FIREBASE_APP_ID,
+      apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+      storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+      appId: import.meta.env.VITE_FIREBASE_APP_ID,
     };
 
     console.log('Configuración Firebase:', {
-      apiKey: process.env.REACT_APP_FIREBASE_API_KEY ? 'OK' : 'MISSING',
-      authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN ? 'OK' : 'MISSING',
-      projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID ? 'OK' : 'MISSING',
-      storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET ? 'OK' : 'MISSING',
-      messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID ? 'OK' : 'MISSING',
-      appId: process.env.REACT_APP_FIREBASE_APP_ID ? 'OK' : 'MISSING'
+      apiKey: import.meta.env.VITE_FIREBASE_API_KEY ? 'OK' : 'MISSING',
+      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ? 'OK' : 'MISSING',
+      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID ? 'OK' : 'MISSING',
+      storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET ? 'OK' : 'MISSING',
+      messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID ? 'OK' : 'MISSING',
+      appId: import.meta.env.VITE_FIREBASE_APP_ID ? 'OK' : 'MISSING'
     });
     
     console.log('Inicializando Firebase con proyecto:', firebaseConfig.projectId);
@@ -83,39 +83,54 @@ export const initializeFirebase = async () => {
 export const authService = {
   // Login con email y password
   signInWithEmail: async (email, password) => {
-    const authInstance = auth || getAuth();
+    const authInstance = getAuth();
+    if (!authInstance) {
+      throw new Error('Firebase Auth no está inicializado');
+    }
     return await signInWithEmailAndPassword(authInstance, email, password);
   },
 
   // Login con Google
   signInWithGoogle: async () => {
-    const authInstance = auth || getAuth();
+    const authInstance = getAuth();
+    if (!authInstance) {
+      throw new Error('Firebase Auth no está inicializado');
+    }
     const provider = new GoogleAuthProvider();
     return await signInWithPopup(authInstance, provider);
   },
 
   // Registro con email y password
   signUpWithEmail: async (email, password) => {
-    const authInstance = auth || getAuth();
+    const authInstance = getAuth();
+    if (!authInstance) {
+      throw new Error('Firebase Auth no está inicializado');
+    }
     return await createUserWithEmailAndPassword(authInstance, email, password);
   },
 
   // Cerrar sesión
   signOut: async () => {
-    const authInstance = auth || getAuth();
-    return await signOut(authInstance);
+    const authInstance = getAuth();
+    if (!authInstance) {
+      throw new Error('Firebase Auth no está inicializado');
+    }
+    return await firebaseSignOut(authInstance);
   },
 
   // Observador de estado de autenticación
   onAuthStateChanged: (callback) => {
-    const authInstance = auth || getAuth();
+    const authInstance = getAuth();
+    if (!authInstance) {
+      throw new Error('Firebase Auth no está inicializado');
+    }
     return onAuthStateChanged(authInstance, callback);
   },
 
   // Obtener usuario actual
   getCurrentUser: () => {
-    const authInstance = auth || getAuth();
-    return authInstance.currentUser;
+    const authInstance = getAuth();
+    return authInstance ? authInstance.currentUser : null;
   }
 };
 

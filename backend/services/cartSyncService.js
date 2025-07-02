@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const cartService = require('./cartService');
 const salesService = require('./salesService');
 const transactionsService = require('./transactionsService'); // Agregar transactionsService
+const Logger = require('../utils/logger.js');
 
 // Almacén en memoria de carritos sincronizados (en producción usar Redis o similar)
 const syncedCarts = new Map();
@@ -129,7 +130,7 @@ const processPayment = async (identifier, paymentInfo) => {
       };
     });
     
-    console.log("Items formateados:", JSON.stringify(formattedItems, null, 2));
+    Logger.info("Items formateados:", JSON.stringify(formattedItems, null, 2));
     
     const saleData = {
       items: formattedItems,
@@ -140,7 +141,7 @@ const processPayment = async (identifier, paymentInfo) => {
       clientName: paymentInfo.userId ? `Usuario Wallet: ${paymentInfo.userId}` : "Cliente General"
     };
     
-    console.log("Datos de venta preparados:", saleData);
+    Logger.info("Datos de venta preparados:", saleData);
     
     // Usar salesService para crear la venta en la colección "sales"
     const sale = await salesService.createSale(saleData);
@@ -159,7 +160,7 @@ const processPayment = async (identifier, paymentInfo) => {
         };
         
         const transaction = await transactionsService.createTransaction(transactionData);
-        console.log(`Transacción creada: ${transaction.id} para usuario: ${paymentInfo.userId}`);
+        Logger.info(`Transacción creada: ${transaction.id} para usuario: ${paymentInfo.userId}`);
         
         // Actualizar el estado del carrito sincronizado
         syncData.status = 'paid';
@@ -177,7 +178,7 @@ const processPayment = async (identifier, paymentInfo) => {
           sessionId: sessionId
         };
       } catch (transactionError) {
-        console.error('Error creando transacción:', transactionError);
+        Logger.error('Error creando transacción:', transactionError);
         // Continuar aunque la transacción falle, la venta ya se creó
       }
     }
@@ -196,7 +197,7 @@ const processPayment = async (identifier, paymentInfo) => {
       sessionId: sessionId
     };
   } catch (error) {
-    console.error('Error al procesar el pago:', error);
+    Logger.error('Error al procesar el pago:', error);
     syncData.status = 'failed';
     syncData.error = error.message;
     syncedCarts.set(sessionId, syncData);

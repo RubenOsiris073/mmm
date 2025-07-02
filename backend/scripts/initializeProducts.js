@@ -1,8 +1,9 @@
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+const Logger = require('../utils/logger.js');
 
 // Usar firebase-admin en lugar de client SDK
-const { admin } = require('../config/firebase');
+const { admin } = require('../config/firebaseManager');
 
 // Obtener referencia a Firestore
 const db = admin.firestore();
@@ -1127,18 +1128,18 @@ const productos = [
 // Función principal para inicializar productos
 async function initializeProducts() {
   try {
-    console.log('🚀 Iniciando inicialización de productos...');
-    console.log('📅 Generando fechas de caducidad automáticas...');
+    Logger.info('🚀 Iniciando inicialización de productos...');
+    Logger.info('📅 Generando fechas de caducidad automáticas...');
     
     // Primero, limpiar productos existentes (opcional)
-    console.log('🧹 Limpiando productos existentes...');
+    Logger.info('🧹 Limpiando productos existentes...');
     const existingProducts = await getDocs(collection(db, COLLECTIONS.PRODUCTS));
     const deletePromises = existingProducts.docs.map(doc => deleteDoc(doc.ref));
     await Promise.all(deletePromises);
-    console.log(`✅ Se eliminaron ${existingProducts.size} productos existentes`);
+    Logger.info(`✅ Se eliminaron ${existingProducts.size} productos existentes`);
     
     // Agregar productos nuevos con fechas de caducidad
-    console.log('📦 Agregando nuevos productos con fechas de caducidad...');
+    Logger.info('📦 Agregando nuevos productos con fechas de caducidad...');
     const addPromises = productos.map(async (producto, index) => {
       try {
         // Generar fecha de caducidad automáticamente
@@ -1158,10 +1159,10 @@ async function initializeProducts() {
         
         const docRef = await addDoc(collection(db, COLLECTIONS.PRODUCTS), productoConFecha);
         
-        console.log(`✅ ${index + 1}/${productos.length} - ${producto.nombre} (Caduca: ${fechaCaducidad.toLocaleDateString('es-MX')})`);
+        Logger.info(`✅ ${index + 1}/${productos.length} - ${producto.nombre} (Caduca: ${fechaCaducidad.toLocaleDateString('es-MX')})`);
         return { id: docRef.id, ...productoConFecha };
       } catch (error) {
-        console.error(`❌ Error agregando producto ${producto.nombre}:`, error);
+        Logger.error(`❌ Error agregando producto ${producto.nombre}:`, error);
         throw error;
       }
     });
@@ -1170,12 +1171,12 @@ async function initializeProducts() {
     
     // Resumen por categorías
     const categorias = [...new Set(productos.map(p => p.categoria))];
-    console.log('\n📊 RESUMEN POR CATEGORÍAS:');
+    Logger.info('\n📊 RESUMEN POR CATEGORÍAS:');
     categorias.forEach(categoria => {
       const productosCategoria = productos.filter(p => p.categoria === categoria);
-      console.log(`  📁 ${categoria}: ${productosCategoria.length} productos`);
+      Logger.info(`  📁 ${categoria}: ${productosCategoria.length} productos`);
       productosCategoria.forEach(p => {
-        console.log(`    • ${p.nombre} ($${p.precio})`);
+        Logger.info(`    • ${p.nombre} ($${p.precio})`);
       });
     });
     
@@ -1183,18 +1184,18 @@ async function initializeProducts() {
     const productosPereceseros = productosAgregados.filter(p => p.perecedero);
     const productosNoPereceseros = productosAgregados.filter(p => !p.perecedero);
     
-    console.log('\n📅 RESUMEN DE FECHAS DE CADUCIDAD:');
-    console.log(`  🟢 Productos perecederos: ${productosPereceseros.length}`);
-    console.log(`  🔵 Productos no perecederos: ${productosNoPereceseros.length}`);
+    Logger.info('\n📅 RESUMEN DE FECHAS DE CADUCIDAD:');
+    Logger.info(`  🟢 Productos perecederos: ${productosPereceseros.length}`);
+    Logger.info(`  🔵 Productos no perecederos: ${productosNoPereceseros.length}`);
     
     // Productos que caducan pronto (menos de 30 días)
     const productosProximosACaducar = productosAgregados.filter(p => p.diasParaCaducar <= 30);
-    console.log(`  ⚠️  Productos que caducan en 30 días o menos: ${productosProximosACaducar.length}`);
+    Logger.info(`  ⚠️  Productos que caducan en 30 días o menos: ${productosProximosACaducar.length}`);
     
-    console.log(`\n🎉 ¡Inicialización completada exitosamente!`);
-    console.log(`📦 Total de productos agregados: ${productosAgregados.length}`);
-    console.log(`📁 Total de categorías: ${categorias.length}`);
-    console.log(`📅 Fechas de caducidad generadas automáticamente`);
+    Logger.info(`\n🎉 ¡Inicialización completada exitosamente!`);
+    Logger.info(`📦 Total de productos agregados: ${productosAgregados.length}`);
+    Logger.info(`📁 Total de categorías: ${categorias.length}`);
+    Logger.info(`📅 Fechas de caducidad generadas automáticamente`);
     
     return {
       success: true,
@@ -1207,7 +1208,7 @@ async function initializeProducts() {
     };
     
   } catch (error) {
-    console.error('💥 Error durante la inicialización:', error);
+    Logger.error('💥 Error durante la inicialización:', error);
     throw error;
   }
 }
@@ -1216,11 +1217,11 @@ async function initializeProducts() {
 if (require.main === module) {
   initializeProducts()
     .then(result => {
-      console.log('\n🏆 Script completado exitosamente:', result);
+      Logger.info('\n🏆 Script completado exitosamente:', result);
       process.exit(0);
     })
     .catch(error => {
-      console.error('\n💥 Error en el script:', error);
+      Logger.error('\n💥 Error en el script:', error);
       process.exit(1);
     });
 }

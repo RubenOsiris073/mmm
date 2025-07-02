@@ -1,6 +1,7 @@
 // Servicio para gestionar carritos compartidos entre POS y wallet móvil
-const { COLLECTIONS } = require('../config/firebase');
+const { COLLECTIONS } = require('../config/firebaseManager');
 const firestore = require('../utils/firestoreAdmin');
+const Logger = require('../utils/logger.js');
 
 /**
  * Genera un código alfanumérico aleatorio de la longitud especificada
@@ -52,7 +53,7 @@ class CartService {
         ...newCartData
       };
     } catch (error) {
-      console.error('Error al crear carrito:', error);
+      Logger.error('Error al crear carrito:', error);
       throw error;
     }
   }
@@ -78,7 +79,7 @@ class CartService {
         ...cartDoc.data()
       };
     } catch (error) {
-      console.error(`Error al obtener carrito con sessionId ${sessionId}:`, error);
+      Logger.error(`Error al obtener carrito con sessionId ${sessionId}:`, error);
       throw error;
     }
   }
@@ -111,7 +112,7 @@ class CartService {
         ...updateData
       };
     } catch (error) {
-      console.error(`Error al actualizar estado del carrito con sessionId ${sessionId}:`, error);
+      Logger.error(`Error al actualizar estado del carrito con sessionId ${sessionId}:`, error);
       throw error;
     }
   }
@@ -148,7 +149,7 @@ class CartService {
         ...updateData
       };
     } catch (error) {
-      console.error(`Error al procesar pago del carrito con sessionId ${sessionId}:`, error);
+      Logger.error(`Error al procesar pago del carrito con sessionId ${sessionId}:`, error);
       throw error;
     }
   }

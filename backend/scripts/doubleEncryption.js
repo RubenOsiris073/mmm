@@ -3,6 +3,7 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const Logger = require('../utils/logger.js');
 
 /**
  * Sistema de doble encriptación AES para credenciales
@@ -98,51 +99,143 @@ class DoubleEncryptionManager {
     
     return JSON.parse(credentialsJson);
   }
+
+  /**
+   * Cargar y desencriptar credenciales desde archivo
+   */
+  loadAndDecryptCredentials(filePath, masterKey) {
+    try {
+      const fullPath = path.isAbsolute(filePath) ? filePath : path.join(__dirname, '../config', filePath);
+      
+      if (!fs.existsSync(fullPath)) {
+        throw new Error(`Archivo de credenciales no encontrado: ${filePath}`);
+      }
+
+      const encryptedData = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
+      const decryptedCredentials = this.doubleDecrypt(encryptedData, masterKey);
+      return decryptedCredentials;
+    } catch (error) {
+      throw new Error(`Error cargando credenciales: ${error.message}`);
+    }
+  }
 }
 
 /**
  * Script principal
  */
-async function createDoubleEncryptedCredentials() {
+async function createDoubleEncryptedCredentials(credentialType = 'google') {
   const manager = new DoubleEncryptionManager();
   
-  // Rutas
-  const inputFile = path.join(__dirname, '../config/google-service-account.json');
-  const outputFile = path.join(__dirname, '../config/google-credentials.double-encrypted.json');
+  // Configuración de archivos basada en el tipo
+  const configs = {
+    google: {
+      inputFile: path.join(__dirname, '../config/google-service-account.json'),
+      outputFile: path.join(__dirname, '../config/sys-auth-config.double-encrypted.json'),
+      description: 'Google Sheets credentials'
+    },
+    firebase: {
+      inputFile: path.join(__dirname, '../config/firebase-service-account.json'),
+      outputFile: path.join(__dirname, '../config/db-auth-config.double-encrypted.json'),
+      description: 'Firebase Admin credentials'
+    }
+  };
+  
+  const config = configs[credentialType];
+  if (!config) {
+    throw new Error(`Tipo de credencial no válido: ${credentialType}`);
+  }
   
   // Clave maestra (se debe configurar en .env)
   const masterPassword = process.env.MASTER_ENCRYPTION_KEY || 'fisgo-monkey-tech-master-key-2025';
   
   try {
     // Leer credenciales originales
-    if (!fs.existsSync(inputFile)) {
-      throw new Error('Archivo de credenciales no encontrado');
+    if (!fs.existsSync(config.inputFile)) {
+      throw new Error(`Archivo de credenciales no encontrado: ${config.inputFile}`);
     }
     
-    const credentialsData = JSON.parse(fs.readFileSync(inputFile, 'utf8'));
+    const credentialsData = JSON.parse(fs.readFileSync(config.inputFile, 'utf8'));
     
     // Doble encriptación
     const doubleEncrypted = manager.doubleEncrypt(credentialsData, masterPassword);
     
-    // Guardar resultado
-    fs.writeFileSync(outputFile, JSON.stringify(doubleEncrypted, null, 2));
+    // Agregar metadata
+    doubleEncrypted.credentialType = credentialType;
+    doubleEncrypted.description = config.description;
     
-    console.log('Doble encriptación completada');
-    console.log('Archivo guardado:', outputFile);
-    console.log('Clave maestra utilizada:', masterPassword);
-    console.log('Timestamp:', doubleEncrypted.timestamp);
+    // Guardar resultado
+    fs.writeFileSync(config.outputFile, JSON.stringify(doubleEncrypted, null, 2));
+    
+    Logger.info(`Doble encriptación completada para ${credentialType}`);
+    Logger.info('Archivo guardado:', config.outputFile);
+    Logger.info('Descripción:', config.description);
+    Logger.info('Timestamp:', doubleEncrypted.timestamp);
     
     return true;
     
   } catch (error) {
-    console.error('Error en doble encriptación:', error.message);
+    Logger.error(`Error en doble encriptación para ${credentialType}:`, error.message);
     return false;
   }
 }
 
-// Ejecutar si se llama directamente
-if (require.main === module) {
-  createDoubleEncryptedCredentials();
+/**
+ * Función para encriptar todas las credenciales
+ */
+async function encryptAllCredentials() {
+  Logger.info('Iniciando encriptación de todas las credenciales...\n');
+  
+  const types = ['google', 'firebase'];
+  const results = [];
+  
+  for (const type of types) {
+    try {
+      Logger.info(`--- Procesando credenciales de ${type} ---`);
+      const success = await createDoubleEncryptedCredentials(type);
+      results.push({ type, success });
+      Logger.info(`✓ ${type} completado\n`);
+    } catch (error) {
+      Logger.error(`✗ Error en ${type}:`, error.message);
+      results.push({ type, success: false, error: error.message });
+    }
+  }
+  
+  // Resumen
+  Logger.info('\n=== RESUMEN DE ENCRIPTACIÓN ===');
+  results.forEach(result => {
+    const status = result.success ? '✓ ÉXITO' : '✗ ERROR';
+    Logger.info(`${result.type}: ${status}`);
+    if (result.error) {
+      Logger.info(`  Error: ${result.error}`);
+    }
+  });
+  
+  return results;
 }
 
-module.exports = { DoubleEncryptionManager, createDoubleEncryptedCredentials };
+// Ejecutar si se llama directamente
+if (require.main === module) {
+  // Verificar argumentos de línea de comandos
+  const args = process.argv.slice(2);
+  
+  if (args.includes('--all')) {
+    encryptAllCredentials();
+  } else if (args.includes('--firebase')) {
+    createDoubleEncryptedCredentials('firebase');
+  } else if (args.includes('--google')) {
+    createDoubleEncryptedCredentials('google');
+  } else {
+    Logger.info('Uso del script:');
+    Logger.info('  node doubleEncryption.js --all        # Encriptar todas las credenciales');
+    Logger.info('  node doubleEncryption.js --firebase   # Solo Firebase');
+    Logger.info('  node doubleEncryption.js --google     # Solo Google Sheets');
+    Logger.info('\nPor defecto, se ejecutará --all');
+    encryptAllCredentials();
+  }
+}
+
+module.exports = { 
+  DoubleEncryptionManager, 
+  createDoubleEncryptedCredentials, 
+  encryptAllCredentials 
+};

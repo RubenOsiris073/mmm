@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { COLLECTIONS } = require('../config/firebase');
+const { COLLECTIONS } = require('../config/firebaseManager');
 const firestore = require('../utils/firestoreAdmin');
 const productService = require('../services/productService');
 const inventoryService = require('../services/inventoryService');
+const Logger = require('../utils/logger.js');
 
 // GET /api/products - Usar el servicio automatizado
 router.get('/', async (req, res) => {
@@ -17,7 +18,7 @@ router.get('/', async (req, res) => {
       count: products.length
     });
   } catch (error) {
-    console.error('Error al obtener productos:', error);
+    Logger.error('Error al obtener productos:', error);
     res.status(500).json({ 
       error: 'Error al obtener productos',
       message: error.message,
@@ -29,7 +30,7 @@ router.get('/', async (req, res) => {
 // Nuevo endpoint para inicializar stock automáticamente
 router.post('/initialize-stock', async (req, res) => {
   try {
-    console.log('🚀 Inicializando stock para todos los productos...');
+    Logger.info('🚀 Inicializando stock para todos los productos...');
     
     // Forzar la inicialización ejecutando getAllProducts
     const products = await productService.getAllProducts();
@@ -48,7 +49,7 @@ router.post('/initialize-stock', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error inicializando stock:', error);
+    Logger.error('Error inicializando stock:', error);
     res.status(500).json({
       success: false,
       error: 'Error al inicializar stock',
@@ -75,7 +76,7 @@ router.get('/stock-summary', async (req, res) => {
       summary
     });
   } catch (error) {
-    console.error('Error obteniendo resumen de stock:', error);
+    Logger.error('Error obteniendo resumen de stock:', error);
     res.status(500).json({
       success: false,
       error: 'Error al obtener resumen de stock'
@@ -100,7 +101,7 @@ router.get('/:id', async (req, res) => {
       ...productDoc.data()
     });
   } catch (error) {
-    console.error('Error al obtener producto:', error);
+    Logger.error('Error al obtener producto:', error);
     res.status(500).json({ 
       error: 'Error al obtener producto',
       message: error.message 
@@ -121,7 +122,7 @@ router.put('/:id/stock', async (req, res) => {
       });
     }
     
-    console.log(`Actualizando stock del producto ${id}: ajuste ${adjustment}`);
+    Logger.info(`Actualizando stock del producto ${id}: ajuste ${adjustment}`);
     
     // Usar productService unificado
     const updateResult = await productService.updateProductStock(id, adjustment, reason);
@@ -140,7 +141,7 @@ router.put('/:id/stock', async (req, res) => {
     });
     
   } catch (error) {
-    console.error(`Error actualizando stock del producto ${req.params.id}:`, error);
+    Logger.error(`Error actualizando stock del producto ${req.params.id}:`, error);
     res.status(500).json({
       success: false,
       error: 'Error al actualizar stock',
@@ -154,13 +155,13 @@ router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
-    console.log(`Eliminando producto completo: ${id}`);
+    Logger.info(`Eliminando producto completo: ${id}`);
     
     // Primero eliminar del inventario si existe
     try {
       await inventoryService.updateStock(id, -999999, 'warehouse', 'Eliminación de producto');
     } catch (inventoryError) {
-      console.log(`Producto ${id} no encontrado en inventario o ya sin stock`);
+      Logger.info(`Producto ${id} no encontrado en inventario o ya sin stock`);
     }
     
     // Luego eliminar del catálogo de productos
@@ -177,7 +178,7 @@ router.delete('/:id', async (req, res) => {
     const productData = productDoc.data();
     await deleteDoc(productRef);
     
-    console.log(`Producto eliminado: ${productData.nombre || id}`);
+    Logger.info(`Producto eliminado: ${productData.nombre || id}`);
     
     res.json({
       success: true,
@@ -188,7 +189,7 @@ router.delete('/:id', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error(`Error eliminando producto ${req.params.id}:`, error);
+    Logger.error(`Error eliminando producto ${req.params.id}:`, error);
     res.status(500).json({
       success: false,
       error: 'Error al eliminar producto',

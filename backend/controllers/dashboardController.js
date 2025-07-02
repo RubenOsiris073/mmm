@@ -1,4 +1,5 @@
 const googleSheetsService = require('../services/googleSheetsService');
+const Logger = require('../utils/logger.js');
 
 const dashboardController = {
   async getMetrics(req, res) {
@@ -10,7 +11,7 @@ const dashboardController = {
         data: metrics
       });
     } catch (error) {
-      console.error('Error fetching dashboard metrics:', error);
+      Logger.error('Error fetching dashboard metrics:', error);
       res.status(500).json({
         success: false,
         message: 'Error al obtener métricas del dashboard',
@@ -45,7 +46,7 @@ const dashboardController = {
         }
       });
     } catch (error) {
-      console.error('Error fetching sales data:', error);
+      Logger.error('Error fetching sales data:', error);
       res.status(500).json({
         success: false,
         message: 'Error al obtener datos de ventas',

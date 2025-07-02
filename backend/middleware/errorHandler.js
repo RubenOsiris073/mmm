@@ -1,10 +1,11 @@
+const Logger = require('../utils/logger.js');
 /**
  * Middleware para manejo centralizado de errores
  */
 const errorHandler = (err, req, res, next) => {
   // Registrar el error
-  console.error('Error:', err.message);
-  console.error('Stack:', err.stack);
+  Logger.error('Error:', err.message);
+  Logger.error('Stack:', err.stack);
 
   // Determinar el código de estado
   let statusCode = err.statusCode || 500;

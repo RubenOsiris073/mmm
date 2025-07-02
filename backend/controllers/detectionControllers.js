@@ -1,19 +1,20 @@
-import * as tf from '@tensorflow/tfjs-node';
-import { writeFile } from 'fs/promises';
-import path from 'path';
-import { Buffer } from 'buffer';
+const tf = require('@tensorflow/tfjs-node');
+const { writeFile } = require('fs/promises');
+const path = require('path');
+const { Buffer } = require('buffer');
+const Logger = require('../utils/logger.js');
 
 let model = null;
 
 // Función para cargar el modelo
 async function loadModel() {
   try {
-    console.log("Cargando modelo TensorFlow...");
+    Logger.info("Cargando modelo TensorFlow...");
     model = await tf.loadLayersModel('file://./models/model.json');
-    console.log("Modelo cargado exitosamente");
+    Logger.info("Modelo cargado exitosamente");
     return true;
   } catch (error) {
-    console.error("Error al cargar el modelo:", error);
+    Logger.error("Error al cargar el modelo:", error);
     return false;
   }
 }
@@ -47,12 +48,12 @@ async function processImage(imageBuffer) {
       similarity: (maxProb * 100).toFixed(2)
     };
   } catch (error) {
-    console.error("Error en el procesamiento:", error);
+    Logger.error("Error en el procesamiento:", error);
     throw error;
   }
 }
 
-export const detectObject = async (req, res) => {
+const detectObject = async (req, res) => {
   try {
     // Verificar si el modelo está cargado
     if (!model) {
@@ -84,9 +85,13 @@ export const detectObject = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error en la detección:", error);
+    Logger.error("Error en la detección:", error);
     res.status(500).json({
       error: "Error en el procesamiento de la imagen"
     });
   }
+};
+
+module.exports = {
+  detectObject
 };

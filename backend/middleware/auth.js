@@ -1,71 +1,11 @@
-const admin = require('firebase-admin');
+const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
-const path = require('path');
-const fs = require('fs');
-const { DoubleEncryptionManager } = require('../scripts/doubleEncryption');
+const { firebaseManager } = require('../config/firebaseManager');
+const Logger = require('../utils/logger.js');
 
 dotenv.config();
 
-// Inicializar Firebase Admin si no está inicializado
-if (!admin.apps.length) {
-  let serviceAccount;
-  
-  try {
-    // Archivo con doble encriptación AES
-    if (fs.existsSync(path.join(__dirname, '../config/google-credentials.double-encrypted.json'))) {
-      console.log('Usando credenciales con doble encriptación AES para Firebase Admin');
-      const doubleEncryption = new DoubleEncryptionManager();
-      const encryptedFilePath = path.join(__dirname, '../config/google-credentials.double-encrypted.json');
-      const masterPassword = process.env.MASTER_ENCRYPTION_KEY;
-      
-      try {
-        const doubleEncryptedData = JSON.parse(fs.readFileSync(encryptedFilePath, 'utf8'));
-        serviceAccount = doubleEncryption.doubleDecrypt(doubleEncryptedData, masterPassword);
-        console.log('Credenciales de Firebase Admin desencriptadas exitosamente');
-      } catch (error) {
-        console.error('Error desencriptando credenciales:', error.message);
-        throw new Error('No se pudieron desencriptar las credenciales de Firebase Admin');
-      }
-    }
-    
-    // Archivo local (fallback)
-    else {
-      console.log('Buscando archivo de credenciales local para Firebase Admin...');
-      const possiblePaths = [
-        '../config/google-service-account.json',
-        '../config/google-service-account.json'
-      ];
-      
-      let foundPath = null;
-      for (const filePath of possiblePaths) {
-        const fullPath = path.join(__dirname, filePath);
-        if (fs.existsSync(fullPath)) {
-          foundPath = fullPath;
-          break;
-        }
-      }
-      
-      if (!foundPath) {
-        throw new Error('No se encontraron credenciales de Google para Firebase Admin. Configura ENCRYPTION_PASSWORD o coloca el archivo encriptado');
-      }
-      
-      serviceAccount = require(foundPath);
-    }
-    
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      projectId: serviceAccount.project_id
-    });
-    
-    console.log('Firebase Admin inicializado correctamente');
-    
-  } catch (error) {
-    console.error('Error inicializando Firebase Admin:', error.message);
-    throw new Error(`No se pudo inicializar Firebase Admin: ${error.message}`);
-  }
-}
-
-// Middleware para verificar token de Firebase
+// Middleware para verificar JWT token
 const verifyToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -79,30 +19,28 @@ const verifyToken = async (req, res, next) => {
 
     const token = authHeader.replace('Bearer ', '');
     
-    // Verificar el token de Firebase
-    const decodedToken = await admin.auth().verifyIdToken(token);
+    // Verificar JWT token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     // Agregar información del usuario al request
     req.user = {
-      uid: decodedToken.uid,
-      email: decodedToken.email,
-      emailVerified: decodedToken.email_verified,
-      name: decodedToken.name,
-      picture: decodedToken.picture
+      uid: decoded.uid,
+      email: decoded.email,
+      emailVerified: decoded.emailVerified
     };
     
     next();
   } catch (error) {
-    console.error('Error verificando token de Firebase:', error.message);
+    Logger.error('Error verificando token JWT:', error.message);
     
-    if (error.code === 'auth/id-token-expired') {
+    if (error.name === 'TokenExpiredError') {
       return res.status(401).json({ 
         error: 'Token expirado',
         message: 'El token de autenticación ha expirado' 
       });
     }
     
-    if (error.code === 'auth/argument-error') {
+    if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({ 
         error: 'Token inválido',
         message: 'El token de autenticación no es válido' 

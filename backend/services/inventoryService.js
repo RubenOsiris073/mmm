@@ -1,6 +1,7 @@
-const { COLLECTIONS } = require('../config/firebase');
+const { COLLECTIONS } = require('../config/firebaseManager');
 const firestore = require('../utils/firestoreAdmin');
 const { processTimestamp } = require('../utils/helpers');
+const Logger = require('../utils/logger.js');
 
 class InventoryService {
   /**
@@ -9,7 +10,7 @@ class InventoryService {
   async getInventory() {
     try {
       const inventory = await queryDocuments(COLLECTIONS.INVENTORY);
-      console.log(`Obtenido inventario con ${inventory.length} items`);
+      Logger.info(`Obtenido inventario con ${inventory.length} items`);
       
       // Obtener información de productos relacionada
       const productIds = [...new Set(inventory.map(item => item.id))];
@@ -35,7 +36,7 @@ class InventoryService {
 
       return enrichedInventory;
     } catch (error) {
-      console.error("Error al obtener inventario:", error);
+      Logger.error("Error al obtener inventario:", error);
       throw error;
     }
   }
@@ -50,7 +51,7 @@ class InventoryService {
         throw new Error(`ProductId inválido: ${productId}`);
       }
       
-      console.log(`Actualizando stock para ID: ${productId}, ajuste: ${adjustment}, ubicación: ${location}`);
+      Logger.info(`Actualizando stock para ID: ${productId}, ajuste: ${adjustment}, ubicación: ${location}`);
       
       const inventoryRef = doc(db, COLLECTIONS.INVENTORY, productId);
       const inventoryDoc = await getDoc(inventoryRef);
@@ -62,7 +63,7 @@ class InventoryService {
         const currentStock = inventoryDoc.data().cantidad || 0;
         const newStock = currentStock + adjustment;
         
-        //console.log(`Stock actual: ${currentStock}, Nuevo stock: ${newStock}`);
+        //Logger.info(`Stock actual: ${currentStock}, Nuevo stock: ${newStock}`);
         
         if (newStock < 0) {
           throw new Error("Stock insuficiente");
@@ -99,7 +100,7 @@ class InventoryService {
         return updatedItem;
       } else {
         // El producto no existe en inventario
-        console.log(`Producto ${productId} no existe en inventario, intentando crearlo...`);
+        Logger.info(`Producto ${productId} no existe en inventario, intentando crearlo...`);
         
         // Primero intentar buscarlo en products
         const productData = await getDocumentById(COLLECTIONS.PRODUCTS, productId);
@@ -110,7 +111,7 @@ class InventoryService {
           
           // Si el ajuste es negativo y no hay inventario, no permitir la venta
           if (adjustment < 0) {
-            console.log(`No se puede vender producto ${productId}: no hay stock disponible`);
+            Logger.info(`No se puede vender producto ${productId}: no hay stock disponible`);
             throw new Error(`Stock insuficiente para el producto ${productData.nombre || productId}`);
           }
           
@@ -156,7 +157,7 @@ class InventoryService {
         } else {
           // El producto no existe ni en products ni en inventario
           // Para ventas, esto no debería pasar - vamos a permitirlo pero con advertencia
-          console.warn(`Producto ${productId} no existe en la base de datos, pero se permite la venta`);
+          Logger.warn(`Producto ${productId} no existe en la base de datos, pero se permite la venta`);
           
           // Si es una venta (ajuste negativo), no podemos proceder sin producto
           if (adjustment < 0) {
@@ -191,7 +192,7 @@ class InventoryService {
         }
       }
     } catch (error) {
-      console.error("Error actualizando stock:", error);
+      Logger.error("Error actualizando stock:", error);
       throw error;
     }
   }
@@ -201,38 +202,37 @@ class InventoryService {
    */
   async initializeInventory() {
     try {
-      console.log("Verificando inicialización del inventario...");
+      Logger.info("Verificando inicialización del inventario...");
       const inventoryDocs = await firestore.getDocs(COLLECTIONS.INVENTORY);
       
       // Obtener todos los productos del catálogo
       const productsDocs = await firestore.getDocs(COLLECTIONS.PRODUCTS);
       
-      console.log(`Productos en catálogo: ${productsSnapshot.size}`);
-      console.log(`Productos en inventario: ${inventorySnapshot.size}`);
+      Logger.info(`Productos en catálogo: ${productsDocs.length}`);
+      Logger.info(`Productos en inventario: ${inventoryDocs.length}`);
       
       // Crear un mapa de productos existentes en inventario
       const existingInventoryIds = new Set();
-      inventorySnapshot.forEach(doc => {
+      inventoryDocs.forEach(doc => {
         existingInventoryIds.add(doc.id);
       });
       
       let createdCount = 0;
       
       // Crear entradas de inventario para productos que no las tienen
-      for (const productDoc of productsSnapshot.docs) {
+      for (const productDoc of productsDocs) {
         if (!existingInventoryIds.has(productDoc.id)) {
-          const productData = productDoc.data();
-          const inventoryItemRef = doc(db, COLLECTIONS.INVENTORY, productDoc.id);
+          const productData = productDoc;
           
-          const timestamp = getServerTimestamp();
+          const timestamp = new Date().toISOString();
           
-          await setDoc(inventoryItemRef, {
+          await firestore.addDoc(COLLECTIONS.INVENTORY, {
             id: productDoc.id,
             nombre: productData.nombre || productData.label || "Producto sin nombre",
             cantidad: 10, // Stock inicial de 10 unidades para productos nuevos
             location: 'warehouse',
-            updatedAt: serverTimestamp(),
-            createdAt: serverTimestamp(),
+            updatedAt: firestore.serverTimestamp(),
+            createdAt: firestore.serverTimestamp(),
             lastUpdate: {
               adjustment: 10,
               reason: 'Inicialización de inventario - Stock inicial',
@@ -242,33 +242,32 @@ class InventoryService {
           });
           
           // Registrar movimiento inicial
-          const movementRef = collection(db, COLLECTIONS.INVENTORY_MOVEMENTS);
-          await addDoc(movementRef, {
+          await firestore.addDoc(COLLECTIONS.INVENTORY_MOVEMENTS, {
             productId: productDoc.id,
             adjustment: 10,
             location: 'warehouse',
             reason: 'Inicialización de inventario - Stock inicial',
             previousQuantity: 0,
             newQuantity: 10,
-            timestamp: serverTimestamp(),
+            timestamp: firestore.serverTimestamp(),
             createdAt: timestamp,
             createdBy: 'RubenOsiris073'
           });
           
           createdCount++;
-          console.log(`Creada entrada de inventario para: ${productData.nombre || productDoc.id}`);
+          Logger.info(`Creada entrada de inventario para: ${productData.nombre || productDoc.id}`);
         }
       }
       
       if (createdCount > 0) {
-        console.log(`Inventario actualizado: ${createdCount} nuevas entradas creadas`);
+        Logger.info(`Inventario actualizado: ${createdCount} nuevas entradas creadas`);
       } else {
-        console.log(`Inventario ya está sincronizado con el catálogo de productos`);
+        Logger.info(`Inventario ya está sincronizado con el catálogo de productos`);
       }
       
       return true;
     } catch (error) {
-      console.error("Error inicializando inventario:", error);
+      Logger.error("Error inicializando inventario:", error);
       return false;
     }
   }
@@ -290,7 +289,7 @@ class InventoryService {
       
       return { quantity: 0, location: null };
     } catch (error) {
-      console.error(`Error obteniendo stock para ${productId}:`, error);
+      Logger.error(`Error obteniendo stock para ${productId}:`, error);
       return { quantity: 0, location: null };
     }
   }
@@ -347,7 +346,7 @@ class InventoryService {
       }));
 
     } catch (error) {
-      console.error("Error al obtener movimientos:", error);
+      Logger.error("Error al obtener movimientos:", error);
       throw error;
     }
   }

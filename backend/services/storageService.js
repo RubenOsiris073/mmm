@@ -1,59 +1,64 @@
-const { COLLECTIONS } = require('../config/firebase');
+const { COLLECTIONS } = require('../config/firebaseManager');
 const firestore = require('../utils/firestoreAdmin');
-
+const Logger = require('../utils/logger.js');
 const DETECTIONS_COLLECTION = 'detecciones';
 const PRODUCTS_COLLECTION = 'productos';
 
 const addDetection = async (detectionData) => {
   try {
-    const docRef = await addDoc(collection(db, DETECTIONS_COLLECTION), {
-      ...detectionData,
-      createdAt: serverTimestamp()
-    });
-    console.log("Detección guardada con ID:", docRef.id);
+    const docRef = await firestore.addDoc(DETECTIONS_COLLECTION, detectionData);
+    Logger.info("Detección guardada con ID:", docRef.id);
     return docRef.id;
   } catch (error) {
-    console.error("Error al guardar detección:", error);
+    Logger.error("Error al guardar detección:", error);
     throw error;
   }
 };
 
 const getDetections = async (limitCount = 10) => {
   try {
-    const q = query(
-      collection(db, DETECTIONS_COLLECTION),
-      orderBy('createdAt', 'desc'),
-      limit(limitCount)
-    );
+    const snapshot = await firestore.collection(DETECTIONS_COLLECTION)
+      .orderBy('createdAt', 'desc')
+      .limit(limitCount)
+      .get();
     
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      timestamp: doc.data().createdAt?.toDate().toISOString() || new Date().toISOString()
-    }));
+    const detections = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      detections.push({
+        id: doc.id,
+        ...data,
+        timestamp: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString()
+      });
+    });
+    
+    return detections;
   } catch (error) {
-    console.error("Error al obtener detecciones:", error);
+    Logger.error("Error al obtener detecciones:", error);
     throw error;
   }
 };
 
 const getProductsByCategory = async (category) => {
   try {
-    const q = query(
-      collection(db, PRODUCTS_COLLECTION),
-      where('categoria', '==', category),
-      orderBy('createdAt', 'desc')
-    );
+    const snapshot = await firestore.collection(PRODUCTS_COLLECTION)
+      .where('categoria', '==', category)
+      .orderBy('createdAt', 'desc')
+      .get();
     
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      timestamp: doc.data().createdAt?.toDate().toISOString() || new Date().toISOString()
-    }));
+    const products = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      products.push({
+        id: doc.id,
+        ...data,
+        timestamp: data.createdAt?.toDate?.()?.toISOString() || new Date().toISOString()
+      });
+    });
+    
+    return products;
   } catch (error) {
-    console.error("Error al obtener productos por categoría:", error);
+    Logger.error("Error al obtener productos por categoría:", error);
     throw error;
   }
 };

@@ -1,6 +1,7 @@
 const NodeWebcam = require('node-webcam');
 const fs = require('fs');
 const path = require('path');
+const Logger = require('../utils/logger.js');
 
 // Configurar webcam
 const Webcam = NodeWebcam.create({
@@ -31,11 +32,11 @@ async function captureImage() {
   return new Promise((resolve, reject) => {
     Webcam.capture(imagePath, (err, data) => {
       if (err) {
-        console.error("Error capturando imagen:", err);
+        Logger.error("Error capturando imagen:", err);
         reject(err);
         return;
       }
-      console.log("Imagen capturada correctamente");
+      Logger.info("Imagen capturada correctamente");
       resolve(imagePath);
     });
   });
@@ -46,7 +47,7 @@ async function captureImage() {
  */
 function cleanupImage(imagePath) {
   fs.unlink(imagePath, (err) => {
-    if (err) console.error("Error eliminando imagen temporal:", err);
+    if (err) Logger.error("Error eliminando imagen temporal:", err);
   });
 }
 

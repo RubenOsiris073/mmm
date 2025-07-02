@@ -5,10 +5,10 @@ dotenv.config();
 // Configuración de autenticación
 const authConfig = {
   // Secret para JWT
-  jwtSecret: process.env.JWT_SECRET || 'tu-secret-key-aqui',
+  jwtSecret: process.env.JWT_SECRET,
   
-  // Duración del token (en segundos)
-  tokenExpiration: process.env.TOKEN_EXPIRATION || '1h',
+  // Duración del token 
+  tokenExpiration: process.env.TOKEN_EXPIRATION,
   
   // Configuración de cookies
   cookieOptions: {

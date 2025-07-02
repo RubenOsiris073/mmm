@@ -1,6 +1,7 @@
 const tf = require('@tensorflow/tfjs-node');
 const path = require('path');
-const { addDetection } = require('./storageService');
+const { addDetection, getDetections } = require('./storageService');
+const Logger = require('../utils/logger.js');
 
 class DetectionService {
   constructor() {
@@ -14,21 +15,21 @@ class DetectionService {
 
   async initialize() {
     try {
-      console.log("Iniciando servicio de detección...");
+      Logger.info("Iniciando servicio de detección...");
       await this.loadModel();
-      console.log("Servicio de detección inicializado");
+      Logger.info("Servicio de detección inicializado");
     } catch (error) {
-      console.error("Error al inicializar servicio de detección:", error);
+      Logger.error("Error al inicializar servicio de detección:", error);
     }
   }
 
   async loadModel() {
     try {
-      console.log("Cargando modelo desde:", this.modelPath);
+      Logger.info("Cargando modelo desde:", this.modelPath);
       this.model = await tf.loadLayersModel(`file://${this.modelPath}`);
-      console.log("Modelo cargado exitosamente");
+      Logger.info("Modelo cargado exitosamente");
     } catch (error) {
-      console.error("Error al cargar el modelo:", error);
+      Logger.error("Error al cargar el modelo:", error);
       throw error;
     }
   }
@@ -76,18 +77,17 @@ class DetectionService {
 
       return detection;
     } catch (error) {
-      console.error("Error en detección:", error);
+      Logger.error("Error en detección:", error);
       throw error;
     }
   }
 
   async getRecentDetections(limit = 10) {
     try {
-      // Implementa la lógica para obtener las detecciones recientes de la base de datos
       const detections = await getDetections(limit);
       return detections;
     } catch (error) {
-      console.error("Error al obtener detecciones:", error);
+      Logger.error("Error al obtener detecciones:", error);
       throw error;
     }
   }

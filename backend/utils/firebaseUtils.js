@@ -1,6 +1,7 @@
-const { COLLECTIONS } = require('../config/firebase');
+const { COLLECTIONS } = require('../config/firebaseManager');
 const firestore = require('./firestoreAdmin');
 const { processTimestamp } = require('./helpers');
+const Logger = require('./logger.js');
 
 /**
  * Obtiene un documento de una colección por ID
@@ -22,7 +23,7 @@ async function getDocumentById(collectionName, docId) {
     
     return null;
   } catch (error) {
-    console.error(`Error obteniendo documento ${docId} de ${collectionName}:`, error);
+    Logger.error(`Error obteniendo documento ${docId} de ${collectionName}:`, error);
     throw error;
   }
 }
@@ -87,7 +88,7 @@ async function queryDocuments(collectionName, filters = [], orderByField = null,
     
     return documents;
   } catch (error) {
-    console.error(`Error consultando documentos de ${collectionName}:`, error);
+    Logger.error(`Error consultando documentos de ${collectionName}:`, error);
     throw error;
   }
 }
@@ -120,7 +121,7 @@ async function searchByField(collectionName, field, searchTerm) {
     
     return results;
   } catch (error) {
-    console.error(`Error en búsqueda de ${searchTerm} en ${collectionName}.${field}:`, error);
+    Logger.error(`Error en búsqueda de ${searchTerm} en ${collectionName}.${field}:`, error);
     throw error;
   }
 }

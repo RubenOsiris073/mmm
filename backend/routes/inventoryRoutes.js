@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const inventoryService = require('../services/inventoryService');
+const Logger = require('../utils/logger.js');
 
 // GET /api/inventory - Obtener todo el inventario
 router.get('/', async (req, res) => {
@@ -12,7 +13,7 @@ router.get('/', async (req, res) => {
       count: inventory.length
     });
   } catch (error) {
-    console.error('Error al obtener inventario:', error);
+    Logger.error('Error al obtener inventario:', error);
     res.status(500).json({
       success: false,
       error: 'Error al obtener inventario',
@@ -34,7 +35,7 @@ router.get('/:productId/stock', async (req, res) => {
       location: stockInfo.location
     });
   } catch (error) {
-    console.error(`Error al obtener stock para ${req.params.productId}:`, error);
+    Logger.error(`Error al obtener stock para ${req.params.productId}:`, error);
     res.status(500).json({
       success: false,
       error: 'Error al obtener stock del producto',
@@ -56,7 +57,7 @@ router.put('/:productId/stock', async (req, res) => {
       });
     }
     
-    console.log(`Actualizando stock: ${productId}, ajuste: ${adjustment}, razón: ${reason}`);
+    Logger.info(`Actualizando stock: ${productId}, ajuste: ${adjustment}, razón: ${reason}`);
     
     const updatedItem = await inventoryService.updateStock(
       productId, 
@@ -73,7 +74,7 @@ router.put('/:productId/stock', async (req, res) => {
       newStock: updatedItem.cantidad
     });
   } catch (error) {
-    console.error(`Error actualizando stock para ${req.params.productId}:`, error);
+    Logger.error(`Error actualizando stock para ${req.params.productId}:`, error);
     res.status(500).json({
       success: false,
       error: 'Error al actualizar stock',
@@ -95,7 +96,7 @@ router.put('/:productId/set-stock', async (req, res) => {
       });
     }
     
-    console.log(`Estableciendo stock absoluto: ${productId}, cantidad: ${quantity}`);
+    Logger.info(`Estableciendo stock absoluto: ${productId}, cantidad: ${quantity}`);
     
     // Primero obtener el stock actual
     const currentStock = await inventoryService.getProductStock(productId);
@@ -120,7 +121,7 @@ router.put('/:productId/set-stock', async (req, res) => {
       adjustment
     });
   } catch (error) {
-    console.error(`Error estableciendo stock para ${req.params.productId}:`, error);
+    Logger.error(`Error estableciendo stock para ${req.params.productId}:`, error);
     res.status(500).json({
       success: false,
       error: 'Error al establecer stock',
@@ -148,7 +149,7 @@ router.get('/movements', async (req, res) => {
       count: movements.length
     });
   } catch (error) {
-    console.error('Error al obtener movimientos de inventario:', error);
+    Logger.error('Error al obtener movimientos de inventario:', error);
     res.status(500).json({
       success: false,
       error: 'Error al obtener movimientos de inventario',

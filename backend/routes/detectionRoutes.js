@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const detectionService = require('../services/detectionService');
+const Logger = require('../utils/logger.js');
 
 // Realizar una detección
 router.post('/detect', async (req, res) => {
@@ -19,7 +20,7 @@ router.post('/detect', async (req, res) => {
       detection
     });
   } catch (error) {
-    console.error("Error en detección:", error);
+    Logger.error("Error en detección:", error);
     res.status(500).json({ 
       error: "Error en detección",
       details: error.message 
@@ -34,7 +35,7 @@ router.get('/detections', async (req, res) => {
     const detections = await detectionService.getRecentDetections(limitParam);
     res.json({ detections });
   } catch (error) {
-    console.error("Error al obtener detecciones:", error);
+    Logger.error("Error al obtener detecciones:", error);
     res.status(500).json({ error: "Error al obtener detecciones", detections: [] });
   }
 });
@@ -65,7 +66,7 @@ router.get('/detection/continuous/status', async (req, res) => {
     const status = await detectionService.getDetectionStatus();
     res.json(status);
   } catch (error) {
-    console.error("Error al obtener estado de detección continua:", error);
+    Logger.error("Error al obtener estado de detección continua:", error);
     res.status(500).json({ error: "Error al obtener estado de detección continua" });
   }
 });
@@ -77,7 +78,7 @@ router.post('/detection/continuous', async (req, res) => {
     const result = await detectionService.setDetectionMode(active, intervalMs);
     res.json(result);
   } catch (error) {
-    console.error("Error al configurar modo de detección continua:", error);
+    Logger.error("Error al configurar modo de detección continua:", error);
     res.status(500).json({ error: "Error al configurar modo de detección continua" });
   }
 });
