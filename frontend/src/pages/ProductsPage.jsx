@@ -92,9 +92,9 @@ const ProductsPage = () => {
       )}
 
       {/* Contenedor principal de productos */}
-      <Card className="shadow-sm" style={{ margin: 0 }}>
+      <Card className="shadow-sm" style={{ margin: 0, padding: 0 }}>
         {/* Header del card con título y botón */}
-        <Card.Header className="d-flex justify-content-between align-items-center">
+        <Card.Header className="d-flex justify-content-between align-items-center" style={{ padding: '0.5rem' }}>
           <h2 className="m-0" style={{ fontWeight: '600' }}>Productos</h2>
           <Button 
             as={Link} 
@@ -107,7 +107,7 @@ const ProductsPage = () => {
           </Button>
         </Card.Header>
         
-        <Card.Body style={{ padding: '1rem' }}>
+        <Card.Body style={{ padding: '0.25rem' }}>
           <ProductGrid 
             products={allProducts} 
             loading={loading} 

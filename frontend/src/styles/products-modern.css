@@ -125,7 +125,7 @@
 }
 
 .product-card .card-body {
-  padding: 2rem !important;
+  padding: 1.5rem !important; /* Reducir padding de cards */
   position: relative !important;
   z-index: 3 !important;
   height: 100% !important;
@@ -541,7 +541,7 @@
   .product-category-icon {
     width: 70px !important;
     height: 70px !important;
-    font-size: 1.75rem !important;
+    font-size: 2rem !important;
   }
 }
 
@@ -568,6 +568,17 @@
   
   .category-header h4 {
     font-size: 1.25rem !important;
+  }
+  
+  /* Optimización adicional para móviles */
+  .product-card .card-body {
+    padding: 1rem !important; /* Aún menos padding en móviles */
+  }
+  
+  .product-category-icon {
+    width: 60px !important;
+    height: 60px !important;
+    margin: 0 auto 1rem !important;
   }
 }
 
@@ -625,17 +636,17 @@
 .product-category-tabs {
   display: flex;
   background-color: transparent;
-  margin-bottom: 20px;
+  margin-bottom: 15px; /* Reducir margen */
   border-bottom: 1px solid rgba(0,0,0,0.1);
-  padding: 10px 0; /* Solo padding vertical */
+  padding: 5px 0; /* Reducir padding vertical */
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
 .product-category-tab {
-  padding: 8px 16px;
+  padding: 6px 12px; /* Reducir padding */
   border-radius: 20px;
-  margin-right: 10px;
+  margin-right: 8px; /* Reducir margen */
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -651,7 +662,7 @@
 /* Estilos de búsqueda */
 .product-search-container {
   position: relative;
-  margin-bottom: 20px;
+  margin-bottom: 15px; /* Reducir margen */
 }
 
 .product-search-container input {
@@ -782,6 +793,18 @@
   margin: 0 !important;
 }
 
+/* Anular padding de root específicamente para productos */
+.product-page-wrapper #root {
+  padding: 0 !important;
+}
+
+/* Asegurarse de que no hay padding extra en contenedores padre */
+.product-page-wrapper .container,
+.product-page-wrapper .container-fluid {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
 /* Animación de carga */
 .product-loading-spinner {
   position: relative;
@@ -790,8 +813,73 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .product-category-tabs {
-    overflow-x: auto;
-    padding-bottom: 15px;
+  .product-page-wrapper {
+    margin-left: 70px !important;
+    padding: 0.1rem; /* Padding ultra mínimo en móviles */
   }
+  
+  .main-content-with-sidebar.sidebar-collapsed .product-page-wrapper {
+    margin-left: 70px !important;
+  }
+  
+  /* Optimización adicional para móviles */
+  .product-card .card-body {
+    padding: 1rem !important; /* Aún menos padding en móviles */
+  }
+  
+  .product-category-icon {
+    width: 60px !important;
+    height: 60px !important;
+    margin: 0 auto 1rem !important;
+  }
+}
+
+/* Optimizaciones adicionales de espacio */
+.products-page-container .mb-4 {
+  margin-bottom: 1rem !important; /* Reducir margen de categorías */
+}
+
+.products-page-container .mb-5 {
+  margin-bottom: 1.5rem !important; /* Reducir margen de secciones */
+}
+
+.products-page-container .g-4 {
+  --bs-gutter-x: 0.75rem !important; /* Reducir gutters entre cards */
+  --bs-gutter-y: 0.75rem !important;
+}
+
+/* Optimizar espacio en grid de productos */
+.product-grid-container .row {
+  margin: 0 !important;
+}
+
+.product-grid-container .col {
+  padding: 0.375rem !important; /* Reducir padding de columnas */
+}
+
+/* Optimización específica para el Card principal de productos */
+.product-page-wrapper .card {
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 8px;
+}
+
+.product-page-wrapper .card-header {
+  padding: 0.5rem !important;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.product-page-wrapper .card-body {
+  padding: 0.25rem !important;
+}
+
+/* Maximizar el uso del espacio en productos */
+.product-page-wrapper {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+.product-page-wrapper .products-page-container {
+  max-width: 100% !important;
+  width: 100% !important;
 }

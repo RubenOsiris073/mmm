@@ -2,18 +2,16 @@
 
 /* Contenedor principal del dashboard - NUEVA ESTRATEGIA */
 .dashboard-main-container {
-  position: absolute;
-  top: 0;
-  left: 240px !important; /* Posicionar después del sidebar expandido */
-  right: 0;
-  bottom: 0;
+  position: relative;
+  margin-left: 240px !important; /* Posicionar después del sidebar expandido */
+  min-height: 100vh;
   z-index: 1;
-  transition: left 0.3s ease;
+  transition: margin-left 0.3s ease;
 }
 
 /* Ajustar cuando el sidebar está colapsado */
 .main-content-with-sidebar.sidebar-collapsed .dashboard-main-container {
-  left: 90px !important; /* Posicionar después del sidebar colapsado */
+  margin-left: 90px !important; /* Posicionar después del sidebar colapsado */
 }
 
 /* Wrapper del contenido del dashboard */
@@ -31,21 +29,19 @@
 
 /* Loading container */
 .dashboard-loading-container {
-  position: absolute;
-  top: 0;
-  left: 240px !important;
-  right: 0;
-  bottom: 0;
+  position: relative;
+  margin-left: 240px !important;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: #f8f9fa;
   z-index: 1;
-  transition: left 0.3s ease;
+  transition: margin-left 0.3s ease;
 }
 
 .main-content-with-sidebar.sidebar-collapsed .dashboard-loading-container {
-  left: 90px !important;
+  margin-left: 90px !important;
 }
 
 /* Grid system del dashboard */

@@ -24,40 +24,46 @@ const AccessSelector = ({ onSelectAccess }) => {
 
   return (
     <div className="auth-split-container">
-      {/* Left side - Image */}
-      <div className="auth-image-side">
-        <div className="auth-image-overlay">
-          <div className="auth-welcome-text">
-            <h2>MMM Aguachile</h2>
-            <p>Sistema de gestión empresarial</p>
-          </div>
+      {/* Sección izquierda - Imagen */}
+      <div className="auth-image-section">
+        <div className="auth-image-overlay"></div>
+        <div className="auth-image-content">
+          <h1>
+            <span className="brand-text">
+              FISGO<sup className="brand-registered">®</sup>
+            </span>
+          </h1>
+          <p>Sistema de gestión automatizado</p>
         </div>
       </div>
 
-      {/* Right side - Selection */}
-      <div className="auth-form-side">
-        <div className="auth-form-content">
-          <div className="auth-header-section">
-            <h2>Selecciona tu tipo de acceso</h2>
-            <p>Elige cómo deseas acceder al sistema</p>
+      {/* Sección derecha - Selección de acceso */}
+      <div className="auth-form-section">
+        <div className="auth-form-container">
+          {/* Header */}
+          <div className="auth-form-header">
+            <div className="auth-logo">
+              <h1>Selecciona tu tipo de acceso</h1>
+              <span className="auth-subtitle">Elige cómo deseas acceder al sistema</span>
+            </div>
           </div>
 
           {/* Access Options */}
-          <div className="auth-access-options">
+          <div className="access-options">
             {accessOptions.map((option) => (
               <div 
                 key={option.id}
-                className="auth-access-card"
+                className={`access-card ${option.btnClass}`}
                 onClick={() => onSelectAccess(option.id)}
               >
-                <div className={`auth-icon-container ${option.btnClass}`}>
+                <div className="access-card-icon">
                   {option.icon}
                 </div>
-                <div className="auth-option-content">
+                <div className="access-card-content">
                   <h3>{option.title}</h3>
                   <p>{option.subtitle}</p>
                 </div>
-                <div className="auth-option-arrow">
+                <div className="access-card-arrow">
                   <FaArrowRight />
                 </div>
               </div>

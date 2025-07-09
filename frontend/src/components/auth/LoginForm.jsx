@@ -97,19 +97,22 @@ const LoginForm = ({ accessType = 'general', onBack, onLoginSuccess }) => {
 
   return (
     <div className="auth-split-container">
-      {/* Left side - Image */}
-      <div className="auth-image-side">
-        <div className="auth-image-overlay">
-          <div className="auth-welcome-text">
-            <h2>MMM Aguachile</h2>
-            <p>Sistema de gestión empresarial</p>
-          </div>
+      {/* Sección izquierda - Imagen */}
+      <div className="auth-image-section">
+        <div className="auth-image-overlay"></div>
+        <div className="auth-image-content">
+          <h1>
+            <span className="brand-text">
+              FISGO<sup className="brand-registered">®</sup>
+            </span>
+          </h1>
+          <p>Sistema de gestión automatizado</p>
         </div>
       </div>
 
-      {/* Right side - Form */}
-      <div className="auth-form-side">
-        <div className="auth-form-content">
+      {/* Sección derecha - Formulario */}
+      <div className="auth-form-section">
+        <div className="auth-form-container">
           {/* Back Button if needed */}
           {onBack && (
             <button className="auth-back-button" onClick={onBack}>
@@ -118,110 +121,114 @@ const LoginForm = ({ accessType = 'general', onBack, onLoginSuccess }) => {
             </button>
           )}
 
-          <div className="auth-header-section">
-            <h2>{config.title}</h2>
-            <p>{config.subtitle}</p>
+          {/* Header */}
+          <div className="auth-form-header">
+            <div className="auth-logo">
+              <h1>{config.title}</h1>
+              <span className="auth-subtitle">{config.subtitle}</span>
+            </div>
           </div>
 
-          {/* Error Alert */}
-          {error && (
-            <div className="auth-error-message">
-              <span>{error}</span>
-              <button onClick={clearError} className="auth-error-close">×</button>
-            </div>
-          )}
-
-          {/* Login Form */}
-          <Form onSubmit={handleEmailLogin}>
-            <div className="auth-form-group">
-              <input
-                type="email"
-                className="auth-form-input"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                placeholder="Correo electrónico"
-                required
-                disabled={isSubmitting || loading}
-              />
-            </div>
-
-            <div className="auth-form-group">
-              <input
-                type={showPassword ? "text" : "password"}
-                className="auth-form-input"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                placeholder="Contraseña"
-                required
-                disabled={isSubmitting || loading}
-              />
-              <button
-                type="button"
-                className="auth-password-toggle"
-                onClick={() => setShowPassword(!showPassword)}
-                disabled={isSubmitting || loading}
-              >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
-              </button>
-            </div>
-
-            <div className="auth-form-row">
-              <div className="auth-checkbox-group">
-                <input 
-                  className="auth-checkbox-input" 
-                  type="checkbox" 
-                  id="rememberMe" 
-                  checked={rememberMe}
-                  onChange={() => setRememberMe(!rememberMe)}
-                />
-                <label className="auth-checkbox-label" htmlFor="rememberMe">
-                  Recordarme
-                </label>
+          {/* Login Section */}
+          <div className="auth-login-section">
+            {/* Error Alert */}
+            {error && (
+              <div className="auth-error-message">
+                <span>{error}</span>
+                <button onClick={clearError} className="auth-error-close">×</button>
               </div>
-              <button 
-                type="button" 
-                className={`auth-forgot-link ${accessType}-theme`}
-                onClick={() => alert('Funcionalidad de recuperación de contraseña próximamente')}
+            )}
+
+            {/* Login Form */}
+            <Form onSubmit={handleEmailLogin} className="auth-form">
+              <div className="auth-form-group">
+                <Form.Control
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="Correo electrónico"
+                  required
+                  disabled={isSubmitting || loading}
+                />
+              </div>
+
+              <div className="auth-form-group">
+                <div className="password-input-wrapper">
+                  <Form.Control
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    placeholder="Contraseña"
+                    required
+                    disabled={isSubmitting || loading}
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle-btn"
+                    onClick={() => setShowPassword(!showPassword)}
+                    disabled={isSubmitting || loading}
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="auth-options">
+                <div className="remember-me-section">
+                  <Form.Check 
+                    type="checkbox" 
+                    id="rememberMe" 
+                    label="Recordarme"
+                    checked={rememberMe}
+                    onChange={() => setRememberMe(!rememberMe)}
+                  />
+                </div>
+                <button 
+                  type="button" 
+                  className="forgot-password-link"
+                  onClick={() => alert('Funcionalidad de recuperación de contraseña próximamente')}
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
+
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={isSubmitting || loading || !formData.email || !formData.password}
+                className="w-100"
               >
-                ¿Olvidaste tu contraseña?
-              </button>
+                {isSubmitting ? (
+                  <>
+                    <Spinner size="sm" className="me-2" />
+                    Iniciando sesión...
+                  </>
+                ) : (
+                  'Iniciar Sesión'
+                )}
+              </Button>
+            </Form>
+
+            {/* Divider */}
+            <div className="auth-divider">
+              <span>o continúa con</span>
             </div>
 
-            <Button
-              type="submit"
-              className={`auth-login-btn ${accessType}-theme`}
-              disabled={isSubmitting || loading || !formData.email || !formData.password}
+            {/* Google Button */}
+            <Button 
+              variant="outline-secondary"
+              onClick={handleGoogleLogin}
+              disabled={isSubmitting || loading}
+              className="w-100"
             >
-              {isSubmitting ? (
-                <>
-                  <Spinner size="sm" className="me-2" />
-                  Iniciando sesión...
-                </>
-              ) : (
-                'Iniciar Sesión'
-              )}
+              <FcGoogle size={20} className="me-2" />
+              Google
             </Button>
-          </Form>
-
-          {/* Divider */}
-          <div className="auth-divider">
-            <span>o inicia con</span>
           </div>
-
-          {/* Google Button con estilos forzados */}
-          <button 
-            type="button"
-            className={`auth-google-btn-custom ${accessType}-theme`}
-            onClick={handleGoogleLogin}
-            disabled={isSubmitting || loading}
-          >
-            <FcGoogle size={20} style={{ marginRight: '0.5rem' }} />
-            <span>Google</span>
-          </button>
         </div>
       </div>
     </div>

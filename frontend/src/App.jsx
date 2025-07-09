@@ -31,7 +31,6 @@ const SalesPage = lazy(() => import('./pages/SalesPage'));
 const CameraPage = lazy(() => import('./pages/CameraPage'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const AlertsPage = lazy(() => import('./pages/AlertsPage'));
-const Footer = lazy(() => import('./components/layout/Footer'));
 const POSMainPage = lazy(() => import('./pages/POSMainPage'));
 
 // Componente para envolver el layout compartido (sidebar + contenido)
@@ -47,7 +46,6 @@ const MainLayout = ({ children }) => {
       <Navigation onSidebarToggle={handleSidebarToggle} />
       <div className={`main-content-with-sidebar ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         {children}
-        <Footer />
       </div>
     </>
   );
