@@ -124,6 +124,7 @@ export const AuthProvider = ({ children }) => {
     signInWithEmail,
     signInWithGoogle,
     logout,
+    signOut: logout, // Alias para compatibilidad
     clearError,
     isAuthenticated: !!user,
     getAuthHeaders: () => authService.getAuthHeaders()

@@ -1,5 +1,6 @@
 import React from 'react';
-import { FaMoneyBillWave, FaShieldAlt, FaArrowRight } from 'react-icons/fa';
+import { FaArrowRight } from 'react-icons/fa';
+import { AnimatedMoneyIcon, AnimatedUserIcon } from './AnimatedIcons';
 import './auth.css';
 
 const AccessSelector = ({ onSelectAccess }) => {
@@ -9,7 +10,7 @@ const AccessSelector = ({ onSelectAccess }) => {
       title: 'Punto de Venta',
       subtitle: 'Sistema de ventas y cobros',
       description: 'Acceso para operadores de caja y personal de ventas',
-      icon: <FaMoneyBillWave size={24} className="icon-color" />,
+      icon: <AnimatedMoneyIcon size={24} />,
       btnClass: 'primary'
     },
     {
@@ -17,7 +18,7 @@ const AccessSelector = ({ onSelectAccess }) => {
       title: 'Administración',
       subtitle: 'Panel de control completo',
       description: 'Acceso completo para administradores del sistema',
-      icon: <FaShieldAlt size={24} className="icon-color" />,
+      icon: <AnimatedUserIcon size={24} />,
       btnClass: 'danger'
     }
   ];

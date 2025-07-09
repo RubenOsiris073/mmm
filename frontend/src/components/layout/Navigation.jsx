@@ -23,15 +23,15 @@ import './Navigation.css';
 
 const Navigation = ({ onSidebarToggle }) => {
   const { isDark, toggleTheme } = useTheme();
-  const { user, signOut } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
 
   const handleLogout = async () => {
     try {
-      await signOut();
-      navigate('/login'); // Redirigir al login después del logout
+      await logout();
+      navigate('/login');
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
     }
@@ -69,8 +69,7 @@ const Navigation = ({ onSidebarToggle }) => {
         <div className="sidebar-brand">
           {!collapsed ? (
             <>
-              <FaStore className="sidebar-logo-icon" />
-              <span className="sidebar-brand-text">Admin</span>
+              <span className="sidebar-brand-text">Panel</span>
             </>
           ) : (
             <FaStore className="sidebar-logo-icon-collapsed" />

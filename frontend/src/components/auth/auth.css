@@ -15,15 +15,24 @@
 }
 
 .auth-split-container .access-card-content h3 {
-  color: #212529 !important;
+  color: #000000 !important;
+  font-weight: 700 !important;
+  font-size: 1.2rem !important;
 }
 
 .auth-split-container .access-card-content p {
-  color: #6c757d !important;
+  color: #495057 !important;
+  font-weight: 500 !important;
 }
 
 .auth-split-container .auth-subtitle {
-  color: #6c757d !important;
+  color: #495057 !important;
+  font-weight: 500 !important;
+}
+
+.auth-split-container .auth-logo h1 {
+  color: #000000 !important;
+  font-weight: 700 !important;
 }
 
 /* Contenedor principal de autenticación - Layout Split mejorado */
@@ -73,6 +82,29 @@ body:has(.auth-split-container) * {
   text-align: left !important;
   width: 100vw !important;
   height: 100vh !important;
+}
+
+/* Force white background for all form inputs */
+.auth-split-container input,
+.auth-split-container input[type="text"],
+.auth-split-container input[type="email"],
+.auth-split-container input[type="password"],
+.auth-split-container input[type="checkbox"],
+.auth-split-container textarea,
+.auth-split-container select {
+  background-color: #ffffff !important;
+  color: #495057 !important;
+  border: 1px solid #ced4da !important;
+}
+
+.auth-split-container input:focus,
+.auth-split-container input[type="text"]:focus,
+.auth-split-container input[type="email"]:focus,
+.auth-split-container input[type="password"]:focus,
+.auth-split-container textarea:focus,
+.auth-split-container select:focus {
+  background-color: #ffffff !important;
+  color: #495057 !important;
 }
 
 /* Sección izquierda - imagen */
@@ -147,14 +179,15 @@ body:has(.auth-split-container) * {
 .auth-logo h1 {
   font-size: 2rem;
   font-weight: 700;
-  color: #212529;
+  color: #000000;
   margin: 0 0 0.5rem 0;
 }
 
 .auth-subtitle {
-  color: #6c757d;
-  font-size: 0.95rem;
+  color: #495057;
+  font-size: 1rem;
   margin: 0;
+  font-weight: 500;
 }
 
 .auth-login-section {
@@ -189,8 +222,8 @@ body:has(.auth-split-container) * {
   padding: 0.75rem 1rem;
   font-size: 1rem;
   line-height: 1.5;
-  color: #495057;
-  background-color: #fff;
+  color: #495057 !important;
+  background-color: #ffffff !important;
   background-clip: padding-box;
   border: 1px solid #ced4da;
   border-radius: 0.375rem;
@@ -198,8 +231,8 @@ body:has(.auth-split-container) * {
 }
 
 .form-control:focus {
-  color: #495057;
-  background-color: #fff;
+  color: #495057 !important;
+  background-color: #ffffff !important;
   border-color: #86b7fe;
   outline: 0;
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
@@ -245,7 +278,7 @@ body:has(.auth-split-container) * {
   height: 1rem;
   margin-top: 0;
   vertical-align: top;
-  background-color: #fff;
+  background-color: #ffffff !important;
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
@@ -422,6 +455,7 @@ body:has(.auth-split-container) * {
   justify-content: center;
   margin-right: 1rem;
   font-size: 1.5rem;
+  overflow: hidden;
 }
 
 .access-card.primary .access-card-icon {
@@ -441,16 +475,17 @@ body:has(.auth-split-container) * {
 }
 
 .access-card-content h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1.2rem;
+  font-weight: 700;
   margin: 0 0 0.25rem 0;
-  color: #212529;
+  color: #000000;
 }
 
 .access-card-content p {
-  font-size: 0.9rem;
-  color: #6c757d;
+  font-size: 1rem;
+  color: #495057;
   margin: 0;
+  font-weight: 500;
 }
 
 .access-card-arrow {
