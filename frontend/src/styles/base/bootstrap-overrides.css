@@ -1,0 +1,105 @@
+/* ============================================
+   SOBRESCRITURAS DE BOOTSTRAP
+   ============================================ */
+
+/* Botones Bootstrap - Sin conflictos */
+.btn {
+  padding: var(--bs-btn-padding-y) var(--bs-btn-padding-x) !important;
+  font-size: var(--bs-btn-font-size) !important;
+  border-radius: var(--bs-btn-border-radius) !important;
+  transition: all 0.2s ease;
+}
+
+.btn-sm {
+  padding: var(--bs-btn-padding-y-sm) var(--bs-btn-padding-x-sm) !important;
+  font-size: var(--bs-btn-font-size-sm) !important;
+}
+
+/* Clases utilitarias para botones compactos */
+.btn.px-3 {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+.btn.py-2 {
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+}
+
+/* Cards Bootstrap */
+.card {
+  background-color: var(--card-bg) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.card-body {
+  color: var(--text-primary) !important;
+}
+
+.card-header {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Forms Bootstrap */
+.form-control {
+  background-color: var(--input-bg) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.form-control:focus {
+  background-color: var(--input-bg) !important;
+  border-color: var(--accent-blue) !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
+}
+
+/* Modals Bootstrap */
+.modal-content {
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+}
+
+.modal-header {
+  border-color: var(--border-color) !important;
+}
+
+.modal-footer {
+  border-color: var(--border-color) !important;
+}
+
+/* Tables Bootstrap */
+.table {
+  color: var(--text-primary) !important;
+}
+
+.table-dark {
+  --bs-table-bg: var(--bg-secondary) !important;
+  --bs-table-color: var(--text-primary) !important;
+}
+
+/* Navbar Bootstrap */
+.navbar-dark {
+  background-color: var(--navbar-bg) !important;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+  color: var(--navbar-text) !important;
+}
+
+/* Dropdown Bootstrap */
+.dropdown-menu {
+  background-color: var(--card-bg) !important;
+  border-color: var(--border-color) !important;
+}
+
+.dropdown-item {
+  color: var(--text-primary) !important;
+}
+
+.dropdown-item:hover {
+  background-color: var(--bg-secondary) !important;
+}

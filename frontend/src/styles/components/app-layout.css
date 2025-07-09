@@ -1,0 +1,42 @@
+/* ============================================
+   LAYOUT PRINCIPAL DE LA APLICACIÓN
+   ============================================ */
+
+.app-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--bg-primary);
+}
+
+/* Contenido principal con sidebar */
+.main-content-with-sidebar {
+  flex: 1;
+  margin-left: 220px; /* Ancho del sidebar */
+  overflow-y: auto;
+  background-color: var(--bg-primary);
+  transition: margin-left 0.3s ease;
+  min-height: 100vh;
+}
+
+/* Ajustes cuando el sidebar está colapsado */
+.main-content-with-sidebar.sidebar-collapsed {
+  margin-left: 70px; /* Ancho del sidebar colapsado */
+}
+
+/* Asegurar que el contenido use todo el espacio disponible */
+.main-content-with-sidebar > * {
+  min-height: 100%;
+}
+
+/* Responsive para dispositivos móviles */
+@media (max-width: 768px) {
+  .main-content-with-sidebar {
+    margin-left: 0;
+    overflow-y: auto;
+  }
+  
+  .main-content-with-sidebar.sidebar-collapsed {
+    margin-left: 0;
+  }
+}

@@ -4,11 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ToastContainer } from 'react-toastify';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
-
-// Importar estilos de temas
-import './styles/themes.css';
-// Importar estilos modernos para productos
-import './styles/products-modern.css';
+import './styles/components/app-layout.css';
 
 // Importar el contexto de tema
 import { ThemeProvider } from './contexts/ThemeContext.jsx';
@@ -20,6 +16,7 @@ import { AuthenticationPage, ProtectedRoute } from './components/auth';
 
 // Importar pantalla de carga y hook (críticos - no lazy)
 import LoadingScreen from './components/shared/LoadingScreen';
+import ContentLoading from './components/shared/ContentLoading';
 import useRouteLoading from './hooks/useRouteLoading';
 
 // Lazy loading para componentes no críticos
@@ -29,7 +26,7 @@ const ProductFormPage = lazy(() => import('./pages/ProductFormPage'));
 const ProveedorView = lazy(() => import('./components/proveedor/ProveedorView'));
 const SalesPage = lazy(() => import('./pages/SalesPage'));
 const CameraPage = lazy(() => import('./pages/CameraPage'));
-const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const MinimalDashboard = lazy(() => import('./pages/MinimalDashboard'));
 const AlertsPage = lazy(() => import('./pages/AlertsPage'));
 const POSMainPage = lazy(() => import('./pages/POSMainPage'));
 
@@ -42,22 +39,26 @@ const MainLayout = ({ children }) => {
   };
 
   return (
-    <>
-      <Navigation onSidebarToggle={handleSidebarToggle} />
+    <div className="app-layout">
+      <Suspense fallback={null}>
+        <Navigation onSidebarToggle={handleSidebarToggle} />
+      </Suspense>
       <div className={`main-content-with-sidebar ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-        {children}
+        <Suspense fallback={<ContentLoading />}>
+          {children}
+        </Suspense>
       </div>
-    </>
+    </div>
   );
 };
 
 // Componente para manejar las rutas principales
 const AppRoutes = () => {
   const { user, loading } = useAuth();
-  const isRouteLoading = useRouteLoading(1000); // Reducir tiempo de carga
+  const isRouteLoading = useRouteLoading(800); // Reducir tiempo de carga
 
-  // Mostrar pantalla de carga durante verificación inicial
-  if (loading || isRouteLoading) {
+  // Mostrar pantalla de carga solo durante verificación inicial de auth
+  if (loading) {
     return <LoadingScreen />;
   }
 
@@ -132,7 +133,7 @@ const AppRoutes = () => {
       <Route path="/dashboard" element={
         <ProtectedRoute requireAuth={true}>
           <MainLayout>
-            <DashboardPage />
+            <MinimalDashboard />
           </MainLayout>
         </ProtectedRoute>
       } />

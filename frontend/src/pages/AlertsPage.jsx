@@ -90,9 +90,11 @@ const AlertsPage = () => {
                 variant="outline-danger" 
                 size="sm" 
                 onClick={checkNow}
-                style={{ borderRadius: '8px' }}
+                className="px-2 py-1"
+                style={{ borderRadius: '8px', minWidth: 'auto' }}
+                title="Verificar conexión"
               >
-                Verificar ahora
+                Verificar
               </Button>
             </div>
           </div>

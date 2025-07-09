@@ -1,0 +1,13 @@
+/* ============================================
+   ESTILOS GLOBALES PRINCIPALES
+   Solo lo absolutamente necesario
+   ============================================ */
+
+/* Importar estilos base */
+@import './base/index.css';
+
+/* Importar sistema de temas */
+@import './components/themes.css';
+
+/* Importar protección del sidebar */
+@import './components/sidebar-protection.css';

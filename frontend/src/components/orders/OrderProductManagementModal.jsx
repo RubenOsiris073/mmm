@@ -435,34 +435,25 @@ const OrderProductManagementModal = ({
         </div>
       </Modal.Body>
 
-      <Modal.Footer>
-        <Button variant="outline-secondary" onClick={handleClose} disabled={loading}>
+      <Modal.Footer className="d-flex justify-content-center align-items-center">
+        <Button variant="outline-secondary" size="sm" onClick={handleClose} disabled={loading} className="me-2 px-2 py-1">
           <i className="bi bi-x-circle me-1"></i>
           Cerrar
         </Button>
         
-        {/* Botones de acción adicionales */}
-        <Button 
-          variant="outline-primary" 
-          onClick={() => window.print()}
-          disabled={loading}
-          title="Imprimir orden"
-        >
-          <i className="bi bi-printer me-1"></i>
-          Imprimir
-        </Button>
-        
         {products.length > 0 && (
           <Button 
-            variant="success" 
+            variant="primary" 
+            size="sm"
             disabled={loading}
             title="Generar factura"
+            className="px-2 py-1"
             onClick={() => {
               toast.info('Funcionalidad de generación de PDF próximamente disponible');
             }}
           >
             <i className="bi bi-file-earmark-pdf me-1"></i>
-            Generar PDF
+            PDF
           </Button>
         )}
       </Modal.Footer>

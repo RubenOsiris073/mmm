@@ -60,36 +60,31 @@ const SalesPage = () => {
 
   return (
     <div className="p-3" style={{ minHeight: '100vh' }}>
-      <Row className="mb-4">
-        <Col>
-          <Card className="shadow-sm">
-            <Card.Body>
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <h1 className="mb-0">Gestión de Ventas</h1>
-                  <p className="text-muted">
-                    Visualice, descargue y genere facturas de sus ventas
-                  </p>
-                </div>
-                <Button 
-                  variant="primary"
-                  onClick={handleDownloadSalesReport}
-                  disabled={downloading || salesData.length === 0}
-                  className="d-flex align-items-center"
-                >
-                  {downloading ? (
-                    <>Generando PDF...</>
-                  ) : (
-                    <>
-                      <FaDownload className="me-2" /> Descargar Historial
-                    </>
-                  )}
-                </Button>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 className="mb-0">Gestión de Ventas</h1>
+          <p className="text-muted mb-0">
+            Visualice, descargue y genere facturas de sus ventas
+          </p>
+        </div>
+        <Button 
+          variant="primary"
+          size="sm"
+          onClick={handleDownloadSalesReport}
+          disabled={downloading || salesData.length === 0}
+          className="px-3 py-2"
+          title="Descargar historial de ventas"
+        >
+          {downloading ? (
+            <span style={{ fontSize: '12px' }}>Generando...</span>
+          ) : (
+            <>
+              <FaDownload size="12" className="me-1" />
+              Descargar
+            </>
+          )}
+        </Button>
+      </div>
       
       <Row>
         <Col>

@@ -1,0 +1,37 @@
+/* ============================================
+   SOBRESCRITURAS PARA PROTEGER SIDEBAR
+   ============================================ */
+
+/* Asegurar que los botones del sidebar mantengan sus estilos originales */
+.sidebar-navigation button,
+.sidebar-navigation .sidebar-menu-item,
+.sidebar-navigation .sidebar-toggle-btn {
+  /* Resetear estilos que puedan venir de buttons.css */
+  all: unset;
+  /* Luego aplicar los estilos específicos del sidebar */
+  display: flex;
+  cursor: pointer;
+}
+
+.sidebar-navigation .sidebar-menu-item {
+  /* Forzar estilos originales del sidebar */
+  display: flex !important;
+  align-items: center !important;
+  padding: 0.75rem 1rem !important;
+  border-radius: 8px !important;
+  margin-bottom: 0.25rem !important;
+  color: #cccccc !important;
+  transition: all 0.2s ease !important;
+  text-decoration: none !important;
+  background: none !important;
+  border: none !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+}
+
+.sidebar-navigation.collapsed .sidebar-menu-item {
+  padding: 0.75rem !important;
+  justify-content: center !important;
+  margin-bottom: 0.5rem !important;
+}

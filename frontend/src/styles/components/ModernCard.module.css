@@ -1,0 +1,101 @@
+/* ============================================
+   EJEMPLO: COMPONENTE CARD MODERNO
+   Usando CSS Modules
+   ============================================ */
+
+.card {
+  composes: card-modern from '../base/components.css';
+  position: relative;
+  transition: all var(--timing-normal) var(--easing-smooth);
+}
+
+.card:hover {
+  composes: hover-lift from '../base/animations.css';
+}
+
+.cardHeader {
+  composes: card-modern-header from '../base/components.css';
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.cardSubtitle {
+  margin: var(--spacing-xs) 0 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.cardBody {
+  composes: card-modern-body from '../base/components.css';
+}
+
+.cardFooter {
+  composes: card-modern-footer from '../base/components.css';
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+}
+
+.cardActions {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+/* Estados específicos */
+.cardLoading {
+  composes: card;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.cardError {
+  composes: card;
+  border-color: var(--enterprise-error, #de350b);
+  background: rgba(222, 53, 11, 0.05);
+}
+
+.cardSuccess {
+  composes: card;
+  border-color: var(--enterprise-success, #36b37e);
+  background: rgba(54, 179, 126, 0.05);
+}
+
+/* Variantes de tamaño */
+.cardCompact .cardHeader,
+.cardCompact .cardBody,
+.cardCompact .cardFooter {
+  padding: var(--spacing-md);
+}
+
+.cardLarge .cardHeader,
+.cardLarge .cardBody,
+.cardLarge .cardFooter {
+  padding: var(--spacing-xl);
+}
+
+/* Elementos específicos */
+.badge {
+  composes: badge-modern from '../base/components.css';
+}
+
+.badgeSuccess {
+  composes: badge-success from '../base/components.css';
+}
+
+.badgeWarning {
+  composes: badge-warning from '../base/components.css';
+}
+
+.badgeError {
+  composes: badge-error from '../base/components.css';
+}

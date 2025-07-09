@@ -164,32 +164,27 @@ const ProveedorView = () => {
   return (
     <Container fluid>
       {/* Header */}
-      <Row className="mb-4">
-        <Col>
-          <Card className="shadow-sm">
-            <Card.Body>
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <h1 className="mb-0">
-                    <FaBuilding className="me-2" />
-                    Gestión de Proveedores
-                  </h1>
-                  <p className="text-muted">
-                    Administra la información de tus proveedores y mantén un registro actualizado
-                  </p>
-                </div>
-                <Button 
-                  variant="primary"
-                  onClick={handleCreate}
-                >
-                  <FaPlus className="me-1" />
-                  Nuevo Proveedor
-                </Button>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 className="mb-0">
+            <FaBuilding className="me-2" />
+            Gestión de Proveedores
+          </h1>
+          <p className="text-muted">
+            Administra la información de tus proveedores y mantén un registro actualizado
+          </p>
+        </div>
+        <Button 
+          variant="primary"
+          size="sm"
+          onClick={handleCreate}
+          className="px-2 py-1"
+          title="Crear nuevo proveedor"
+        >
+          <FaPlus size="12" className="me-1" />
+          Nuevo
+        </Button>
+      </div>
 
       {/* Filtros */}
       <Row className="mb-4">

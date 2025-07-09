@@ -3,7 +3,7 @@ import { Card, Alert, Spinner, Table, Button, Badge, ProgressBar } from 'react-b
 import { FaChartLine, FaDollarSign, FaShoppingCart, FaCalendarAlt, FaSyncAlt, FaTags, FaUsers, FaCreditCard, FaMoneyBillWave, FaTrophy, FaBoxes, FaChartPie, FaChartBar } from 'react-icons/fa';
 import apiService from '../services/apiService';
 import { BarChart, PieChart } from '../components/dashboard/Charts';
-import '../components/dashboard/Dashboard.css'; // Cambiar a la ubicación correcta
+import '../styles/pages/dashboard.css';
 
 const DashboardPage = () => {
   const [metrics, setMetrics] = useState(null);
@@ -140,19 +140,21 @@ const DashboardPage = () => {
     <div className="dashboard-main-container">
       <div className="dashboard-content-wrapper">
         {/* Header del Dashboard */}
-        <div className="row mb-4">
-          <div className="col">
-            <div className="d-flex justify-content-between align-items-center">
-              <div>
-                <h1 className="mb-1 display-6">Dashboard de Ventas</h1>
-                <p className="text-muted mb-0">Análisis completo de datos desde Google Sheets</p>
-              </div>
-              <Button variant="outline-primary" onClick={loadDashboardData} disabled={loading}>
-                <FaSyncAlt className="me-2" />
-                Actualizar
-              </Button>
-            </div>
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h1 className="mb-1 display-6">Dashboard de Ventas</h1>
+            <p className="text-muted mb-0">Análisis completo de datos desde Google Sheets</p>
           </div>
+          <Button 
+            variant="outline-primary" 
+            size="sm"
+            onClick={loadDashboardData} 
+            disabled={loading}
+            className="px-3 py-2"
+            title="Actualizar datos del dashboard"
+          >
+            <FaSyncAlt className={loading ? 'fa-spin' : ''} size="14" />
+          </Button>
         </div>
 
         {error && (

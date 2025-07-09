@@ -157,20 +157,19 @@ const InvoiceModal = ({ show, onHide, sale }) => {
         </div>
       </Modal.Body>
       
-      <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
+      <Modal.Footer className="d-flex justify-content-center align-items-center">
+        <Button variant="secondary" size="sm" onClick={onHide} className="me-2 px-2 py-1">
           Cerrar
-        </Button>
-        <Button variant="primary" onClick={() => window.print()}>
-          <FaPrint className="me-1" /> Imprimir
         </Button>
         
         {/* Botón principal mejorado */}
         <Button 
-          variant="success" 
+          variant="primary" 
+          size="sm"
           onClick={handleDownloadInvoice}
           disabled={downloading}
           title="Descargar PDF profesional"
+          className="px-2 py-1"
         >
           {downloading ? (
             <>
@@ -178,7 +177,7 @@ const InvoiceModal = ({ show, onHide, sale }) => {
             </>
           ) : (
             <>
-              <FaDownload className="me-1" /> Descargar PDF
+              <FaDownload className="me-1" /> PDF
             </>
           )}
         </Button>

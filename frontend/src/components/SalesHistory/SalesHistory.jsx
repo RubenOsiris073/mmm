@@ -269,7 +269,12 @@ const SalesHistory = memo(({ onGenerateInvoice, onDownloadReport, onSalesDataUpd
         <Alert.Heading>Error</Alert.Heading>
         <p>{error}</p>
         <div className="d-flex justify-content-end">
-          <Button variant="outline-danger" onClick={loadSales}>
+          <Button 
+            variant="outline-danger" 
+            size="sm"
+            onClick={loadSales}
+            className="px-2 py-1"
+          >
             Reintentar
           </Button>
         </div>
@@ -279,29 +284,35 @@ const SalesHistory = memo(({ onGenerateInvoice, onDownloadReport, onSalesDataUpd
 
   return (
     <>
+      {/* Header principal */}
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h5 className="mb-0">Historial de Ventas</h5>
+        <div className="d-flex gap-2">
+          <Button 
+            variant="outline-primary" 
+            size="sm" 
+            className="px-3 py-2"
+            onClick={() => setShowFilters(!showFilters)}
+            title={showFilters ? 'Ocultar filtros' : 'Mostrar filtros'}
+          >
+            <FaFilter size="12" className="me-1" /> 
+            {showFilters ? 'Ocultar' : 'Filtros'}
+          </Button>
+          <Button 
+            variant="outline-secondary" 
+            size="sm"
+            className="px-3 py-2"
+            onClick={loadSales}
+            title="Actualizar datos"
+          >
+            <i className="bi bi-arrow-clockwise" style={{ fontSize: '12px' }} />
+            <span className="ms-1">Recargar</span>
+          </Button>
+        </div>
+      </div>
+
       {/* Panel principal */}
       <Card className="shadow-sm mb-4">
-        <Card.Header className="d-flex justify-content-between align-items-center">
-          <h5 className="mb-0">Historial de Ventas</h5>
-          <div>
-            <Button 
-              variant="outline-primary" 
-              size="sm" 
-              className="me-2"
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <FaFilter className="me-1" /> 
-              {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
-            </Button>
-            <Button 
-              variant="outline-secondary" 
-              size="sm"
-              onClick={loadSales}
-            >
-              <i className="bi bi-arrow-clockwise me-1"></i> Actualizar
-            </Button>
-          </div>
-        </Card.Header>
         
         {/* Panel de filtros plegable */}
         {showFilters && (
@@ -388,7 +399,12 @@ const SalesHistory = memo(({ onGenerateInvoice, onDownloadReport, onSalesDataUpd
                 <i className="bi bi-search fs-1 text-muted"></i>
                 <p className="mt-3 text-muted">No se encontraron ventas</p>
                 {(filters.startDate || filters.paymentMethod) && (
-                  <Button variant="link" onClick={clearFilters}>
+                  <Button 
+                    variant="link" 
+                    size="sm"
+                    onClick={clearFilters}
+                    className="p-1"
+                  >
                     Limpiar filtros
                   </Button>
                 )}

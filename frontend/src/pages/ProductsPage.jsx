@@ -4,8 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { FaPlus } from 'react-icons/fa';
 import ProductGrid from '../components/products/ProductGrid';
 import { getDetections, getProductsWithSafeDates } from '../services/storageService';
-import '../App.css';
-import '../styles/products-modern.css';
+import '../styles/pages/products.css';
 
 const ProductsPage = () => {
   const [allProducts, setAllProducts] = useState([]);
@@ -91,22 +90,24 @@ const ProductsPage = () => {
         </Alert>
       )}
 
+      {/* Header con título y botón */}
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2 className="m-0" style={{ fontWeight: '600' }}>Productos</h2>
+        <Button 
+          as={Link} 
+          to="/products/new" 
+          variant="primary"
+          size="sm"
+          className="px-3 py-2"
+          title="Crear nuevo producto"
+        >
+          <FaPlus size="12" className="me-1" />
+          Nuevo
+        </Button>
+      </div>
+
       {/* Contenedor principal de productos */}
       <Card className="shadow-sm" style={{ margin: 0, padding: 0 }}>
-        {/* Header del card con título y botón */}
-        <Card.Header className="d-flex justify-content-between align-items-center" style={{ padding: '0.5rem' }}>
-          <h2 className="m-0" style={{ fontWeight: '600' }}>Productos</h2>
-          <Button 
-            as={Link} 
-            to="/products/new" 
-            variant="primary"
-            className="d-flex align-items-center"
-          >
-            <FaPlus className="me-2" />
-            Nuevo Producto
-          </Button>
-        </Card.Header>
-        
         <Card.Body style={{ padding: '0.25rem' }}>
           <ProductGrid 
             products={allProducts} 
