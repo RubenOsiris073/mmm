@@ -34,6 +34,7 @@ const Navigation = ({ onSidebarToggle }) => {
   // Función para manejar el toggle del sidebar con preservación completa de scroll
   const handleSidebarToggle = () => {
     const mainContent = document.querySelector('.main-content-with-sidebar');
+    const sidebar = document.querySelector('.sidebar-navigation');
     
     // Guardar la posición actual del scroll
     if (mainContent) {
@@ -43,6 +44,14 @@ const Navigation = ({ onSidebarToggle }) => {
     // Actualizar estado local y global
     const newCollapsed = !collapsed;
     setCollapsed(newCollapsed);
+    
+    // Asegurar que la barra de navegación se mantiene en su posición de scroll actual
+    if (sidebar) {
+      const currentScrollTop = sidebar.scrollTop;
+      setTimeout(() => {
+        sidebar.scrollTop = currentScrollTop;
+      }, 50);
+    }
     
     // Notificar al componente padre para actualizar las clases del contenido principal
     if (onSidebarToggle) {
@@ -147,7 +156,7 @@ const Navigation = ({ onSidebarToggle }) => {
         
         {/* Sección de Order Process (según imagen POSLINE) */}
         <div className="sidebar-section">
-          {!collapsed && <div className="sidebar-section-title">Order Process</div>}
+          {!collapsed && <div className="sidebar-section-title">Historial</div>}
           
           <Nav.Link 
             as={Link} 
@@ -159,9 +168,9 @@ const Navigation = ({ onSidebarToggle }) => {
           </Nav.Link>
         </div>
         
-        {/* Sección de Analytics (según imagen POSLINE) */}
+        {/* Sección de Analytics */}
         <div className="sidebar-section">
-          {!collapsed && <div className="sidebar-section-title">Analytics</div>}
+          {!collapsed && <div className="sidebar-section-title">Analisis</div>}
           
           <Nav.Link 
             as={Link} 
@@ -193,7 +202,7 @@ const Navigation = ({ onSidebarToggle }) => {
 
         {/* Sección Manage Dish (según imagen POSLINE) */}
         <div className="sidebar-section">
-          {!collapsed && <div className="sidebar-section-title">Manage Dish</div>}
+          {!collapsed && <div className="sidebar-section-title">Registro</div>}
           
           <Nav.Link 
             as={Link} 
