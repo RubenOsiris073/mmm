@@ -95,5 +95,7 @@
   /* === LAYOUT VARIABLES === */
   --sidebar-width: 240px;
   --header-height: 60px;
+  /* Altura de la barra superior (por defecto usa la altura del header) */
+  --navbar-height: var(--header-height);
   --content-padding: var(--space-6);
 }
