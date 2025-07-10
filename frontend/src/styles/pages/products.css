@@ -188,8 +188,10 @@
 
 /* Estilos mejorados para la vista de productos */
 .product-page-wrapper {
-  padding: var(--space-4);
-  max-width: 100%;
+  padding: var(--content-padding);
+  background-color: var(--bg-surface-2);
+  min-height: calc(100vh - var(--navbar-height));
+  width: 100%;
 }
 
 /* Estilos para la cuadrícula de productos */
