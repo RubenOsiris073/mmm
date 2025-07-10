@@ -12,7 +12,7 @@ import {
   FaTrash,
   FaEye
 } from 'react-icons/fa';
-import './ExpirationAlerts.css';
+import '../../styles/components/alerts/expiration.css';
 
 const ExpirationAlerts = () => {
   const [products, setProducts] = useState([]);

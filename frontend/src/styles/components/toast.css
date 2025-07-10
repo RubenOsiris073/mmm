@@ -1,0 +1,29 @@
+/* ============================================
+   PERSONALIZACIONES DE NOTIFICACIONES TOAST
+   ============================================ */
+
+/* Mantener el fondo blanco del toast pero cambiar la barra de progreso a azul */
+.Toastify__toast-theme--light.Toastify__toast--success {
+  background-color: white !important;
+  border-left: 4px solid #0d6efd !important;
+}
+
+/* Barra de progreso para toast de éxito */
+.Toastify__toast-theme--light.Toastify__toast--success .Toastify__progress-bar {
+  background-color: #0d6efd !important;  /* Azul */
+}
+
+/* Color del ícono de éxito */
+.Toastify__toast-theme--light.Toastify__toast--success .Toastify__toast-icon svg {
+  fill: #0d6efd !important;
+}
+
+/* Estilos generales para todos los toasts */
+.toast-custom {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.toast-progress {
+  height: 4px;
+}

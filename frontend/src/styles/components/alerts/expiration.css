@@ -1,0 +1,227 @@
+/* Estilos para el componente ExpirationAlerts */
+
+.expiration-alerts-container {
+  padding: var(--content-padding);
+  background-color: var(--bg-surface-2);
+}
+
+.expiration-alerts-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  text-align: center;
+}
+
+.expiration-alerts-header {
+  background: linear-gradient(135deg, #1a3a5f 0%, #2c5282 100%);
+  border-radius: 10px;
+  padding: 20px;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.expiration-alerts-header h2 {
+  color: white !important;
+  margin: 0;
+}
+
+.expiration-alerts-header p {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Cards de resumen */
+.expiration-alerts-container .card {
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.expiration-alerts-container .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Animación para números */
+.expiration-alerts-container .card h3 {
+  font-weight: 700;
+  font-size: 2.5rem;
+  animation: countUp 0.6s ease-out;
+}
+
+@keyframes countUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Iconos de card */
+.expiration-alerts-container .card-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.expiration-alerts-container .card-icon.danger {
+  background-color: rgba(220, 53, 69, 0.15);
+  color: var(--bs-danger);
+}
+
+.expiration-alerts-container .card-icon.warning {
+  background-color: rgba(255, 193, 7, 0.15);
+  color: var(--bs-warning);
+}
+
+.expiration-alerts-container .card-icon.info {
+  background-color: rgba(23, 162, 184, 0.15);
+  color: var(--bs-info);
+}
+
+.expiration-alerts-container .card-icon.success {
+  background-color: rgba(40, 167, 69, 0.15);
+  color: var(--bs-success);
+}
+
+/* Tabla de productos */
+.expiration-alerts-container .expiration-table {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  margin-top: 30px;
+}
+
+.expiration-alerts-container .expiration-table thead {
+  background-color: var(--bs-primary);
+  color: white;
+}
+
+.expiration-alerts-container .expiration-table th {
+  font-weight: 600;
+  padding: 16px;
+  border: none;
+}
+
+.expiration-alerts-container .expiration-table td {
+  padding: 16px;
+  vertical-align: middle;
+  border-color: rgba(0, 0, 0, 0.05);
+}
+
+.expiration-alerts-container .expiration-table .table-row-critical {
+  background-color: rgba(220, 53, 69, 0.05);
+  border-left: 4px solid var(--bs-danger);
+}
+
+.expiration-alerts-container .expiration-table .table-row-warning {
+  background-color: rgba(255, 193, 7, 0.05);
+  border-left: 4px solid var(--bs-warning);
+}
+
+.expiration-alerts-container .expiration-table .table-row-normal {
+  border-left: 4px solid transparent;
+}
+
+.expiration-alerts-container .expiration-table .product-image {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+/* Barra de días restantes */
+.days-bar {
+  height: 6px;
+  border-radius: 3px;
+  background-color: #e9ecef;
+  position: relative;
+  overflow: hidden;
+}
+
+.days-bar .days-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  border-radius: 3px;
+}
+
+.days-bar .days-indicator.critical {
+  background-color: var(--bs-danger);
+}
+
+.days-bar .days-indicator.warning {
+  background-color: var(--bs-warning);
+}
+
+.days-bar .days-indicator.normal {
+  background-color: var(--bs-success);
+}
+
+/* Estadísticas por categoría */
+.category-stats {
+  margin-top: 30px;
+}
+
+.category-stat-item {
+  border-radius: 12px;
+  background-color: white;
+  padding: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.category-stat-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.category-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+}
+
+.category-name {
+  font-weight: 500;
+  margin-bottom: 0;
+}
+
+.category-item-count {
+  font-weight: 700;
+  margin-left: auto;
+}
+
+/* Filtros */
+.alerts-filters {
+  padding: 20px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .expiration-alerts-container {
+    padding: 15px;
+  }
+}

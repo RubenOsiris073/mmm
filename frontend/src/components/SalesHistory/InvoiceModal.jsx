@@ -17,15 +17,21 @@ const InvoiceModal = ({ show, onHide, sale }) => {
   const handleDownloadInvoice = async () => {
     try {
       setDownloading(true);
-      toast.info('Generando factura PDF profesional...');
+      toast.info('Generando factura PDF profesional...', {
+        toastId: `invoice-info-${saleId}` // ID único
+      });
       
       // Usar la función mejorada del pdfGenerator
       await generateInvoicePDF(sale);
       
-      toast.success('Factura descargada correctamente');
+      toast.success('Factura descargada correctamente', {
+        toastId: `invoice-success-${saleId}` // ID único
+      });
     } catch (error) {
       console.error('Error al generar la factura:', error);
-      toast.error('Error al generar la factura: ' + (error.message || 'Error desconocido'));
+      toast.error('Error al generar la factura: ' + (error.message || 'Error desconocido'), {
+        toastId: `invoice-error-${saleId}` // ID único
+      });
     } finally {
       setDownloading(false);
     }

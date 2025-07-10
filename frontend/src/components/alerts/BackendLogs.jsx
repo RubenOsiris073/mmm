@@ -14,7 +14,7 @@ import {
   FaExclamationCircle
 } from 'react-icons/fa';
 import apiService from '../../services/apiService';
-import './BackendLogs.css';
+import '../../styles/components/alerts/logs.css';
 
 const BackendLogs = () => {
   const [logs, setLogs] = useState([]);

@@ -95,3 +95,13 @@ button:not(.btn):hover {
   height: auto !important;
   white-space: nowrap;
 }
+
+/* === BOTÓN DESCARGAR === */
+.btn-download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto !important;
+  height: auto !important;
+  white-space: nowrap;
+}

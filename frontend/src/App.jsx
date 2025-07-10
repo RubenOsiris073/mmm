@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ToastContainer } from 'react-toastify';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
+import './styles/components/toast.css';
 
 // Importar el contexto de tema
 import { ThemeProvider } from './contexts/ThemeContext.jsx';
@@ -216,7 +217,7 @@ function App() {
             </Suspense>
             <ToastContainer 
               position="top-right"
-              autoClose={3000}
+              autoClose={4000}
               hideProgressBar={false}
               newestOnTop={false}
               closeOnClick
@@ -224,6 +225,10 @@ function App() {
               pauseOnFocusLoss
               draggable
               pauseOnHover
+              theme="light"
+              toastClassName="toast-custom"
+              progressClassName="toast-progress"
+              limit={3}
             />
           </Router>
         </ProductVisibilityProvider>

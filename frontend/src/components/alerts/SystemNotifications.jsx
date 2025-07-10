@@ -1,32 +1,47 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Alert, Badge, Button, Row, Col, Toast, ToastContainer, Spinner } from 'react-bootstrap';
+import { Badge } from 'react-bootstrap';
 import { 
-  FaServer, 
   FaCheckCircle, 
   FaTimesCircle, 
   FaExclamationTriangle, 
   FaInfoCircle, 
   FaCog, 
   FaDatabase, 
-  FaCloud, 
   FaBell,
-  FaHeartbeat,
-  FaTerminal,
-  FaCode,
-  FaTools
+  FaTools,
+  FaCode
 } from 'react-icons/fa';
-import apiService from '../../services/apiService';
-import './SystemNotifications.css';
 
+// Componentes
+import StatusCard from './components/StatusCard';
+import NotificationsSummary from './components/NotificationsSummary';
+import NotificationsList from './components/NotificationsList';
+import ToastNotifications from './components/ToastNotifications';
+
+// Servicios
+import apiService from '../../services/apiService';
+
+// Estilos
+import '../../styles/components/alerts/notifications.css';
+
+/**
+ * Componente principal del Centro de Alertas y Estado del Sistema
+ * Muestra el estado actual de conexión con servicios clave y notificaciones importantes
+ */
 const SystemNotifications = ({ backendStatus }) => {
+  // ESTADOS
   const [systemStatus, setSystemStatus] = useState({
     backend: backendStatus?.isOnline ? 'online' : 'offline',
     database: 'checking',
     sheets: 'checking',
-    lastCheck: backendStatus?.lastChecked || null
+    lastCheck: backendStatus?.lastChecked || null,
+    errorType: backendStatus?.errorType || null,
+    errorMessage: backendStatus?.error || null
   });
   const [notifications, setNotifications] = useState([]);
   const [toasts, setToasts] = useState([]);
+
+  // EFECTOS
 
   // Actualizar el estado del backend cuando cambie la prop
   useEffect(() => {
@@ -34,13 +49,34 @@ const SystemNotifications = ({ backendStatus }) => {
       setSystemStatus(prev => ({
         ...prev,
         backend: backendStatus.isOnline ? 'online' : 'offline',
-        lastCheck: backendStatus.lastChecked
+        lastCheck: backendStatus.lastChecked,
+        errorType: backendStatus.errorType || null,
+        errorMessage: backendStatus.error || null
       }));
+      
+      // Si hay error CORS, mostrar una notificación especial
+      if (backendStatus.errorType === 'cors' && !backendStatus.isOnline) {
+        addNotification({
+          id: `cors-${Date.now()}`,
+          type: 'warning',
+          title: 'Error CORS Detectado',
+          message: 'Configuración incorrecta de CORS en el servidor. Contacte al administrador.',
+          date: new Date(),
+          unread: true,
+          icon: <FaCode />,
+          solution: 'Verifique la configuración CORS en el archivo backend/config/cors.js'
+        });
+      }
     }
   }, [backendStatus]);
 
+  /**
+   * Verifica el estado de los servicios externos (Firebase y Google Sheets)
+   * Implementa manejo de errores y actualiza el estado del sistema
+   */
   const checkOtherServices = useCallback(async () => {
     try {
+      // Inicializar estado de verificación
       const newStatus = {
         database: 'checking',
         sheets: 'checking',
@@ -53,6 +89,7 @@ const SystemNotifications = ({ backendStatus }) => {
         newStatus.database = dbResponse.success ? 'online' : 'offline';
       } catch (error) {
         newStatus.database = 'offline';
+        console.error('Error al verificar Firebase:', error);
       }
 
       // Verificar Google Sheets
@@ -64,6 +101,7 @@ const SystemNotifications = ({ backendStatus }) => {
         showToast('warning', 'Google Sheets desconectado', 'Verificar configuración de API');
       }
 
+      // Actualizar estado del sistema con los resultados
       setSystemStatus(prev => ({
         ...prev,
         database: newStatus.database,
@@ -71,35 +109,87 @@ const SystemNotifications = ({ backendStatus }) => {
         lastCheck: newStatus.lastCheck
       }));
     } catch (error) {
-      console.error('Error checking other services:', error);
+      console.error('Error al verificar servicios externos:', error);
     }
   }, []);
 
+  /**
+   * Efecto para inicializar verificaciones y configurar intervalos de actualización
+   */
   useEffect(() => {
-    // Solo verificar database y sheets, el backend ya viene desde la prop
+    // Verificar servicios y cargar notificaciones al inicio
     checkOtherServices();
     loadNotifications();
     
-    // Verificar otros servicios cada 30 segundos
-    const statusInterval = setInterval(checkOtherServices, 30000);
-    // Cargar notificaciones cada 5 minutos
-    const notificationInterval = setInterval(loadNotifications, 5 * 60 * 1000);
+    // Configurar intervalos de actualización automática
+    const statusInterval = setInterval(checkOtherServices, 30000); // Cada 30 segundos
+    const notificationInterval = setInterval(loadNotifications, 5 * 60 * 1000); // Cada 5 minutos
     
+    // Limpieza de intervalos al desmontar
     return () => {
       clearInterval(statusInterval);
       clearInterval(notificationInterval);
     };
   }, [checkOtherServices]);
 
+  // FUNCIONES PARA NOTIFICACIONES
+  
+  /**
+   * Muestra una notificación toast temporal
+   * @param {string} type - Tipo de notificación (success, warning, error, info)
+   * @param {string} title - Título de la notificación
+   * @param {string} message - Mensaje de la notificación
+   */
+  const showToast = useCallback((type, title, message) => {
+    const newToast = {
+      id: `toast-${Date.now()}`,
+      type,
+      title,
+      message,
+      timestamp: new Date()
+    };
+    
+    setToasts(prev => [...prev, newToast]);
+    
+    // Auto-eliminar después de 5 segundos
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== newToast.id));
+    }, 5000);
+  }, []);
+  
+  /**
+   * Añade una nueva notificación al sistema
+   * @param {Object} notification - La notificación a añadir
+   */
+  const addNotification = useCallback((notification) => {
+    // Comprobar si ya existe una notificación similar para evitar duplicados
+    const exists = notifications.some(n => 
+      n.title === notification.title && 
+      n.type === notification.type
+    );
+    
+    if (!exists) {
+      setNotifications(prev => [notification, ...prev]);
+      
+      // Mostrar también como toast si es importante (warning o error)
+      if (['warning', 'error'].includes(notification.type)) {
+        showToast(notification.type, notification.title, notification.message);
+      }
+    }
+  }, [notifications, showToast]);
+  
+  /**
+   * Carga notificaciones del sistema (simuladas)
+   * En un entorno de producción, estas vendrían de una API
+   */
   const loadNotifications = () => {
-    // Simular notificaciones administrativas (en producción vendrían de una API)
-    const adminNotifications = [
+    const mockNotifications = [
       {
         id: 1,
         type: 'info',
         title: 'Actualización de Sistema',
         message: 'Nueva versión v2.1.0 disponible con mejoras en el dashboard de ventas.',
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 horas atrás
+        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
         priority: 'medium',
         category: 'system',
         read: false,
@@ -110,7 +200,7 @@ const SystemNotifications = ({ backendStatus }) => {
         type: 'warning',
         title: 'Mantenimiento Programado',
         message: 'El sistema estará en mantenimiento el 25 de junio de 2:00 AM a 4:00 AM.',
-        timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hora atrás
+        timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000),
         priority: 'high',
         category: 'maintenance',
         read: false,
@@ -121,7 +211,7 @@ const SystemNotifications = ({ backendStatus }) => {
         type: 'success',
         title: 'Backup Completado',
         message: 'Respaldo automático de datos completado exitosamente.',
-        timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 minutos atrás
+        timestamp: new Date(Date.now() - 30 * 60 * 1000),
         priority: 'low',
         category: 'backup',
         read: true,
@@ -132,7 +222,7 @@ const SystemNotifications = ({ backendStatus }) => {
         type: 'error',
         title: 'Error en Detección de Productos',
         message: 'El modelo de IA ha reportado errores intermitentes. Se recomienda reiniciar el servicio.',
-        timestamp: new Date(Date.now() - 15 * 60 * 1000), // 15 minutos atrás
+        timestamp: new Date(Date.now() - 15 * 60 * 1000),
         priority: 'critical',
         category: 'ai',
         read: false,
@@ -143,7 +233,7 @@ const SystemNotifications = ({ backendStatus }) => {
         type: 'info',
         title: 'Nueva Funcionalidad',
         message: 'Se agregó el módulo de alertas de caducidad para mejor gestión del inventario.',
-        timestamp: new Date(Date.now() - 45 * 60 * 1000), // 45 minutos atrás
+        timestamp: new Date(Date.now() - 45 * 60 * 1000),
         priority: 'medium',
         category: 'feature',
         read: false,
@@ -151,26 +241,21 @@ const SystemNotifications = ({ backendStatus }) => {
       }
     ];
 
-    setNotifications(adminNotifications);
+    setNotifications(mockNotifications);
   };
 
-  const showToast = (type, title, message) => {
-    const newToast = {
-      id: Date.now(),
-      type,
-      title,
-      message,
-      show: true
-    };
-    
-    setToasts(prev => [...prev, newToast]);
-    
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-      setToasts(prev => prev.filter(toast => toast.id !== newToast.id));
-    }, 5000);
-  };
+  /**
+   * Muestra una notificación toast temporal
+   * @param {string} type - Tipo de notificación: 'success', 'error', 'warning', 'info'
+   * @param {string} title - Título de la notificación
+   * @param {string} message - Mensaje de la notificación
+   * Esta función ya está definida arriba usando useCallback
+   */
 
+  /**
+   * Marca una notificación como leída
+   * @param {number} notificationId - ID de la notificación a marcar
+   */
   const markAsRead = (notificationId) => {
     setNotifications(prev =>
       prev.map(notification =>
@@ -181,33 +266,13 @@ const SystemNotifications = ({ backendStatus }) => {
     );
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'online': return <FaCheckCircle className="text-success" />;
-      case 'offline': return <FaTimesCircle className="text-danger" />;
-      case 'checking': return <Spinner animation="border" size="sm" />;
-      default: return <FaExclamationTriangle className="text-warning" />;
-    }
-  };
-
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'online': return 'En línea';
-      case 'offline': return 'Desconectado';
-      case 'checking': return 'Verificando...';
-      default: return 'Desconocido';
-    }
-  };
-
-  const getStatusVariant = (status) => {
-    switch (status) {
-      case 'online': return 'success';
-      case 'offline': return 'danger';
-      case 'checking': return 'warning';
-      default: return 'secondary';
-    }
-  };
-
+  // UTILIDADES PARA RENDERIZADO
+  
+  /**
+   * Devuelve el ícono correspondiente al tipo de notificación
+   * @param {string} type - Tipo de notificación
+   * @returns {JSX.Element} Elemento React con el ícono
+   */
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'success': return <FaCheckCircle className="text-success" />;
@@ -218,6 +283,11 @@ const SystemNotifications = ({ backendStatus }) => {
     }
   };
 
+  /**
+   * Devuelve un badge con el nivel de prioridad formateado
+   * @param {string} priority - Nivel de prioridad: 'critical', 'high', 'medium', 'low'
+   * @returns {JSX.Element} Badge con el texto y color correspondiente
+   */
   const getPriorityBadge = (priority) => {
     const variants = {
       critical: 'danger',
@@ -228,6 +298,11 @@ const SystemNotifications = ({ backendStatus }) => {
     return <Badge bg={variants[priority]} pill>{priority.toUpperCase()}</Badge>;
   };
 
+  /**
+   * Devuelve el ícono correspondiente a la categoría de la notificación
+   * @param {string} category - Categoría de la notificación
+   * @returns {JSX.Element} Elemento React con el ícono
+   */
   const getCategoryIcon = (category) => {
     switch (category) {
       case 'system': return <FaCog className="me-1" />;
@@ -239,203 +314,31 @@ const SystemNotifications = ({ backendStatus }) => {
     }
   };
 
-  const unreadNotifications = notifications.filter(n => !n.read);
-  const criticalNotifications = notifications.filter(n => n.priority === 'critical');
-
+  // RENDERIZADO
   return (
     <div className="system-notifications-container">
-      {/* Estado del Sistema */}
-      <Card className="mb-4 system-status-card">
-        <Card.Header className="bg-dark text-white">
-          <h5 className="mb-0">
-            <FaHeartbeat className="me-2" />
-            Estado del Sistema
-            {systemStatus.lastCheck && (
-              <small className="float-end">
-                Última verificación: {systemStatus.lastCheck.toLocaleTimeString('es-MX')}
-              </small>
-            )}
-          </h5>
-        </Card.Header>
-        <Card.Body>
-          <Row>
-            <Col md={4}>
-              <div className="status-item">
-                <div className="d-flex align-items-center justify-content-between">
-                  <div className="d-flex align-items-center">
-                    <FaServer className="me-2 text-primary" size={20} />
-                    <span className="fw-bold">Backend API</span>
-                  </div>
-                  <div className="d-flex align-items-center">
-                    {getStatusIcon(systemStatus.backend)}
-                    <Badge bg={getStatusVariant(systemStatus.backend)} className="ms-2">
-                      {getStatusText(systemStatus.backend)}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-            </Col>
-            <Col md={4}>
-              <div className="status-item">
-                <div className="d-flex align-items-center justify-content-between">
-                  <div className="d-flex align-items-center">
-                    <FaDatabase className="me-2 text-primary" size={20} />
-                    <span className="fw-bold">Base de Datos</span>
-                  </div>
-                  <div className="d-flex align-items-center">
-                    {getStatusIcon(systemStatus.database)}
-                    <Badge bg={getStatusVariant(systemStatus.database)} className="ms-2">
-                      {getStatusText(systemStatus.database)}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-            </Col>
-            <Col md={4}>
-              <div className="status-item">
-                <div className="d-flex align-items-center justify-content-between">
-                  <div className="d-flex align-items-center">
-                    <FaCloud className="me-2 text-primary" size={20} />
-                    <span className="fw-bold">Google Sheets</span>
-                  </div>
-                  <div className="d-flex align-items-center">
-                    {getStatusIcon(systemStatus.sheets)}
-                    <Badge bg={getStatusVariant(systemStatus.sheets)} className="ms-2">
-                      {getStatusText(systemStatus.sheets)}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
-
-      {/* Alertas Críticas */}
-      {criticalNotifications.length > 0 && (
-        <Alert variant="danger" className="mb-4">
-          <FaExclamationTriangle className="me-2" />
-          <strong>¡Atención!</strong> Tienes {criticalNotifications.length} notificación(es) crítica(s) que requieren atención inmediata.
-        </Alert>
-      )}
-
-      {/* Resumen de Notificaciones */}
-      <Row className="mb-4">
-        <Col md={6}>
-          <Card className="h-100 border-primary">
-            <Card.Body className="text-center">
-              <FaBell className="text-primary mb-2" size={32} />
-              <h3 className="text-primary mb-1">{unreadNotifications.length}</h3>
-              <small className="text-muted">Notificaciones sin leer</small>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={6}>
-          <Card className="h-100 border-danger">
-            <Card.Body className="text-center">
-              <FaExclamationTriangle className="text-danger mb-2" size={32} />
-              <h3 className="text-danger mb-1">{criticalNotifications.length}</h3>
-              <small className="text-muted">Notificaciones críticas</small>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Lista de Notificaciones */}
-      <Card>
-        <Card.Header>
-          <h5 className="mb-0">
-            <FaBell className="me-2" />
-            Notificaciones del Sistema
-            <Button 
-              variant="outline-primary" 
-              size="sm" 
-              className="float-end"
-              onClick={loadNotifications}
-            >
-              <FaTerminal className="me-1" />
-              Actualizar
-            </Button>
-          </h5>
-        </Card.Header>
-        <Card.Body className="p-0">
-          {notifications.length === 0 ? (
-            <div className="text-center py-4">
-              <FaCheckCircle className="text-success mb-2" size={48} />
-              <h5>No hay notificaciones</h5>
-              <p className="text-muted">Todo está funcionando correctamente</p>
-            </div>
-          ) : (
-            <div className="notifications-list">
-              {notifications.map((notification, index) => (
-                <div 
-                  key={notification.id} 
-                  className={`notification-item ${!notification.read ? 'unread' : ''}`}
-                  onClick={() => markAsRead(notification.id)}
-                >
-                  <Row className="align-items-center">
-                    <Col md={1} className="text-center">
-                      {getNotificationIcon(notification.type)}
-                    </Col>
-                    <Col md={8}>
-                      <div className="notification-content">
-                        <div className="d-flex align-items-center mb-1">
-                          {getCategoryIcon(notification.category)}
-                          <h6 className="mb-0 fw-bold">{notification.title}</h6>
-                          {!notification.read && <Badge bg="primary" className="ms-2">Nuevo</Badge>}
-                        </div>
-                        <p className="mb-1 text-muted">{notification.message}</p>
-                        <small className="text-muted">
-                          {notification.timestamp.toLocaleString('es-MX')}
-                        </small>
-                      </div>
-                    </Col>
-                    <Col md={3} className="text-end">
-                      <div className="notification-actions">
-                        {getPriorityBadge(notification.priority)}
-                        {notification.actionUrl && (
-                          <Button 
-                            variant="outline-primary" 
-                            size="sm" 
-                            className="ms-2"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              // Navegar a la URL de acción
-                              console.log('Navigate to:', notification.actionUrl);
-                            }}
-                          >
-                            Ver
-                          </Button>
-                        )}
-                      </div>
-                    </Col>
-                  </Row>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card.Body>
-      </Card>
-
-      {/* Toast Notifications */}
-      <ToastContainer position="top-end" className="p-3">
-        {toasts.map((toast) => (
-          <Toast
-            key={toast.id}
-            show={toast.show}
-            onClose={() => setToasts(prev => prev.filter(t => t.id !== toast.id))}
-            delay={5000}
-            autohide
-            className={`border-${toast.type === 'error' ? 'danger' : toast.type}`}
-          >
-            <Toast.Header>
-              {getNotificationIcon(toast.type)}
-              <strong className="me-auto ms-2">{toast.title}</strong>
-            </Toast.Header>
-            <Toast.Body>{toast.message}</Toast.Body>
-          </Toast>
-        ))}
-      </ToastContainer>
+      {/* Componente de Estado del Sistema */}
+      <StatusCard systemStatus={systemStatus} />
+      
+      {/* Componente de Resumen de Notificaciones */}
+      <NotificationsSummary notifications={notifications} />
+      
+      {/* Componente de Lista de Notificaciones */}
+      <NotificationsList
+        notifications={notifications}
+        loadNotifications={loadNotifications}
+        markAsRead={markAsRead}
+        getNotificationIcon={getNotificationIcon}
+        getCategoryIcon={getCategoryIcon}
+        getPriorityBadge={getPriorityBadge}
+      />
+      
+      {/* Componente de Notificaciones Toast */}
+      <ToastNotifications
+        toasts={toasts}
+        getNotificationIcon={getNotificationIcon}
+        setToasts={setToasts}
+      />
     </div>
   );
 };

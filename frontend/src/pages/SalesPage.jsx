@@ -4,7 +4,7 @@ import { FaDownload } from 'react-icons/fa';
 import SalesHistory from '../components/SalesHistory/SalesHistory';
 import InvoiceModal from '../components/SalesHistory/InvoiceModal';
 import { generateSalesReportPDF } from '../utils/pdfGenerator';
-import { toast } from 'react-toastify';
+import { toast } from '../utils/toastHelper';
 
 const SalesPage = () => {
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
@@ -44,9 +44,15 @@ const SalesPage = () => {
 
     try {
       setDownloading(true);
+      // Mostrar toast solo cuando comienza la descarga
+      if (isComponentMounted) {
+        toast.info('Generando reporte de ventas...');
+      }
       await generateSalesReportPDF(salesData);
       if (isComponentMounted) {
-        toast.success('Reporte de ventas descargado correctamente');
+        toast.success('Reporte de ventas descargado correctamente', {
+          toastId: 'sales-report-success' // Asegurar ID único para evitar duplicados
+        });
       }
     } catch (error) {
       console.error('Error al generar el reporte de ventas:', error);
@@ -72,15 +78,15 @@ const SalesPage = () => {
           size="sm"
           onClick={handleDownloadSalesReport}
           disabled={downloading || salesData.length === 0}
-          className="px-3 py-2"
+          className="px-3 py-2 d-inline-flex align-items-center btn-download"
           title="Descargar historial de ventas"
         >
           {downloading ? (
             <span style={{ fontSize: '12px' }}>Generando...</span>
           ) : (
             <>
-              <FaDownload size="12" className="me-1" />
-              Descargar
+              <FaDownload size={12} className="me-1" />
+              <span>Descargar</span>
             </>
           )}
         </Button>
@@ -90,7 +96,6 @@ const SalesPage = () => {
         <Col>
           <SalesHistory 
             onGenerateInvoice={handleShowInvoice}
-            onDownloadReport={handleDownloadSalesReport}
             onSalesDataUpdate={handleSalesDataUpdate}
           />
         </Col>

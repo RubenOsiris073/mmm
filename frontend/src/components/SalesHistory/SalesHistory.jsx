@@ -9,7 +9,7 @@ import ClientNameModal from './ClientNameModal';
 import OrderProductManagementModal from '../orders/OrderProductManagementModal';
 import { generateInvoicePDF } from '../../utils/pdfGenerator';
 
-const SalesHistory = memo(({ onGenerateInvoice, onDownloadReport, onSalesDataUpdate }) => {
+const SalesHistory = memo(({ onGenerateInvoice, onSalesDataUpdate }) => {
   const [sales, setSales] = useState([]);
   const [filteredSales, setFilteredSales] = useState([]);
   const [displayedSales, setDisplayedSales] = useState([]); // Nuevas ventas mostradas
@@ -89,7 +89,9 @@ const SalesHistory = memo(({ onGenerateInvoice, onDownloadReport, onSalesDataUpd
       
       // Solo mostrar toast si el componente ya se ha montado completamente
       if (isComponentMounted) {
-        toast.error('Error al cargar el historial de ventas');
+        toast.error('Error al cargar el historial de ventas', {
+          toastId: 'sales-history-load-error'
+        });
       }
     } finally {
       setLoading(false);
@@ -193,7 +195,9 @@ const SalesHistory = memo(({ onGenerateInvoice, onDownloadReport, onSalesDataUpd
       setGeneratingPDF(true);
       
       if (isComponentMounted) {
-        toast.info('Generando factura PDF...');
+        toast.info('Generando factura PDF...', {
+          toastId: `sales-invoice-gen-${saleForInvoice?.id || 'noid'}`
+        });
       }
       
       // Crear copia de la venta con el nombre del cliente actualizado
@@ -206,7 +210,9 @@ const SalesHistory = memo(({ onGenerateInvoice, onDownloadReport, onSalesDataUpd
       await generateInvoicePDF(updatedSale);
       
       if (isComponentMounted) {
-        toast.success(`Factura generada para ${clientName}`);
+        toast.success(`Factura generada para ${clientName}`, {
+          toastId: `sales-invoice-success-${saleForInvoice?.id || 'noid'}`
+        });
       }
       
       setShowClientNameModal(false);
@@ -214,7 +220,9 @@ const SalesHistory = memo(({ onGenerateInvoice, onDownloadReport, onSalesDataUpd
     } catch (error) {
       console.error('Error al generar factura PDF:', error);
       if (isComponentMounted) {
-        toast.error('Error al generar la factura PDF');
+        toast.error('Error al generar la factura PDF', {
+          toastId: `sales-invoice-error-${saleForInvoice?.id || 'noid'}`
+        });
       }
     } finally {
       setGeneratingPDF(false);
