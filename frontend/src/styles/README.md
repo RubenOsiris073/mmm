@@ -98,3 +98,5 @@ Los siguientes mantienen sus CSS en sus carpetas:
 - `/components/auth/auth.css`
 
 Esto asegura que no rompemos funcionalidad existente.
+
+@import './layout/navigation.css';
