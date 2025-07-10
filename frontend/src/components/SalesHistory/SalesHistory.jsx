@@ -1,13 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useCallback, useRef, memo, useMemo } from 'react';
 import { Table, Spinner, Card, Alert, Button, Row, Col, Form, Badge } from 'react-bootstrap';
-import { FaDownload, FaFilter, FaTimes, FaEye, FaCalendarAlt, FaShoppingCart } from 'react-icons/fa';
+import { FaDownload, FaFilter, FaTimes, FaEye, FaCalendarAlt, FaShoppingCart, FaSearch } from 'react-icons/fa';
 import apiService from '../../services/apiService';
 import { toast } from 'react-toastify';
 import InvoiceModal from './InvoiceModal';
 import ClientNameModal from './ClientNameModal';
 import OrderProductManagementModal from '../orders/OrderProductManagementModal';
 import { generateInvoicePDF } from '../../utils/pdfGenerator';
+
+// Estilos
+import '../../styles/components/sales/history.css';
 
 const SalesHistory = memo(({ onGenerateInvoice, onSalesDataUpdate }) => {
   const [sales, setSales] = useState([]);
@@ -252,11 +255,11 @@ const SalesHistory = memo(({ onGenerateInvoice, onSalesDataUpdate }) => {
       return '$0.00';
     }
     
-    return new Intl.NumberFormat('es-CO', {
+    return new Intl.NumberFormat('es-MX', {
       style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      currency: 'MXN',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
     }).format(Number(amount));
   };
 
@@ -319,23 +322,42 @@ const SalesHistory = memo(({ onGenerateInvoice, onSalesDataUpdate }) => {
         </div>
       </div>
 
-      {/* Panel principal */}
-      <Card className="shadow-sm mb-4">
+      {/* Panel principal con nuevo diseño */}
+      <div className="sales-history-container">
+        <h5 className="sales-history-title p-3">
+          <FaShoppingCart className="me-2 text-primary" />
+          Historial de Ventas
+          <Button 
+            variant={showFilters ? "outline-primary" : "light"}
+            size="sm" 
+            className="ms-auto sales-history-btn"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <FaFilter className="me-1" />
+            {showFilters ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+          </Button>
+        </h5>
         
-        {/* Panel de filtros plegable */}
+        {/* Panel de filtros plegable con nuevo diseño */}
         {showFilters && (
-          <Card.Body className="border-bottom">
+          <div className="sales-history-filters">
             <Form>
               <Row>
                 <Col md={3}>
                   <Form.Group className="mb-3">
                     <Form.Label>Fecha Inicio</Form.Label>
-                    <Form.Control 
-                      type="date" 
-                      name="startDate"
-                      value={filters.startDate}
-                      onChange={handleFilterChange}
-                    />
+                    <div className="input-group">
+                      <span className="input-group-text">
+                        <FaCalendarAlt size={14} />
+                      </span>
+                      <Form.Control 
+                        type="date" 
+                        name="startDate"
+                        value={filters.startDate}
+                        onChange={handleFilterChange}
+                        className="rounded-end"
+                      />
+                    </div>
                   </Form.Group>
                 </Col>
                 <Col md={3}>
@@ -347,30 +369,60 @@ const SalesHistory = memo(({ onGenerateInvoice, onSalesDataUpdate }) => {
                       value={filters.paymentMethod}
                       onChange={handleFilterChange}
                       placeholder="Efectivo, Tarjeta, etc."
+                      className="rounded-pill"
                     />
                   </Form.Group>
                 </Col>
               </Row>
               
+              {/* Filtros aplicados */}
+              {(filters.startDate || filters.paymentMethod) && (
+                <div className="mb-3">
+                  {filters.startDate && (
+                    <div className="filter-pill">
+                      <span>Desde: {filters.startDate}</span>
+                      <span 
+                        className="filter-pill-close"
+                        onClick={() => handleFilterChange({ target: { name: 'startDate', value: '' } })}
+                      >
+                        <FaTimes size={12} />
+                      </span>
+                    </div>
+                  )}
+                  {filters.paymentMethod && (
+                    <div className="filter-pill">
+                      <span>Método: {filters.paymentMethod}</span>
+                      <span 
+                        className="filter-pill-close"
+                        onClick={() => handleFilterChange({ target: { name: 'paymentMethod', value: '' } })}
+                      >
+                        <FaTimes size={12} />
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+              
               <div className="d-flex justify-content-end">
                 <Button 
-                  variant="link" 
+                  variant="outline-danger" 
                   size="sm"
                   onClick={clearFilters}
-                  className="text-danger"
+                  className="sales-history-btn"
+                  disabled={!filters.startDate && !filters.paymentMethod}
                 >
                   <FaTimes className="me-1" /> Limpiar filtros
                 </Button>
-                <span className="ms-3 text-muted">
+                <span className="ms-3 my-auto text-muted">
                   {filteredSales.length} de {sales.length} ventas mostradas
                 </span>
               </div>
             </Form>
-          </Card.Body>
+          </div>
         )}
         
         {/* Tabla de ventas optimizada */}
-        <Card.Body className="p-0">
+        <div className="sales-history-table-container">
           {loading ? (
             <div className="text-center p-5">
               <Spinner animation="border" variant="primary" />
@@ -378,7 +430,7 @@ const SalesHistory = memo(({ onGenerateInvoice, onSalesDataUpdate }) => {
             </div>
           ) : (
             formattedDisplayedSales.length > 0 ? (
-              <Table responsive striped hover className="mb-0">
+              <Table responsive hover className="sales-history-table mb-0">
                 <thead>
                   <tr>
                     <th>ID</th>
@@ -403,47 +455,48 @@ const SalesHistory = memo(({ onGenerateInvoice, onSalesDataUpdate }) => {
                 </tbody>
               </Table>
             ) : (
-              <div className="text-center p-5">
-                <i className="bi bi-search fs-1 text-muted"></i>
-                <p className="mt-3 text-muted">No se encontraron ventas</p>
+              <div className="sales-history-empty">
+                <div className="sales-history-empty-icon">
+                  <FaSearch />
+                </div>
+                <p>No se encontraron ventas</p>
                 {(filters.startDate || filters.paymentMethod) && (
                   <Button 
-                    variant="link" 
+                    variant="outline-primary" 
                     size="sm"
                     onClick={clearFilters}
-                    className="p-1"
+                    className="sales-history-btn mt-2"
                   >
-                    Limpiar filtros
+                    <FaTimes className="me-1" /> Limpiar filtros
                   </Button>
                 )}
               </div>
             )
           )}
-        </Card.Body>
+        </div>
         
         {/* Footer con acciones adicionales */}
-        <Card.Footer>
-          <div className="d-flex justify-content-between align-items-center">
-            <div>
-              <small className="text-muted">
-                Total de ventas: <strong>{filteredSales.length}</strong>
-              </small>
-            </div>
-            <div>
-              {hasMoreData && (
-                <Button 
-                  variant="link" 
-                  size="sm"
-                  onClick={loadMoreSales}
-                  disabled={loadingMore}
-                >
-                  {loadingMore ? 'Cargando más...' : 'Cargar más ventas'}
-                </Button>
-              )}
-            </div>
+        <div className="sales-history-footer">
+          <div>
+            <small className="text-muted">
+              Total de ventas: <strong>{filteredSales.length}</strong>
+            </small>
           </div>
-        </Card.Footer>
-      </Card>
+          <div>
+            {hasMoreData && (
+              <Button 
+                variant="outline-primary" 
+                size="sm"
+                onClick={loadMoreSales}
+                disabled={loadingMore}
+                className="sales-history-btn"
+              >
+                {loadingMore ? 'Cargando más...' : 'Cargar más ventas'}
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Modal de factura */}
       <InvoiceModal
@@ -479,51 +532,69 @@ const SalesHistory = memo(({ onGenerateInvoice, onSalesDataUpdate }) => {
   );
 });
 
-// Componente optimizado para cada fila de venta
+// Componente optimizado para cada fila de venta con nuevo diseño
 const SaleRow = memo(({ sale, onViewInvoice, onViewProducts, onDownloadInvoice }) => (
   <tr>
     <td>
-      <Badge bg="primary">{sale.id}</Badge>
+      <Badge bg="primary" pill className="px-2 py-1">{sale.id}</Badge>
     </td>
     <td>
-      <FaCalendarAlt className="me-1" />
-      {sale.formattedDate}
-    </td>
-    <td>{sale.client || sale.cliente || 'Cliente general'}</td>
-    <td>{sale.itemsCount} productos</td>
-    <td>
-      <strong>{sale.formattedTotal}</strong>
-    </td>
-    <td>
-      <Badge bg="success">{sale.paymentMethod || 'Desconocido'}</Badge>
+      <div className="d-flex align-items-center">
+        <div className="me-2 rounded-circle p-1" style={{ backgroundColor: 'rgba(13, 110, 253, 0.1)' }}>
+          <FaCalendarAlt size={12} className="text-primary" />
+        </div>
+        <span>{sale.formattedDate}</span>
+      </div>
     </td>
     <td>
-      <Button
-        variant="outline-primary"
-        size="sm"
-        className="me-1"
-        onClick={() => onViewInvoice(sale)}
-        title="Ver factura"
-      >
-        <FaEye />
-      </Button>
-      <Button
-        variant="outline-info"
-        size="sm"
-        className="me-1"
-        onClick={() => onViewProducts(sale)}
-        title="Ver productos"
-      >
-        <FaShoppingCart />
-      </Button>
-      <Button
-        variant="outline-success"
-        size="sm"
-        onClick={() => onDownloadInvoice(sale)}
-        title="Descargar PDF"
-      >
-        <FaDownload />
-      </Button>
+      <div className="d-inline-block text-truncate" style={{ maxWidth: "150px" }}>
+        {sale.client || sale.cliente || 'Cliente general'}
+      </div>
+    </td>
+    <td>
+      <Badge bg="light" text="dark" pill className="px-2 py-1">
+        {sale.itemsCount} productos
+      </Badge>
+    </td>
+    <td>
+      <span className="fw-bold text-success" style={{ fontSize: '1.05rem', letterSpacing: '0.3px' }}>{sale.formattedTotal}</span>
+    </td>
+    <td>
+      <Badge bg="success" pill className="px-2 py-1">{sale.paymentMethod || 'Desconocido'}</Badge>
+    </td>
+    <td>
+      <div className="d-flex">
+        <Button
+          variant="outline-primary"
+          size="sm"
+          className="me-1 rounded-circle p-1"
+          style={{ width: "30px", height: "30px" }}
+          onClick={() => onViewInvoice(sale)}
+          title="Ver factura"
+        >
+          <FaEye size={14} />
+        </Button>
+        <Button
+          variant="outline-info"
+          size="sm"
+          className="me-1 rounded-circle p-1"
+          style={{ width: "30px", height: "30px" }}
+          onClick={() => onViewProducts(sale)}
+          title="Ver productos"
+        >
+          <FaShoppingCart size={14} />
+        </Button>
+        <Button
+          variant="outline-success"
+          size="sm"
+          className="rounded-circle p-1"
+          style={{ width: "30px", height: "30px" }}
+          onClick={() => onDownloadInvoice(sale)}
+          title="Descargar PDF"
+        >
+          <FaDownload size={14} />
+        </Button>
+      </div>
     </td>
   </tr>
 ));
