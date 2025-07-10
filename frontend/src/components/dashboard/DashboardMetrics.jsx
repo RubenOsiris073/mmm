@@ -3,29 +3,34 @@ import { FaShoppingCart, FaDollarSign, FaBoxes, FaUsers, FaArrowUp, FaArrowDown 
 
 const MetricCard = ({ icon: Icon, iconClass, value, label, change, changeType }) => (
   <div className="metric-card">
-    <div className="metric-header">
-      <div className={`metric-icon ${iconClass}`}>
-        <Icon />
+    <div className="metric-main">
+      <div className="metric-left">
+        <div className={`metric-icon ${iconClass}`}>
+          <Icon />
+        </div>
+        <div className="metric-content">
+          <div className="metric-value">{value}</div>
+          <div className="metric-label">{label}</div>
+        </div>
       </div>
-      <div className="metric-content">
-        <div className="metric-value">{value}</div>
-        <div className="metric-label">{label}</div>
+      <div className={`metric-change-right ${changeType}`}>
+        {changeType === 'positive' ? <FaArrowUp className="change-icon" /> : <FaArrowDown className="change-icon" />}
+        <span className="change-value">{change}</span>
       </div>
-    </div>
-    <div className={`metric-change ${changeType}`}>
-      {changeType === 'positive' ? <FaArrowUp className="me-1" /> : <FaArrowDown className="me-1" />}
-      {change}
     </div>
   </div>
 );
 
-export const DashboardMetrics = ({ metrics }) => {
-  const formatCurrency = (amount) => {
+export const DashboardMetrics = ({ metrics, formatCurrency }) => {
+  // Función de fallback si no se pasa formatCurrency como prop
+  const defaultFormatCurrency = (amount) => {
     return new Intl.NumberFormat('es-MX', {
       style: 'currency',
       currency: 'MXN'
     }).format(amount || 0);
   };
+
+  const currencyFormatter = formatCurrency || defaultFormatCurrency;
 
   return (
     <div className="dashboard-metrics">
@@ -40,7 +45,7 @@ export const DashboardMetrics = ({ metrics }) => {
       <MetricCard
         icon={FaDollarSign}
         iconClass="revenue"
-        value={formatCurrency(metrics?.totalRevenue || 0)}
+        value={currencyFormatter(metrics?.totalRevenue || 0)}
         label="Ingresos"
         change="+8%"
         changeType="positive"
@@ -56,7 +61,7 @@ export const DashboardMetrics = ({ metrics }) => {
       <MetricCard
         icon={FaUsers}
         iconClass="users"
-        value={formatCurrency(metrics?.averageTicket || 0)}
+        value={currencyFormatter(metrics?.averageTicket || 0)}
         label="Ticket Promedio"
         change="-3%"
         changeType="negative"

@@ -5,17 +5,27 @@ import Chart from 'react-apexcharts';
 export const MinimalDonutChart = ({ data, title }) => {
   // Procesar datos para el formato correcto
   const processedData = data && data.length > 0 ? data : [
-    { name: 'Efectivo', value: 45 },
-    { name: 'Tarjeta', value: 35 },
-    { name: 'Transferencia', value: 20 }
+    { name: 'Producto A', value: 45000 },
+    { name: 'Producto B', value: 35000 },
+    { name: 'Producto C', value: 20000 }
   ];
+
+  // Formatear valor para mostrar como moneda
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('es-MX', {
+      style: 'currency',
+      currency: 'MXN',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value);
+  };
 
   const options = {
     chart: {
       type: 'donut',
       background: 'transparent'
     },
-    colors: ['#00E396', '#0090FF', '#FEB019', '#FF4560', '#775DD0'],
+    colors: ['#00E396', '#0090FF', '#FEB019', '#FF4560', '#775DD0', '#33B2DF'],
     labels: processedData.map(item => item.name),
     dataLabels: {
       enabled: false
@@ -25,6 +35,10 @@ export const MinimalDonutChart = ({ data, title }) => {
       position: 'bottom',
       labels: {
         colors: '#8e8da4'
+      },
+      formatter: function(seriesName, opts) {
+        const value = processedData[opts.seriesIndex]?.value || 0;
+        return seriesName + ': ' + formatCurrency(value);
       }
     },
     plotOptions: {
@@ -35,15 +49,16 @@ export const MinimalDonutChart = ({ data, title }) => {
             show: true,
             name: {
               show: true,
-              fontSize: '16px',
+              fontSize: '14px',
               color: '#8e8da4'
             },
             value: {
               show: true,
-              fontSize: '20px',
+              fontSize: '18px',
               color: '#ffffff',
-              formatter: function (val) {
-                return parseInt(val) + '%';
+              formatter: function (val, opts) {
+                const value = processedData[opts.seriesIndex]?.value || 0;
+                return formatCurrency(value);
               }
             },
             total: {
@@ -51,9 +66,8 @@ export const MinimalDonutChart = ({ data, title }) => {
               label: 'Total',
               color: '#8e8da4',
               formatter: function (w) {
-                return w.globals.seriesTotals.reduce((a, b) => {
-                  return a + b;
-                }, 0) + '%';
+                const total = processedData.reduce((sum, item) => sum + item.value, 0);
+                return formatCurrency(total);
               }
             }
           }
@@ -61,7 +75,12 @@ export const MinimalDonutChart = ({ data, title }) => {
       }
     },
     tooltip: {
-      theme: 'dark'
+      theme: 'dark',
+      y: {
+        formatter: function(value) {
+          return formatCurrency(value);
+        }
+      }
     }
   };
 

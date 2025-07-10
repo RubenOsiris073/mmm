@@ -68,10 +68,14 @@ const DashboardPage = () => {
     }).format(amount || 0);
   };
 
-  // Procesar datos de ventas para métricas y gráficos
+  // Procesar datos reales de Google Sheets para métricas y gráficos
   const getProcessedData = () => {
-    if (!salesData?.data || salesData.data.length === 0) {
-      // Datos de ejemplo cuando no hay datos reales
+    console.log('DEBUG - metrics:', metrics);
+    console.log('DEBUG - salesData:', salesData);
+    
+    // Si no hay datos de metrics, usar datos de ejemplo
+    if (!metrics) {
+      console.log('DEBUG - No hay metrics, usando datos de ejemplo');
       return {
         metrics: {
           totalSales: 0,
@@ -97,84 +101,328 @@ const DashboardPage = () => {
       };
     }
 
-    const data = salesData.data;
-    let totalSales = data.length;
+    // Usar datos reales de Google Sheets y calcular métricas reales
+    console.log('DEBUG - Usando datos reales de metrics y salesData');
+    
     let totalRevenue = 0;
-    let totalOrders = 0;
-    let averageTicket = 0;
+    let totalOrders = salesData?.data?.length || 0;
+    
+    // Calcular ingresos totales reales desde salesData
+    if (salesData?.data && salesData.data.length > 0) {
+      totalRevenue = salesData.data.reduce((sum, sale) => {
+        const revenue = parseFloat(sale.Total || sale.venta_total || sale.total || 0);
+        return sum + revenue;
+      }, 0);
+    }
 
-    // Datos para gráficos
-    const categoryData = {};
-    const paymentData = {};
-    const dailySales = {};
+    const realMetrics = {
+      totalSales: metrics.totalSales || 0,
+      totalRevenue: totalRevenue,
+      totalOrders: totalOrders,
+      averageTicket: totalOrders > 0 ? (totalRevenue / totalOrders) : 0
+    };
+    console.log('DEBUG - realMetrics:', realMetrics);
 
-    data.forEach(item => {
-      const revenue = parseFloat(item.venta_total || 0);
-      totalRevenue += revenue;
-      totalOrders += parseInt(item.cantidad || 0);
+    // Procesar datos de ventas usando salesData.data directamente
+    let monthlyData = [];
+    let productsData = [];
 
-      // Datos por categoría
-      const category = item.categoria || 'Sin categoría';
-      if (!categoryData[category]) {
-        categoryData[category] = 0;
+    if (salesData?.data && salesData.data.length > 0) {
+      console.log('DEBUG - Primer registro de salesData:', salesData.data[0]);
+      console.log('DEBUG - Campos disponibles:', Object.keys(salesData.data[0]));
+      
+      // Procesar datos de ventas por mes
+      const salesByMonth = {};
+      const productCounts = {};
+      const categoryRevenue = {}; // Cambiar a ingresos por categoría
+
+      salesData.data.forEach(sale => {
+        // Procesar fecha para agrupar por mes
+        const date = sale.Fecha || sale.venta_timestamp || sale.fecha || sale.Timestamp || new Date().toISOString();
+        const monthKey = new Date(date).toISOString().slice(0, 7); // YYYY-MM
+        
+        // Procesar ingresos por mes
+        const revenue = parseFloat(sale.Total || sale.venta_total || sale.total || sale.Precio || sale.precio || 0);
+        if (!salesByMonth[monthKey]) {
+          salesByMonth[monthKey] = 0;
+        }
+        salesByMonth[monthKey] += revenue;
+
+        // Procesar productos más vendidos
+        const productName = sale.Producto || sale.producto || sale.product || sale.Descripcion || sale.descripcion || 'Producto sin nombre';
+        productCounts[productName] = (productCounts[productName] || 0) + 1;
+
+        // Procesar ingresos por categoría (no conteo, sino dinero generado)
+        let category = sale.Categoria || sale.categoria || sale.Category || sale.Tipo || sale.tipo || 
+                      sale.Seccion || sale.seccion || sale.Departamento || sale.departamento;
+        
+        // Si no hay categoría, crear una basada en el producto
+        if (!category || category === 'General') {
+          const productName = (sale.Producto || sale.producto || sale.product || sale.Descripcion || sale.descripcion || '').toLowerCase();
+          
+          if (productName.includes('electrón') || productName.includes('celular') || productName.includes('comput') || productName.includes('tablet')) {
+            category = 'Electrónicos';
+          } else if (productName.includes('ropa') || productName.includes('camisa') || productName.includes('pantalón') || productName.includes('vestido')) {
+            category = 'Ropa';
+          } else if (productName.includes('hogar') || productName.includes('cocina') || productName.includes('muebl') || productName.includes('decoración')) {
+            category = 'Hogar';
+          } else if (productName.includes('deport') || productName.includes('ejercicio') || productName.includes('gym') || productName.includes('fitness')) {
+            category = 'Deportes';
+          } else if (productName.includes('comida') || productName.includes('alimento') || productName.includes('bebida')) {
+            category = 'Alimentos';
+          } else if (productName.includes('libro') || productName.includes('educación') || productName.includes('curso')) {
+            category = 'Educación';
+          } else {
+            category = 'Otros';
+          }
+        }
+        
+        // Acumular ingresos por categoría en lugar de contar
+        if (!categoryRevenue[category]) {
+          categoryRevenue[category] = 0;
+        }
+        categoryRevenue[category] += revenue;
+      });
+
+      console.log('DEBUG - salesByMonth procesado:', salesByMonth);
+      console.log('DEBUG - productCounts procesado:', productCounts);
+      console.log('DEBUG - categoryRevenue procesado:', categoryRevenue);
+
+      // Convertir a formato para gráficos
+      monthlyData = Object.entries(salesByMonth)
+        .sort(([a], [b]) => new Date(a + '-01') - new Date(b + '-01'))
+        .slice(-12) // Últimos 12 meses
+        .map(([month, revenue]) => ({
+          x: new Date(month + '-01').getTime(),
+          y: revenue
+        }));
+
+      // Top 5 categorías por ingresos (no por cantidad)
+      productsData = Object.entries(categoryRevenue)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 5)
+        .map(([category, revenue]) => ({
+          name: category,
+          value: revenue // Ahora es el ingreso, no el conteo
+        }));
+    }
+    
+    console.log('DEBUG - monthlyData procesado:', monthlyData);
+    console.log('DEBUG - productsData procesado:', productsData);
+
+    // Datos de métodos de pago (usar datos reales de ventas si están disponibles)
+    let paymentsData = [
+      { name: 'Sin datos', value: 1 }
+    ];
+
+    if (salesData?.data && salesData.data.length > 0) {
+      const paymentMethods = {};
+      salesData.data.forEach(sale => {
+        const method = sale.MetodoPago || sale.PaymentMethod || sale.metodo_pago || 'No especificado';
+        paymentMethods[method] = (paymentMethods[method] || 0) + 1;
+      });
+
+      paymentsData = Object.entries(paymentMethods)
+        .map(([method, count]) => ({
+          name: method,
+          value: count
+        }))
+        .slice(0, 5); // Top 5 métodos de pago
+    }
+
+    console.log('DEBUG - paymentsData final:', paymentsData);
+
+    // Múltiples opciones para el gráfico de dona - análisis completo de campos disponibles
+    let topProductsData = [{ name: 'Sin datos', value: 1 }];
+    let paymentMethodsData = [{ name: 'Sin datos', value: 1 }];
+    let vendorData = [{ name: 'Sin datos', value: 1 }];
+    let timeDistributionData = [{ name: 'Sin datos', value: 1 }];
+    let regionData = [{ name: 'Sin datos', value: 1 }];
+
+    if (salesData?.data && salesData.data.length > 0) {
+      console.log('DEBUG - Analizando campos disponibles para gráfico de dona:');
+      console.log('DEBUG - Campos del primer registro:', Object.keys(salesData.data[0]));
+      
+      // 1. PRODUCTOS POR INGRESOS (actual)
+      const productRevenue = {};
+      
+      // 2. MÉTODOS DE PAGO
+      const paymentMethods = {};
+      
+      // 3. VENDEDORES/EMPLEADOS (si está disponible)
+      const vendors = {};
+      
+      // 4. DISTRIBUCIÓN POR HORAS DEL DÍA
+      const timeDistribution = {
+        'Mañana (6-12)': 0,
+        'Tarde (12-18)': 0,
+        'Noche (18-24)': 0,
+        'Madrugada (0-6)': 0
+      };
+      
+      // 5. REGIONES/SUCURSALES (si está disponible)
+      const regions = {};
+
+      salesData.data.forEach(sale => {
+        const revenue = parseFloat(sale.Precio || sale.precio || sale.price || sale.Total || sale.total || 0);
+        const quantity = parseInt(sale.Cantidad || sale.cantidad || sale.quantity || 1);
+        const totalRevenue = revenue * quantity;
+        
+        // Productos por ingresos
+        const productName = sale.Producto || sale.producto || sale.product || sale.Descripcion || sale.descripcion || 'Producto desconocido';
+        if (productName && totalRevenue > 0) {
+          productRevenue[productName] = (productRevenue[productName] || 0) + totalRevenue;
+        }
+
+        // Métodos de pago
+        const paymentMethod = sale.MetodoPago || sale.PaymentMethod || sale.metodo_pago || 
+                             sale['Método de Pago'] || sale.payment_method || sale.forma_pago || 'No especificado';
+        if (paymentMethod && paymentMethod !== 'No especificado') {
+          paymentMethods[paymentMethod] = (paymentMethods[paymentMethod] || 0) + totalRevenue;
+        }
+
+        // Vendedores/Empleados
+        const vendor = sale.Vendedor || sale.vendedor || sale.Empleado || sale.empleado || 
+                      sale.Seller || sale.seller || sale.Usuario || sale.usuario || 
+                      sale.Staff || sale.staff || sale.Cajero || sale.cajero;
+        if (vendor && vendor.trim() && vendor !== '-' && vendor !== 'N/A') {
+          vendors[vendor] = (vendors[vendor] || 0) + totalRevenue;
+        }
+
+        // Distribución por horas
+        const date = sale.Fecha || sale.fecha || sale.Date || sale.timestamp || sale.Timestamp || 
+                    sale.venta_timestamp || sale.created_at;
+        if (date) {
+          const hour = new Date(date).getHours();
+          if (hour >= 6 && hour < 12) timeDistribution['Mañana (6-12)'] += totalRevenue;
+          else if (hour >= 12 && hour < 18) timeDistribution['Tarde (12-18)'] += totalRevenue;
+          else if (hour >= 18 && hour < 24) timeDistribution['Noche (18-24)'] += totalRevenue;
+          else timeDistribution['Madrugada (0-6)'] += totalRevenue;
+        }
+
+        // Regiones/Sucursales
+        const region = sale.Sucursal || sale.sucursal || sale.Region || sale.region || 
+                      sale.Ciudad || sale.ciudad || sale.Tienda || sale.tienda || 
+                      sale.Store || sale.store || sale.Location || sale.location;
+        if (region && region.trim() && region !== '-' && region !== 'N/A') {
+          regions[region] = (regions[region] || 0) + totalRevenue;
+        }
+      });
+
+      console.log('DEBUG - Datos procesados para dona:');
+      console.log('- Productos:', Object.keys(productRevenue).length);
+      console.log('- Métodos de pago:', Object.keys(paymentMethods).length);
+      console.log('- Vendedores:', Object.keys(vendors).length);
+      console.log('- Regiones:', Object.keys(regions).length);
+
+      // Procesar datos para gráficos de dona
+      
+      // 1. Top 6 productos por ingresos
+      if (Object.keys(productRevenue).length > 0) {
+        topProductsData = Object.entries(productRevenue)
+          .sort(([,a], [,b]) => b - a)
+          .slice(0, 6)
+          .map(([product, revenue]) => ({
+            name: product.length > 20 ? product.substring(0, 20) + '...' : product,
+            value: revenue
+          }));
       }
-      categoryData[category] += revenue;
 
-      // Datos por método de pago
-      const payment = item.venta_paymentMethod || 'No especificado';
-      if (!paymentData[payment]) {
-        paymentData[payment] = 0;
+      // 2. Métodos de pago por ingresos
+      if (Object.keys(paymentMethods).length > 0) {
+        paymentMethodsData = Object.entries(paymentMethods)
+          .sort(([,a], [,b]) => b - a)
+          .slice(0, 6)
+          .map(([method, revenue]) => ({
+            name: method,
+            value: revenue
+          }));
       }
-      paymentData[payment] += revenue;
 
-      // Datos por día para serie temporal
-      const date = new Date(item.venta_timestamp || new Date()).toDateString();
-      if (!dailySales[date]) {
-        dailySales[date] = 0;
+      // 3. Top vendedores por ingresos
+      if (Object.keys(vendors).length > 0) {
+        vendorData = Object.entries(vendors)
+          .sort(([,a], [,b]) => b - a)
+          .slice(0, 6)
+          .map(([vendor, revenue]) => ({
+            name: vendor.length > 15 ? vendor.substring(0, 15) + '...' : vendor,
+            value: revenue
+          }));
       }
-      dailySales[date] += revenue;
-    });
 
-    averageTicket = totalRevenue / totalSales;
+      // 4. Distribución por horarios
+      const timeEntries = Object.entries(timeDistribution).filter(([,revenue]) => revenue > 0);
+      if (timeEntries.length > 0) {
+        timeDistributionData = timeEntries.map(([time, revenue]) => ({
+          name: time,
+          value: revenue
+        }));
+      }
 
-    // Convertir datos diarios a serie temporal
-    const timeSeriesData = Object.entries(dailySales)
-      .sort(([a], [b]) => new Date(a) - new Date(b))
-      .slice(-30) // Últimos 30 días
-      .map(([date, value]) => ({
-        x: new Date(date).getTime(),
-        y: value
-      }));
+      // 5. Top regiones por ingresos
+      if (Object.keys(regions).length > 0) {
+        regionData = Object.entries(regions)
+          .sort(([,a], [,b]) => b - a)
+          .slice(0, 6)
+          .map(([region, revenue]) => ({
+            name: region.length > 15 ? region.substring(0, 15) + '...' : region,
+            value: revenue
+          }));
+      }
+    }
 
-    return {
-      metrics: {
-        totalSales,
-        totalRevenue,
-        totalOrders,
-        averageTicket
-      },
+    console.log('DEBUG - topProductsData final:', topProductsData);
+    console.log('DEBUG - paymentMethodsData final:', paymentMethodsData);
+    console.log('DEBUG - vendorData final:', vendorData);
+    console.log('DEBUG - timeDistributionData final:', timeDistributionData);
+    console.log('DEBUG - regionData final:', regionData);
+
+    // Determinar el mejor gráfico de dona basado en la disponibilidad de datos
+    let selectedDonutData = topProductsData;
+    let selectedDonutTitle = 'Top Productos por Ingresos';
+
+    // Priorizar según la riqueza de datos disponibles
+    if (vendorData.length > 1 && vendorData[0].name !== 'Sin datos') {
+      selectedDonutData = vendorData;
+      selectedDonutTitle = 'Top Vendedores por Ingresos';
+    } else if (paymentMethodsData.length > 1 && paymentMethodsData[0].name !== 'Sin datos') {
+      selectedDonutData = paymentMethodsData;
+      selectedDonutTitle = 'Ingresos por Método de Pago';
+    } else if (regionData.length > 1 && regionData[0].name !== 'Sin datos') {
+      selectedDonutData = regionData;
+      selectedDonutTitle = 'Ingresos por Región/Sucursal';
+    } else if (timeDistributionData.length > 1 && timeDistributionData[0].name !== 'Sin datos') {
+      selectedDonutData = timeDistributionData;
+      selectedDonutTitle = 'Distribución de Ventas por Horario';
+    }
+
+    console.log('DEBUG - Gráfico de dona seleccionado:', selectedDonutTitle);
+
+    const finalData = {
+      metrics: realMetrics,
       timeSeries: [
         {
-          name: 'Ventas Diarias',
-          data: timeSeriesData.length > 0 ? timeSeriesData : [
-            { x: new Date().getTime() - 24 * 60 * 60 * 1000, y: 100 },
-            { x: new Date().getTime() - 12 * 60 * 60 * 1000, y: 150 },
-            { x: new Date().getTime(), y: 200 }
-          ]
+          name: 'Ingresos Mensuales',
+          data: monthlyData
         }
       ],
-      categoryData: {
-        categories: Object.keys(categoryData),
-        series: [{
-          name: 'Ventas por Categoría',
-          data: Object.values(categoryData)
-        }]
-      },
-      paymentData: {
-        labels: Object.keys(paymentData),
-        series: Object.values(paymentData)
+      categoryData: productsData.length > 0 ? productsData : [{ name: 'Sin datos', value: 1 }],
+      paymentData: paymentsData,
+      // Datos dinámicos para el gráfico de dona
+      topProductsData: selectedDonutData,
+      donutTitle: selectedDonutTitle,
+      // Datos adicionales disponibles para futuras visualizaciones
+      alternativeDonutData: {
+        products: topProductsData,
+        payments: paymentMethodsData,
+        vendors: vendorData,
+        timeDistribution: timeDistributionData,
+        regions: regionData
       }
     };
+    
+    console.log('DEBUG - datos finales retornados:', finalData);
+    return finalData;
   };
 
   const chartData = getProcessedData();
@@ -225,6 +473,7 @@ const DashboardPage = () => {
           {/* Métricas principales */}
           <DashboardMetrics 
             metrics={chartData.metrics}
+            formatCurrency={formatCurrency}
           />
 
           {/* Gráficos principales en grid mejorado */}
@@ -243,7 +492,7 @@ const DashboardPage = () => {
             
             <div className="chart-card medium">
               <div className="chart-header">
-                <h6 className="chart-title">Ventas por Categoría</h6>
+                <h6 className="chart-title">Ingresos por Categoría</h6>
               </div>
               <div className="chart-content">
                 <MinimalBarChart 
@@ -258,11 +507,11 @@ const DashboardPage = () => {
           <div className="dashboard-charts-grid">
             <div className="chart-card medium">
               <div className="chart-header">
-                <h6 className="chart-title">Métodos de Pago</h6>
+                <h6 className="chart-title">{chartData.donutTitle || 'Top Productos por Ingresos'}</h6>
               </div>
               <div className="chart-content">
                 <MinimalDonutChart 
-                  data={chartData.paymentData} 
+                  data={chartData.topProductsData} 
                   title="" 
                 />
               </div>
@@ -284,24 +533,7 @@ const DashboardPage = () => {
               </div>
             </div>
             
-            <div className="chart-card small">
-              <div className="chart-header">
-                <h6 className="chart-title">Tendencia de Inventario</h6>
-              </div>
-              <div className="chart-content">
-                <div className="inventory-alert">
-                  <FaBoxes className="text-warning" size={24} />
-                  <span className="alert-text">7 productos con stock bajo</span>
-                </div>
-                <InventoryTrendChart 
-                  data={[{
-                    name: 'Stock Bajo',
-                    data: [12, 8, 15, 6, 9, 11, 7]
-                  }]} 
-                  title=""
-                />
-              </div>
-            </div>
+
           </div>
 
           {/* Información adicional */}
