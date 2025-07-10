@@ -11,8 +11,9 @@
 .dashboard-main-container {
   padding: var(--content-padding);
   background-color: var(--bg-app);
-  /* NO usar width: 100% ni min-height: 100vh aquí */
-  /* El layout principal maneja el posicionamiento */
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
 }
 
 /* Ajustes para contenido del dashboard dentro del sistema de sidebar */

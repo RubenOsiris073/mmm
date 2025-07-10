@@ -38,7 +38,7 @@ const MainLayout = ({ children }) => {
   };
 
   return (
-    <div className="app-layout">
+    <div className="app-container">
       <Suspense fallback={null}>
         <Navigation onSidebarToggle={handleSidebarToggle} />
       </Suspense>

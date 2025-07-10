@@ -35,43 +35,26 @@ const Navigation = ({ onSidebarToggle }) => {
   const handleSidebarToggle = () => {
     const mainContent = document.querySelector('.main-content-with-sidebar');
     
-    // Preservar posición del scroll ANTES del cambio
+    // Guardar la posición actual del scroll
     if (mainContent) {
       scrollPositionRef.current = mainContent.scrollTop;
     }
     
+    // Actualizar estado local y global
     const newCollapsed = !collapsed;
     setCollapsed(newCollapsed);
     
-    // Notificar al componente padre
+    // Notificar al componente padre para actualizar las clases del contenido principal
     if (onSidebarToggle) {
       onSidebarToggle(newCollapsed);
     }
     
-    // Restaurar posición del scroll de manera más precisa
-    if (mainContent) {
-      // Usar la API de intersectionObserver para detectar cuando la transición termine
-      const observer = new MutationObserver(() => {
-        // Restaurar scroll después de que el layout se haya actualizado
+    // Restaurar la posición del scroll después de la transición
+    setTimeout(() => {
+      if (mainContent) {
         mainContent.scrollTop = scrollPositionRef.current;
-        observer.disconnect();
-      });
-      
-      // Observar cambios en el estilo computado
-      observer.observe(mainContent, { 
-        attributes: true, 
-        attributeFilter: ['style', 'class'],
-        subtree: false 
-      });
-      
-      // Fallback con timeout por si el observer no funciona
-      setTimeout(() => {
-        if (mainContent && scrollPositionRef.current >= 0) {
-          mainContent.scrollTop = scrollPositionRef.current;
-          observer.disconnect();
-        }
-      }, 450);
-    }
+      }
+    }, 50);
   };
 
   const handleLogout = async () => {
@@ -100,7 +83,7 @@ const Navigation = ({ onSidebarToggle }) => {
   };
 
   return (
-    <div className={`sidebar-navigation ${collapsed ? 'collapsed' : ''}`}>
+    <nav className={`sidebar-navigation ${collapsed ? 'collapsed' : ''}`}>
       {/* Header del Sidebar con Logo y Usuario */}
       <div className="sidebar-header">
         <div className="sidebar-brand">
@@ -258,7 +241,7 @@ const Navigation = ({ onSidebarToggle }) => {
           )}
         </button>
       </div>
-    </div>
+    </nav>
   );
 };
 

@@ -6,8 +6,8 @@
 /* === CONTENEDOR PRINCIPAL === */
 .app-container {
   display: flex;
-  height: 100vh;
-  width: 100vw;
+  min-height: 100vh;
+  position: relative;
   overflow: hidden;
 }
 
@@ -32,16 +32,20 @@
 .main-content,
 .main-content-with-sidebar {
   flex: 1;
-  margin-left: var(--sidebar-width, 240px);
+  margin-left: 220px; /* Ancho exacto del sidebar definido en navigation.css */
   height: 100vh;
   overflow-y: auto;
   background: var(--bg-app);
-  transition: margin-left 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  width: calc(100% - 220px);
+  position: absolute;
+  right: 0;
 }
 
 .main-content.sidebar-collapsed,
 .main-content-with-sidebar.sidebar-collapsed {
-  margin-left: 0;
+  margin-left: 70px; /* Ancho exacto del sidebar colapsado */
+  width: calc(100% - 70px);
 }
 
 /* === LOADING SCREEN === */
@@ -71,4 +75,19 @@
   .main-content {
     margin-left: 0;
   }
+}
+
+/* Mejoras para la estructura de la aplicación */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Ajustes específicos para resolver el problema de superposición */
+.main-content-with-sidebar .dashboard-main-container,
+.main-content-with-sidebar .alerts-main-container {
+  width: 100%;
+  position: relative;
 }

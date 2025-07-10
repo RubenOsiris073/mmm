@@ -24,6 +24,7 @@
   overflow-x: hidden !important;
   border-right: 1px solid #000000 !important;
   backdrop-filter: blur(10px) !important;
+  will-change: width !important; /* Optimización para la transición */
 }
 
 .sidebar-navigation.collapsed {
