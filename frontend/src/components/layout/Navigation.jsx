@@ -98,7 +98,7 @@ const Navigation = ({ onSidebarToggle }) => {
         <div className="sidebar-brand">
           {!collapsed ? (
             <>
-              <span className="sidebar-brand-text">Panel</span>
+              <span className="sidebar-brand-text">  Panel</span>
             </>
           ) : (
             <FaStore className="sidebar-logo-icon-collapsed" />

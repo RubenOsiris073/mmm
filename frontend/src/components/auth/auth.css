@@ -144,6 +144,7 @@ body:has(.auth-split-container) * {
   font-weight: 800;
   margin-bottom: 1rem;
   text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  color: #fff !important;
 }
 
 .auth-image-content p {
@@ -151,6 +152,11 @@ body:has(.auth-split-container) * {
   opacity: 0.9;
   margin: 0;
   text-shadow: 0 1px 5px rgba(0,0,0,0.3);
+  color: #fff !important;
+}
+
+.auth-image-content .brand-text, .auth-image-content .brand-registered {
+  color: #fff !important;
 }
 
 /* Sección derecha - formulario */
