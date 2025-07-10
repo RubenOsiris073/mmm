@@ -98,24 +98,22 @@ const ProductsPage = () => {
           to="/products/new" 
           variant="primary"
           size="sm"
-          className="px-3 py-2"
+          className="px-3 py-2 d-inline-flex align-items-center btn-new-product"
           title="Crear nuevo producto"
         >
-          <FaPlus size="12" className="me-1" />
-          Nuevo
+          <FaPlus size={12} className="me-1" />
+          <span>Nuevo</span>
         </Button>
       </div>
 
       {/* Contenedor principal de productos */}
-      <Card className="shadow-sm" style={{ margin: 0, padding: 0 }}>
-        <Card.Body style={{ padding: '0.25rem' }}>
-          <ProductGrid 
-            products={allProducts} 
-            loading={loading} 
-            onProductDeleted={handleProductDeleted}
-          />
-        </Card.Body>
-      </Card>
+      <div className="bg-white rounded shadow-sm">
+        <ProductGrid 
+          products={allProducts} 
+          loading={loading} 
+          onProductDeleted={handleProductDeleted}
+        />
+      </div>
     </div>
   );
 };

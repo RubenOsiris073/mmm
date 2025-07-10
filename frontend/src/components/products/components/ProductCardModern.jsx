@@ -13,40 +13,40 @@ const ProductCardModern = ({ product, onManage }) => {
   };
   
   return (
-    <Card className="product-card-modern h-100">
+    <Card className="product-card-modern">
       {/* Imagen del producto */}
       <div className="product-card-image-container">
         <Card.Img 
           variant="top" 
           src={getImageUrl()} 
-          alt={product.nombre} 
+          alt={product.nombre || 'Producto'} 
           className="product-card-image" 
-          onError={(e) => {e.target.src = '/no-image.jpg'}}  // Fallback si la imagen falla
+          onError={(e) => {e.target.src = '/no-image.jpg'}}
         />
       </div>
       
-      <Card.Body className="d-flex flex-column">
+      <Card.Body className="d-flex flex-column p-3">
         {/* Información básica del producto */}
-        <div className="mb-3">
-          <h5 className="product-card-title mb-1">{product.nombre || 'Producto sin nombre'}</h5>
+        <div className="mb-2">
+          <h5 className="product-card-title">{product.nombre || 'Producto sin nombre'}</h5>
           <p className="product-card-availability mb-1">
             {product.cantidad || 0} disponible{(product.cantidad || 0) !== 1 ? 's' : ''}
           </p>
-          <h4 className="product-card-price">${parseFloat(product.precio || 0).toFixed(2)}</h4>
+          <h4 className="product-card-price mb-2">${parseFloat(product.precio || 0).toFixed(2)}</h4>
         </div>
         
         {/* Código o descripción corta si existe */}
         {(product.codigo || product.descripcion) && (
-          <div className="mb-3">
+          <div className="mb-2">
             {product.codigo && (
               <p className="product-card-code mb-1">
                 <small>Código: {product.codigo}</small>
               </p>
             )}
             {product.descripcion && (
-              <p className="product-card-description small text-muted">
-                {product.descripcion.length > 60 
-                  ? `${product.descripcion.substring(0, 60)}...` 
+              <p className="product-card-description small text-muted mb-0">
+                {product.descripcion.length > 50 
+                  ? `${product.descripcion.substring(0, 50)}...` 
                   : product.descripcion}
               </p>
             )}
@@ -54,14 +54,15 @@ const ProductCardModern = ({ product, onManage }) => {
         )}
         
         {/* Botones de acción para gestionar el producto */}
-        <div className="mt-auto">
-          <div className="d-grid gap-2">
-            <Link to={`/products/edit/${product.id}`} state={{ product }}>
+        <div className="mt-auto pt-2">
+          <div className="d-flex flex-column gap-2">
+            <Link to={`/products/edit/${product.id}`} state={{ product }} className="text-decoration-none">
               <Button 
                 className="btn-edit-modern product-action-btn w-100"
                 variant="primary"
+                size="sm"
               >
-                <i className="bi bi-pencil-square me-2"></i>
+                <i className="bi bi-pencil-square me-1"></i>
                 {product.nombre ? 'Editar' : 'Completar'}
               </Button>
             </Link>
@@ -69,9 +70,10 @@ const ProductCardModern = ({ product, onManage }) => {
             <Button 
               className="btn-manage-modern product-action-btn w-100"
               variant="outline-secondary"
+              size="sm"
               onClick={() => onManage(product)}
             >
-              <i className="bi bi-eye-fill me-2"></i>
+              <i className="bi bi-eye-fill me-1"></i>
               Gestionar
             </Button>
           </div>

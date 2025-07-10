@@ -15,7 +15,7 @@ import ProductManagementModal from './ProductManagementModal';
 import { getCategoryIcon, formatCategoryTitle } from './utils/categoryUtils';
 
 const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
-  const [viewMode, setViewMode] = useState('modern'); // 'modern', 'grid' o 'list'
+  const [viewMode, setViewMode] = useState('modern'); // 'modern' o 'grid'
   const [activeCategory, setActiveCategory] = useState('all');
   
   // Estados para el modal de gestión
@@ -82,6 +82,9 @@ const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
       ? Object.keys(groupedProducts)
       : [activeCategory].filter(cat => groupedProducts[cat]);
 
+    // Calcular el total de productos
+    const totalProducts = Object.values(groupedProducts).flat().length;
+
     return (
       <div className="products-page-container">
         {/* Menú de categorías en pestañas */}
@@ -90,7 +93,7 @@ const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
             className={`product-category-tab ${activeCategory === 'all' ? 'active' : ''}`}
             onClick={() => setActiveCategory('all')}
           >
-            Todos <span className="ms-1 badge rounded-pill bg-light text-dark">{Object.values(groupedProducts).flat().length}</span>
+            Todos <span className="ms-1 badge rounded-pill bg-light text-dark">{totalProducts}</span>
           </div>
           
           {Object.keys(groupedProducts).map(category => (
@@ -105,14 +108,22 @@ const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
         </div>
         
         {/* Barra de búsqueda */}
-        <div className="product-search-container">
-          <i className="bi bi-search"></i>
+        <div className="input-group mb-4">
+          <span className="input-group-text">
+            <i className="bi bi-search"></i>
+          </span>
           <input 
             type="text" 
+            className="form-control"
             placeholder="Buscar productos..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+          {searchTerm && (
+            <Button variant="outline-secondary" onClick={() => setSearchTerm('')}>
+              <i className="bi bi-x"></i>
+            </Button>
+          )}
         </div>
         
         {/* Grid de productos */}
@@ -128,9 +139,9 @@ const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
           categoriesToRender.map(category => (
             <div key={category} className="mb-4">
               {activeCategory === 'all' && (
-                <h5 className="mb-3">{formatCategoryTitle(category)}</h5>
+                <h5 className="mb-3 border-bottom pb-2">{formatCategoryTitle(category)}</h5>
               )}
-              <Row xs={1} sm={2} md={3} lg={4} className="g-4">
+              <Row xs={2} sm={2} md={3} lg={4} xl={5} className="g-3">
                 {groupedProducts[category].map(product => (
                   <Col key={product.id}>
                     <ProductCardModern 
@@ -148,93 +159,7 @@ const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
   };
 
   // Renderizar vista de lista (versión original)
-  const renderListView = () => {
-    return Object.entries(groupedProducts).map(([category, categoryProducts]) => (
-      <div key={category} className="mb-5">
-        <div className="category-header">
-          <h4 className="d-flex align-items-center">
-            <span className="me-3 fs-4">
-              {getCategoryIcon(category)}
-            </span>
-            {formatCategoryTitle(category)}
-            <Badge className="category-badge-modern">
-              {categoryProducts.length}
-            </Badge>
-          </h4>
-        </div>
-        
-        <div className="list-group">
-          {categoryProducts.map(product => {
-            const currentStock = product.cantidad || product.stock || 0;
-            const stockMinimo = product.stockMinimo || 5;
-            
-            const getStockStatus = (stock, minimo) => {
-              if (stock === 0) return 'stock-vacio';
-              if (stock <= minimo) return 'stock-bajo';
-              if (stock <= minimo * 2) return 'stock-medio';
-              return 'stock-alto';
-            };
-            
-            return (
-              <div 
-                key={product.id} 
-                className="list-group-item-modern d-flex justify-content-between align-items-center"
-              >
-                <div className="flex-grow-1">
-                  <div className="d-flex align-items-center mb-2">
-                    <span className="me-3 fs-4">
-                      {getCategoryIcon(product.categoria || 'sin-categoria')}
-                    </span>
-                    <div>
-                      <h5 className="mb-1 text-capitalize product-title">
-                        {product.nombre || product.label || 'Producto sin nombre'}
-                      </h5>
-                      <p className="mb-1 small text-muted">
-                        {product.descripcion || product.notas || 
-                          `Producto detectado automáticamente`}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <Badge className={`product-stock-badge ${getStockStatus(currentStock, stockMinimo)}`}>
-                      Stock: {currentStock} {product.unidadMedida || 'unidades'}
-                    </Badge>
-                    {product.precio && (
-                      <Badge className="product-price-badge ms-2">
-                        ${parseFloat(product.precio).toFixed(2)}
-                      </Badge>
-                    )}
-                    {product.codigo && (
-                      <Badge className="product-code-badge ms-2">
-                        {product.codigo}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="d-flex gap-2 ms-3">
-                  <Link to={`/products/edit/${product.id}`} state={{ product }}>
-                    <Button className="btn-edit-modern product-action-btn">
-                      <i className="bi bi-pencil me-1"></i>
-                      {product.nombre ? 'Editar' : 'Completar'}
-                    </Button>
-                  </Link>
-                  <Button 
-                    className="btn-manage-modern product-action-btn"
-                    onClick={() => handleManageProduct(product)}
-                  >
-                    <i className="bi bi-eye me-1"></i>
-                    Gestionar
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    ));
-  };
+  // La vista de lista ha sido eliminada
 
   // Renderizar vista de cuadrícula (versión original)
   const renderGridView = () => {
@@ -294,24 +219,20 @@ const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
     <div className="product-grid-container">
       {/* Botones de cambio de vista */}
       <div className="d-flex justify-content-end mb-3">
-        <div className="btn-group">
+        <div className="btn-group view-mode-buttons">
           <Button 
             variant={viewMode === 'modern' ? 'primary' : 'outline-secondary'}
             onClick={() => setViewMode('modern')}
+            size="sm"
           >
             <i className="bi bi-grid-3x3-gap me-1"></i> Moderno
           </Button>
           <Button 
             variant={viewMode === 'grid' ? 'primary' : 'outline-secondary'}
             onClick={() => setViewMode('grid')}
+            size="sm"
           >
             <i className="bi bi-grid me-1"></i> Clásico
-          </Button>
-          <Button 
-            variant={viewMode === 'list' ? 'primary' : 'outline-secondary'}
-            onClick={() => setViewMode('list')}
-          >
-            <i className="bi bi-list me-1"></i> Lista
           </Button>
         </div>
       </div>
@@ -330,10 +251,8 @@ const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
         <div>
           {viewMode === 'modern' ? (
             renderModernView()
-          ) : viewMode === 'grid' ? (
-            renderGridView()
           ) : (
-            renderListView()
+            renderGridView()
           )}
         </div>
       )}
