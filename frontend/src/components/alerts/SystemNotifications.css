@@ -1,7 +1,7 @@
 .system-notifications-container {
-  padding: 20px;
-  background-color: #f8f9fa;
-  min-height: 100vh;
+  padding: var(--content-padding);
+  background-color: var(--bg-surface-2);
+  /* Eliminar min-height: 100vh */
 }
 
 /* System Status Card */

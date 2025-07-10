@@ -1,0 +1,30 @@
+/* ============================================
+   FISGO - SISTEMA CSS PRINCIPAL
+   Importación ordenada y optimizada
+   ============================================ */
+
+/* === 1. FUNDAMENTOS === */
+@import './core/tokens.css';
+@import './core/reset.css';
+@import './core/themes.css';
+
+/* === 2. LAYOUT Y ESTRUCTURA === */
+@import './layout/app.css';
+@import './layout/navigation.css';
+@import './layout/responsive.css';
+
+/* === 3. COMPONENTES REUTILIZABLES === */
+@import './components/buttons.css';
+@import './components/forms.css';
+@import './components/modals.css';
+@import './components/cards.css';
+@import './components/apex-charts.css';
+
+/* === 4. LIBRERÍAS EXTERNAS === */
+@import './vendors/bootstrap.css';
+
+/* === 5. UTILIDADES === */
+@import './utils/helpers.css';
+@import './utils/animations.css';
+
+/* Las páginas específicas se importan individualmente en cada componente */

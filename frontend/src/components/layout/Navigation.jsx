@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Nav } from 'react-bootstrap';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
@@ -27,6 +27,52 @@ const Navigation = ({ onSidebarToggle }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  
+  // Ref para preservar la posición del scroll del contenido principal
+  const scrollPositionRef = useRef(0);
+
+  // Función para manejar el toggle del sidebar con preservación completa de scroll
+  const handleSidebarToggle = () => {
+    const mainContent = document.querySelector('.main-content-with-sidebar');
+    
+    // Preservar posición del scroll ANTES del cambio
+    if (mainContent) {
+      scrollPositionRef.current = mainContent.scrollTop;
+    }
+    
+    const newCollapsed = !collapsed;
+    setCollapsed(newCollapsed);
+    
+    // Notificar al componente padre
+    if (onSidebarToggle) {
+      onSidebarToggle(newCollapsed);
+    }
+    
+    // Restaurar posición del scroll de manera más precisa
+    if (mainContent) {
+      // Usar la API de intersectionObserver para detectar cuando la transición termine
+      const observer = new MutationObserver(() => {
+        // Restaurar scroll después de que el layout se haya actualizado
+        mainContent.scrollTop = scrollPositionRef.current;
+        observer.disconnect();
+      });
+      
+      // Observar cambios en el estilo computado
+      observer.observe(mainContent, { 
+        attributes: true, 
+        attributeFilter: ['style', 'class'],
+        subtree: false 
+      });
+      
+      // Fallback con timeout por si el observer no funciona
+      setTimeout(() => {
+        if (mainContent && scrollPositionRef.current >= 0) {
+          mainContent.scrollTop = scrollPositionRef.current;
+          observer.disconnect();
+        }
+      }, 450);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -51,15 +97,6 @@ const Navigation = ({ onSidebarToggle }) => {
   // Verificar si un enlace está activo
   const isActive = (path) => {
     return location.pathname.startsWith(path);
-  };
-
-  // Función para manejar el toggle del sidebar
-  const handleSidebarToggle = () => {
-    const newCollapsed = !collapsed;
-    setCollapsed(newCollapsed);
-    if (onSidebarToggle) {
-      onSidebarToggle(newCollapsed);
-    }
   };
 
   return (

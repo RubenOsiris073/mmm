@@ -1,22 +1,14 @@
 .alerts-page {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
-  padding: 20px;
-  position: relative;
-  z-index: 2 !important; /* Z-index mayor que el contenedor padre */
+  padding: var(--content-padding);
+  /* Eliminar posicionamiento conflictivo */
 }
 
 /* CONTENEDORES PRINCIPALES PARA LAYOUT CON SIDEBAR */
 .alerts-main-container {
-  position: absolute;
-  top: 0;
-  left: 240px !important; /* Posicionar después del sidebar expandido */
-  right: 0;
-  bottom: 0;
-  z-index: 1;
-  transition: left 0.3s ease;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  min-height: 100vh;
+  padding: var(--content-padding);
+  /* Eliminar posicionamiento absoluto - usar el layout principal */
 }
 
 /* Ajustar cuando el sidebar está colapsado */

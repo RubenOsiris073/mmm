@@ -4,7 +4,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ToastContainer } from 'react-toastify';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
-import './styles/components/app-layout.css';
 
 // Importar el contexto de tema
 import { ThemeProvider } from './contexts/ThemeContext.jsx';
@@ -26,7 +25,7 @@ const ProductFormPage = lazy(() => import('./pages/ProductFormPage'));
 const ProveedorView = lazy(() => import('./components/proveedor/ProveedorView'));
 const SalesPage = lazy(() => import('./pages/SalesPage'));
 const CameraPage = lazy(() => import('./pages/CameraPage'));
-const MinimalDashboard = lazy(() => import('./pages/MinimalDashboard'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const AlertsPage = lazy(() => import('./pages/AlertsPage'));
 const POSMainPage = lazy(() => import('./pages/POSMainPage'));
 
@@ -133,7 +132,7 @@ const AppRoutes = () => {
       <Route path="/dashboard" element={
         <ProtectedRoute requireAuth={true}>
           <MainLayout>
-            <MinimalDashboard />
+            <DashboardPage />
           </MainLayout>
         </ProtectedRoute>
       } />

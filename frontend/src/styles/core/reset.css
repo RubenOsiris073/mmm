@@ -1,0 +1,61 @@
+/* ============================================
+   RESET Y BASE - FUNDAMENTOS HTML
+   SIN SELECTORES QUE INTERFIERAN CON COMPONENTES
+   ============================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Enlaces básicos - solo si no tienen clases */
+a:not([class]) {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:not([class]):hover {
+  color: var(--color-primary-hover);
+}
+
+/* Headings básicos */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0 0 var(--space-4) 0;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Párrafos básicos */
+p {
+  margin: 0 0 var(--space-4) 0;
+  color: var(--text-secondary);
+}
+
+/* Elementos de formulario básicos */
+input:not([class]), 
+textarea:not([class]), 
+select:not([class]) {
+  font-family: inherit;
+  font-size: var(--font-size-base);
+}
+
+/* NO agregar estilos a button para no interferir con sidebar */

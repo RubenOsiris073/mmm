@@ -43,21 +43,9 @@
 
 .dashboard-metrics {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--space-6);
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-4);
   margin-bottom: var(--space-8);
-}
-
-@media (max-width: 1200px) {
-  .dashboard-metrics {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .dashboard-metrics {
-    grid-template-columns: 1fr;
-  }
 }
 
 .metric-card {
@@ -67,13 +55,12 @@
   padding: var(--space-6);
   box-shadow: var(--shadow-sm);
   transition: all var(--transition-base);
-  height: auto;
-  min-height: 160px;
+  text-align: center;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-  overflow: hidden;
+  align-items: center;
+  justify-content: center;
 }
 
 .metric-card:hover {
@@ -84,126 +71,57 @@
 .metric-header {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: var(--space-3);
-  margin-bottom: var(--space-2);
-}
-
-.metric-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  flex: 1;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
 }
 
 .metric-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md);
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
-  position: relative;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  flex-shrink: 0;
-}
-
-.metric-icon::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: var(--radius-md);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.metric-icon:hover::before {
-  opacity: 1;
-}
-
-.metric-icon svg {
-  position: relative;
-  z-index: 2;
-  transition: all 0.3s ease;
-  width: 16px;
-  height: 16px;
-}
-
-.metric-icon:hover svg {
-  transform: scale(1.1);
-  filter: drop-shadow(0 0 8px currentColor);
+  font-size: var(--font-size-xl);
+  color: white;
 }
 
 .metric-icon.sales {
-  background: linear-gradient(135deg, rgba(25, 118, 210, 0.1) 0%, rgba(25, 118, 210, 0.05) 100%);
-  color: #1976d2;
-  box-shadow: 0 4px 15px rgba(25, 118, 210, 0.1);
-}
-
-.metric-icon.sales::before {
-  background: linear-gradient(135deg, rgba(25, 118, 210, 0.2) 0%, rgba(25, 118, 210, 0.1) 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .metric-icon.revenue {
-  background: linear-gradient(135deg, rgba(56, 142, 60, 0.1) 0%, rgba(56, 142, 60, 0.05) 100%);
-  color: #388e3c;
-  box-shadow: 0 4px 15px rgba(56, 142, 60, 0.1);
-}
-
-.metric-icon.revenue::before {
-  background: linear-gradient(135deg, rgba(56, 142, 60, 0.2) 0%, rgba(56, 142, 60, 0.1) 100%);
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
 }
 
 .metric-icon.orders {
-  background: linear-gradient(135deg, rgba(245, 124, 0, 0.1) 0%, rgba(245, 124, 0, 0.05) 100%);
-  color: #f57c00;
-  box-shadow: 0 4px 15px rgba(245, 124, 0, 0.1);
-}
-
-.metric-icon.orders::before {
-  background: linear-gradient(135deg, rgba(245, 124, 0, 0.2) 0%, rgba(245, 124, 0, 0.1) 100%);
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 }
 
 .metric-icon.users {
-  background: linear-gradient(135deg, rgba(194, 24, 91, 0.1) 0%, rgba(194, 24, 91, 0.05) 100%);
-  color: #c2185b;
-  box-shadow: 0 4px 15px rgba(194, 24, 91, 0.1);
-}
-
-.metric-icon.users::before {
-  background: linear-gradient(135deg, rgba(194, 24, 91, 0.2) 0%, rgba(194, 24, 91, 0.1) 100%);
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
 }
 
 .metric-value {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-3xl);
   font-weight: 700;
   color: var(--text-primary);
-  margin: 0;
-  line-height: 1.2;
+  margin-bottom: var(--space-1);
 }
 
 .metric-label {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
-  font-weight: 500;
-  margin: var(--space-1) 0 0 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .metric-change {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   font-weight: 600;
   display: flex;
   align-items: center;
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-base);
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(4px);
+  gap: var(--space-1);
 }
 
 .metric-change.positive {
@@ -222,48 +140,56 @@
 }
 
 /* Estilos para las filas del dashboard */
-/* === NUEVO GRID SYSTEM PARA GRÁFICOS === */
-.dashboard-charts-grid {
+.dashboard-row {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: var(--space-6);
   margin-bottom: var(--space-6);
 }
 
-.dashboard-charts-grid:nth-child(4) {
-  grid-template-columns: 1fr 1fr 1fr;
+.dashboard-row > div:last-child {
+  display: grid;
+  gap: var(--space-4);
+}
+
+/* Contenedor para gráficos de ApexCharts */
+.apex-chart-container {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-4);
+}
+
+.apex-chart-container .chart-header {
+  margin-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--space-2);
+}
+
+.apex-chart-container .chart-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
 }
 
 .chart-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
+  padding: var(--space-6);
   box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  transition: all var(--transition-base);
-}
-
-.chart-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.chart-card.large {
-  min-height: 350px;
-}
-
-.chart-card.medium {
-  min-height: 300px;
-}
-
-.chart-card.small {
-  min-height: 250px;
 }
 
 .chart-header {
-  background: var(--bg-surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
   border-bottom: 1px solid var(--border-color);
-  padding: var(--space-4);
 }
 
 .chart-title {
@@ -273,65 +199,9 @@
   margin: 0;
 }
 
-.chart-content {
-  padding: var(--space-4);
-  height: calc(100% - 65px);
-}
-
-/* === INVENTORY ALERT === */
-.inventory-alert {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  background: rgba(255, 193, 7, 0.1);
-  border: 1px solid rgba(255, 193, 7, 0.3);
-  border-radius: var(--radius-md);
-  padding: var(--space-3);
-  margin-bottom: var(--space-3);
-}
-
-.alert-text {
+.chart-period {
   font-size: var(--font-size-sm);
-  font-weight: 500;
-  color: var(--color-warning);
-}
-
-/* === DASHBOARD FOOTER === */
-.dashboard-footer {
-  margin-top: var(--space-8);
-  padding: var(--space-4);
-  border-top: 1px solid var(--border-color);
-  text-align: center;
-}
-
-.update-info {
-  color: var(--text-muted);
-}
-
-/* === RESPONSIVE === */
-@media (max-width: 1200px) {
-  .dashboard-charts-grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-4);
-  }
-  
-  .dashboard-charts-grid:nth-child(4) {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  .dashboard-charts-grid:nth-child(4) {
-    grid-template-columns: 1fr;
-  }
-  
-  .chart-card {
-    min-height: 250px;
-  }
-  
-  .chart-content {
-    padding: var(--space-3);
-  }
+  color: var(--text-secondary);
 }
 
 .dashboard-tables {
@@ -423,13 +293,16 @@
    ============================================ */
 
 .dashboard-chart-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: var(--space-6);
   box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
   transition: all var(--transition-base);
-  min-height: 350px;
 }
 
 .dashboard-chart-container:hover {
@@ -524,32 +397,36 @@
 
 /* Responsive */
 @media (max-width: 1024px) {
+  .dashboard-charts,
   .dashboard-row {
     grid-template-columns: 1fr;
   }
   
-  .dashboard-chart-container {
-    min-height: 250px;
+  .dashboard-tables {
+    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 768px) {
+  .dashboard-page,
   .dashboard-main-container {
-    padding: var(--space-3);
+    padding: var(--space-4);
+  }
+  
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
   }
   
   .dashboard-metrics {
-    gap: var(--space-3);
+    grid-template-columns: 1fr;
   }
   
-  .metric-card {
-    height: 100px;
-    padding: var(--space-3);
-  }
-  
-  .dashboard-chart-container {
-    min-height: 200px;
-    padding: var(--space-3);
+  .dashboard-chart-container,
+  .apex-chart-container {
+    padding: var(--space-4);
+    margin-bottom: var(--space-4);
   }
 }
 
@@ -560,17 +437,3 @@
     border-radius: var(--radius-base);
   }
 }
-
-.dashboard-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-6);
-  margin-bottom: var(--space-8);
-}
-
-.dashboard-row > div:last-child {
-  display: grid;
-  gap: var(--space-6);
-}
-
-/* Contenedor para gráficos de ApexCharts */

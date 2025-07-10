@@ -4,6 +4,12 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+    alias: {
+      '@': '/src'
+    }
+  },
   css: {
     modules: {
       scopeBehaviour: 'local',
@@ -37,7 +43,7 @@ export default defineConfig({
         manualChunks: {
           vendor: ['react', 'react-dom'],
           bootstrap: ['bootstrap'],
-          charts: ['chart.js', 'react-chartjs-2']
+          charts: ['chart.js', 'react-chartjs-2', 'react-apexcharts']
         }
       }
     }

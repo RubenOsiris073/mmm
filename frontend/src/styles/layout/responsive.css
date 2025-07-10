@@ -1,0 +1,44 @@
+/* ============================================
+   RESPONSIVE DESIGN
+   Media queries y adaptaciones
+   ============================================ */
+
+/* === TABLET === */
+@media (max-width: 1024px) {
+  :root {
+    --sidebar-width: 200px;
+    --content-padding: var(--space-4);
+  }
+}
+
+/* === MOBILE === */
+@media (max-width: 768px) {
+  .app-sidebar {
+    transform: translateX(-100%);
+    z-index: var(--z-modal);
+  }
+  
+  .app-sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .main-content {
+    margin-left: 0 !important;
+  }
+  
+  :root {
+    --content-padding: var(--space-3);
+  }
+}
+
+/* === MOBILE SMALL === */
+@media (max-width: 480px) {
+  :root {
+    --content-padding: var(--space-2);
+    --font-size-base: 0.875rem;
+  }
+  
+  .app-sidebar {
+    width: 280px;
+  }
+}

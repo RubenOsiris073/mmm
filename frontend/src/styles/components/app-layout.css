@@ -3,40 +3,56 @@
    ============================================ */
 
 .app-layout {
-  display: flex;
+  position: relative;
   height: 100vh;
   overflow: hidden;
   background-color: var(--bg-primary);
 }
 
-/* Contenido principal con sidebar */
+/* Contenido principal con sidebar - POSICIONAMIENTO ABSOLUTO PARA MANTENER SCROLL ESTÁTICO */
 .main-content-with-sidebar {
-  flex: 1;
-  margin-left: 220px; /* Ancho del sidebar */
+  position: absolute;
+  top: 0;
+  left: 220px; /* Ancho del sidebar */
+  right: 0;
+  bottom: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   background-color: var(--bg-primary);
-  transition: margin-left 0.3s ease;
-  min-height: 100vh;
+  transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Optimizaciones para preservar scroll durante transiciones */
+  scroll-behavior: auto;
+  scrollbar-gutter: stable;
+  will-change: left;
+  contain: layout style paint;
+  /* Evitar que el contenido se reajuste durante la transición */
+  min-width: 0;
+  /* Asegurar que el scroll no se pierda durante transiciones */
+  overflow-anchor: none;
+  /* Mantener el contexto de apilamiento */
+  z-index: 1;
 }
 
 /* Ajustes cuando el sidebar está colapsado */
 .main-content-with-sidebar.sidebar-collapsed {
-  margin-left: 70px; /* Ancho del sidebar colapsado */
+  left: 70px; /* Ancho del sidebar colapsado */
 }
 
 /* Asegurar que el contenido use todo el espacio disponible */
 .main-content-with-sidebar > * {
   min-height: 100%;
+  width: 100%;
 }
 
 /* Responsive para dispositivos móviles */
 @media (max-width: 768px) {
   .main-content-with-sidebar {
-    margin-left: 0;
+    left: 0;
+    position: relative;
     overflow-y: auto;
   }
   
   .main-content-with-sidebar.sidebar-collapsed {
-    margin-left: 0;
+    left: 0;
   }
 }

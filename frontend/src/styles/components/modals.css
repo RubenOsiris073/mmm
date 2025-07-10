@@ -1,0 +1,48 @@
+/* ============================================
+   MODALES
+   ============================================ */
+
+.modal-content {
+  border-radius: var(--radius-lg);
+  border: none;
+  box-shadow: var(--shadow-xl);
+}
+
+.modal-header {
+  background: var(--bg-surface-2);
+  border-bottom: 1px solid var(--border-color);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: var(--space-4);
+}
+
+.modal-title {
+  font-weight: 600;
+  font-size: var(--font-size-lg);
+  color: var(--text-primary);
+}
+
+.modal-body {
+  padding: var(--space-4);
+}
+
+.modal-footer {
+  background: var(--bg-surface-2);
+  border-top: 1px solid var(--border-color);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: var(--font-size-lg);
+  opacity: 0.5;
+  transition: var(--transition-base);
+}
+
+.btn-close:hover {
+  opacity: 1;
+}

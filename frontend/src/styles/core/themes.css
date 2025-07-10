@@ -1,0 +1,44 @@
+/* ============================================
+   TEMAS - LIGHT/DARK MODE
+   ============================================ */
+
+/* TEMA CLARO (por defecto) */
+:root {
+  --bg-app: var(--gray-50);
+  --bg-surface: #ffffff;
+  --bg-surface-2: var(--gray-100);
+  --bg-hover: var(--gray-100);
+  
+  --text-primary: var(--gray-900);
+  --text-secondary: var(--gray-600);
+  --text-muted: var(--gray-500);
+  
+  --border-color: var(--gray-200);
+  --border-focus: var(--color-primary);
+  
+  --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+/* TEMA OSCURO */
+[data-theme="dark"] {
+  --bg-app: #000000;
+  --bg-surface: #111111;
+  --bg-surface-2: #1a1a1a;
+  --bg-hover: #222222;
+  
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --text-muted: #999999;
+  
+  --border-color: #333333;
+  --border-focus: #0d6efd;
+  
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Aplicar tema al body */
+body {
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  transition: background-color var(--transition-base), color var(--transition-base);
+}

@@ -12,7 +12,7 @@
 ## Componentes (En progreso)
 - ✅ `/styles/components/app-layout.css` - Layout principal de App
 - ✅ `/styles/components/themes.css` - Sistema de temas
-- ✅ `/styles/components/apex-charts.css` - Estilos de ApexCharts
+- ✅ `/styles/views/dashboard.css` - Estilos del dashboard y ApexCharts (migrados)
 
 ## Páginas (En progreso)
 - ✅ `/styles/pages/products.css` - Página de productos (movido desde products-modern.css)

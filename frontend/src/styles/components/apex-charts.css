@@ -1,151 +1,81 @@
-/* Estilos minimalistas para ApexCharts */
-.apex-chart-container {
-  background: var(--bg-secondary);
-  border-radius: 12px;
-  padding: 1.5rem;
-  border: 1px solid var(--border-color);
-  backdrop-filter: blur(10px);
-  margin-bottom: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
+/* ============================================
+   APEX CHARTS - ESTILOS ESPECÍFICOS
+   ============================================ */
 
-.apex-chart-container.small {
-  padding: 1rem;
+.apex-chart-container {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
 }
 
 .chart-header {
-  margin-bottom: 1rem;
+  padding: var(--space-4) var(--space-4) var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-surface-2);
 }
 
 .chart-title {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--text-primary);
   margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .chart-subtitle {
-  margin-top: 0.5rem;
-  font-size: 0.8rem;
-  opacity: 0.8;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin: 0;
 }
 
-/* Tema adaptable para los gráficos */
+/* === CONTENEDOR DE GRÁFICO === */
+.chart-content {
+  padding: var(--space-2);
+  height: calc(100% - 60px);
+}
+
+/* === OVERRIDES PARA APEXCHARTS === */
 .apexcharts-canvas {
-  background: transparent !important;
+  font-family: var(--font-family) !important;
+}
+
+.apexcharts-text {
+  fill: var(--text-primary) !important;
+}
+
+.apexcharts-legend-text {
+  color: var(--text-primary) !important;
 }
 
 .apexcharts-gridline {
   stroke: var(--border-color) !important;
 }
 
-.apexcharts-text {
-  fill: var(--text-secondary) !important;
-}
-
 .apexcharts-tooltip {
-  background: var(--bg-secondary) !important;
+  background: var(--bg-surface) !important;
   border: 1px solid var(--border-color) !important;
-  color: var(--text-primary) !important;
+  box-shadow: var(--shadow-lg) !important;
+  border-radius: var(--radius-md) !important;
 }
 
 .apexcharts-tooltip-title {
-  background: var(--bg-primary) !important;
-  border-bottom: 1px solid var(--border-color) !important;
+  background: var(--bg-surface-2) !important;
   color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
 }
 
-/* Métricas con gráficos pequeños */
-.metric-card {
-  background: var(--bg-secondary);
-  border-radius: 12px;
-  padding: 1.5rem;
-  border: 1px solid var(--border-color);
-  backdrop-filter: blur(10px);
-  text-align: center;
-  height: 100%;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.metric-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-}
-
-.metric-value {
-  font-size: 2rem;
-  font-weight: bold;
-  margin: 0.5rem 0;
-  color: var(--text-primary);
-}
-
-.metric-label {
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.metric-change {
-  font-size: 0.8rem;
-  margin-top: 0.5rem;
-}
-
-.metric-change.positive {
-  color: var(--success-color, #28a745);
-}
-
-.metric-change.negative {
-  color: var(--danger-color, #dc3545);
-}
-
-/* Layout del dashboard */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.dashboard-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.dashboard-full-width {
-  grid-column: 1 / -1;
-}
-
-/* Responsive */
+/* === RESPONSIVE === */
 @media (max-width: 768px) {
-  .dashboard-row {
-    grid-template-columns: 1fr;
+  .chart-header {
+    padding: var(--space-3);
   }
   
-  .apex-chart-container {
-    padding: 1rem;
+  .chart-title {
+    font-size: var(--font-size-base);
   }
   
-  .metric-card {
-    padding: 1rem;
+  .chart-content {
+    padding: var(--space-1);
   }
-  
-  .metric-value {
-    font-size: 1.5rem;
-  }
-}
-
-/* Animaciones suaves */
-.apex-chart-container {
-  transition: all 0.3s ease;
-}
-
-.apex-chart-container:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }

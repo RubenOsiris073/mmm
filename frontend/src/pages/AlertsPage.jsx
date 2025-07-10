@@ -6,7 +6,6 @@ import ExpirationAlerts from '../components/alerts/ExpirationAlerts';
 import SystemNotifications from '../components/alerts/SystemNotifications';
 import BackendLogs from '../components/alerts/BackendLogs';
 import useBackendHealth from '../hooks/useBackendHealth';
-import '../components/alerts/AlertsPageStyles.css';
 
 const AlertsPage = () => {
   const [activeTab, setActiveTab] = useState('expiration');

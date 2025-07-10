@@ -40,20 +40,30 @@ const api = axios.create({
 api.interceptors.request.use(
   async (config) => {
     try {
-      // Intentar obtener el token de Firebase de manera más robusta
-      const { getAuth } = await import('firebase/auth');
-      const auth = getAuth();
+      // Rutas que NO requieren autenticación
+      const publicRoutes = ['/dashboard', '/health', '/status'];
+      const isPublicRoute = publicRoutes.some(route => config.url?.includes(route));
       
-      if (auth.currentUser) {
-        const token = await auth.currentUser.getIdToken(true); // forzar refresh del token
-        config.headers.Authorization = `Bearer ${token}`;
+      if (!isPublicRoute) {
+        // Solo agregar token para rutas protegidas
+        const { getAuth } = await import('firebase/auth');
+        const auth = getAuth();
         
-        if (import.meta.env.DEV) {
-          console.log('Token de autenticación agregado correctamente');
+        if (auth.currentUser) {
+          const token = await auth.currentUser.getIdToken(true); // forzar refresh del token
+          config.headers.Authorization = `Bearer ${token}`;
+          
+          if (import.meta.env.DEV) {
+            console.log('Token de autenticación agregado correctamente');
+          }
+        } else {
+          if (import.meta.env.DEV) {
+            console.log('No hay usuario autenticado - sin token');
+          }
         }
       } else {
         if (import.meta.env.DEV) {
-          console.log('No hay usuario autenticado - sin token');
+          console.log('Ruta pública - sin token de autenticación');
         }
       }
     } catch (error) {
