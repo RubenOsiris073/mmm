@@ -288,40 +288,36 @@
 }
 
 .pos-main-row {
-  margin: 0 !important;
   display: flex;
-  height: 100vh;
+  height: 100vh; /* Adjust height as needed */
   width: 100%;
-  overflow: hidden;
+  margin: 0 !important; /* Ensure no extra margin from Bootstrap */
 }
-
+.products-panel .cart-total-section { /* Target the Total section */
+  /* Ensure the total section styles are appropriate for the sidebar */
+}
 /* Panel izquierdo - Productos (70%) */
-.products-panel {
-  background: white;
-  padding: 25px 20px;
-  overflow-y: auto;
-  height: 100vh;
-  width: 70%;
-  flex: 0 0 70%;
-  border-right: 1px solid #e9ecef;
+.products-panel { /* This will now be the right sidebar */
+  flex: 0 0 30%; /* Take 30% of the width */
+  overflow-y: auto; /* Add scroll if content exceeds height */
+  padding: 20px; /* Adjust padding as needed */
+  background: white; /* Example background */
 }
 
 /* Panel derecho - Carrito sidebar (30%) */
-.cart-sidebar-panel {
-  background: #f8f9fa;
-  padding: 15px;
-  width: 30%;
-  flex: 0 0 30%;
-  overflow-y: auto;
-  height: 100vh;
+.cart-sidebar-panel { /* This will now be the left content area */
+  flex: 0 0 70%; /* Take 70% of the width */
   display: flex;
-  flex-direction: column;
-  gap: 15px;
+  flex-direction: column; /* Stack children vertically */
+  overflow-y: auto; /* Add scroll if content exceeds height */
+  padding: 20px; /* Adjust padding as needed */
+  background: #f8f9fa; /* Example background */
+  border-right: 1px solid #e9ecef; /* Optional separator */
 }
 
 /* Ajustes para CartPanel en sidebar */
-.cart-sidebar-panel .cart-panel-modern {
-  flex: 1;
+.cart-sidebar-panel .cart-panel-modern { /* Target CartPanel */
+  margin-bottom: 20px; /* Space between Shopping Bag and Product List */
 }
 
 .cart-sidebar-panel .shopping-bag-container {
@@ -332,6 +328,10 @@
 .cart-sidebar-panel .product-row {
   font-size: 0.85rem;
 }
+.cart-sidebar-panel .product-list-container { /* Target ProductList */
+  /* Add any specific styles for the Product List display here */
+}
+
 
 .cart-sidebar-panel .product-thumbnail {
   width: 40px;
