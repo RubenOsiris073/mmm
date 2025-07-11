@@ -4,17 +4,7 @@ import POSView from '../components/pos/POSView';
 
 const POSPage = () => {
   return (
-    <>
-      <Row className="mb-4">
-        
-      </Row>
-      
-      <Row>
-        <Col>
-          <POSView />
-        </Col>
-      </Row>
-    </>
+    <POSView />
   );
 };
 

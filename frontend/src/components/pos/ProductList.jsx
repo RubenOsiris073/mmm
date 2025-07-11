@@ -134,47 +134,31 @@ const ProductList = ({ products, loading, searchTerm, setSearchTerm, addToCart }
       {/* Lista de productos */}
       <div className="products-grid">
         {filteredProducts.length > 0 ? (
-          <Row className="g-3">
-            {filteredProducts.map((product) => (
-              <Col key={product.id} xs={12} sm={6} md={4} lg={3}>
-                <div className="product-card h-100 border rounded p-3 shadow-sm">
-                  <div className="product-image-container mb-3">
-                    <img
-                      src={product.imagen || '/no-image.jpg'}
-                      alt={product.nombre}
-                      className="product-image w-100"
-                      style={{ 
-                        height: '150px', 
-                        objectFit: 'cover',
-                        borderRadius: '8px'
-                      }}
-                      onError={(e) => {
-                        e.target.src = '/no-image.jpg';
-                      }}
-                    />
-                  </div>
-                  
-                  <div className="product-info">
-                    <h6 className="product-name mb-2" title={product.nombre}>
-                      {product.nombre.length > 30 
-                        ? `${product.nombre.substring(0, 30)}...` 
-                        : product.nombre
-                      }
-                    </h6>
-                    
-                    <p className="product-category text-muted small mb-2">
-                      {product.categoria || 'Sin categoría'}
-                    </p>
-                    
-                    <div className="product-price-stock mb-3">
-                      <div className="fw-bold text-primary">
-                        ${parseFloat(product.precio || 0).toFixed(2)}
-                      </div>
-                      <small className={`text-${product.stock > 0 ? 'success' : 'danger'}`}>
-                        Stock: {product.stock || 0}
-                      </small>
-                    </div>
-                    
+          filteredProducts.map((product) => (
+            <div key={product.id} className="product-card-modern">
+              <div className="product-image-placeholder">
+                 {/* You might want to replace this with an actual image */}
+                 {/* <img src={product.imagen || '/no-image.jpg'} alt={product.nombre} className="product-image" />*/}
+                 <FaBoxOpen /> {/* Placeholder icon */}
+              </div>
+
+              <div className="product-info">
+                <div className="product-name" title={product.nombre}>
+                  {product.nombre.length > 30
+                    ? `${product.nombre.substring(0, 30)}...`
+                    : product.nombre
+                  }
+                </div>
+
+                <div className="product-stock text-muted">
+                  Stock: {product.stock || 0}
+                </div>
+
+                <div className="product-price">
+                  ${parseFloat(product.precio || 0).toFixed(2)}
+                </div>
+
+
                     <Button
                       variant={product.stock > 0 ? 'primary' : 'secondary'}
                       size="sm"
@@ -186,11 +170,9 @@ const ProductList = ({ products, loading, searchTerm, setSearchTerm, addToCart }
                     </Button>
                   </div>
                 </div>
-              </Col>
-            ))}
-          </Row>
+              ))
         ) : (
-          <div className="text-center p-5">
+          <div className="col-span-full text-center p-5">
             <FaBoxOpen size={64} className="text-muted mb-3" />
             <p className="text-muted">
               No hay productos disponibles{searchTerm ? ' para esta búsqueda' : ''}
