@@ -5,7 +5,7 @@ Lote 100 completado: 50 ventas guardadas
 📊 RESUMEN DE VENTAS GENERADAS:
 💰 Total de ventas: 5000
 💵 Monto total: $2529434.50
-📈 Ticket promedio: $505.89
+📈 Ticket promedio: $505.869
 
 📅 VENTAS POR MES:
   Febrero: 829 ventas - $415561.50
