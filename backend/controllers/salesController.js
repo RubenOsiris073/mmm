@@ -3,9 +3,9 @@ const salesService = require('../services/salesService');
 // GET /api/sales/paginated
 async function getSalesPaginatedController(req, res) {
   try {
-    const { limit = 50, startAfter } = req.query;
+    const { limit = 100, startAfter } = req.query;
     const sales = await salesService.getSalesPaginated({
-      limit: parseInt(limit, 10),
+      limit: parseInt(limit, 20),
       startAfter
     });
     res.json(sales);

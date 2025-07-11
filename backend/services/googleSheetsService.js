@@ -84,7 +84,7 @@ class GoogleSheetsService {
     }
   }
 
-  async getSalesData(range = 'A:Z', limit = 100, offset = 0) {
+  async getSalesData(range = 'A:Z', limit = 100000, offset = 0) {
     if (!this.initialized) {
       await this.initialize();
     }
@@ -141,14 +141,41 @@ class GoogleSheetsService {
     }
   }
 
-  async getDashboardMetrics() {
+  /**
+   * Obtiene todos los datos paginando automáticamente en bloques
+   * @param {Object} options
+   * @param {string} [options.range]
+   * @param {number} [options.limit]
+   * @returns {Promise<{data: Array, headers: Array, total: number}>}
+   */
+  async getAllSalesDataPaginated({ range = 'A:Z', limit = 10000 } = {}) {
+    if (!this.initialized) {
+      await this.initialize();
+    }
+    let allData = [];
+    let headers = [];
+    let total = 0;
+    let offset = 0;
+    let done = false;
+    while (!done) {
+      Logger.info(`[Paginación GoogleSheets] limit: ${limit}, offset: ${offset}`);
+      const { data, headers: hdrs, total: blockTotal } = await this.getSalesData(range, limit, offset);
+      if (headers.length === 0 && hdrs.length > 0) headers = hdrs;
+      if (blockTotal === 0 || data.length === 0) break;
+      allData = allData.concat(data);
+      total = blockTotal;
+      offset += limit;
+      if (data.length < limit) done = true;
+    }
+    return { data: allData, headers, total };
+  }
+
+  async getDashboardMetrics({ limit = 100000, offset = 0, range = 'A:Z' } = {}) {
     try {
-      // Para las métricas necesitamos todos los datos, pero podemos optimizar obteniendo solo los últimos 1000
-      const salesData = await this.getSalesData('A:Z', 1000, 0);
-      
-      // Procesar datos para métricas del dashboard
+      // Permitir ajustar el rango, limit y offset desde el frontend
+      const salesData = await this.getSalesData(range, limit, offset);
       const metrics = {
-        totalSales: salesData.total, // Usar el total real de registros
+        totalSales: salesData.total,
         totalRevenue: salesData.data.reduce((sum, sale) => {
           const amount = parseFloat(sale.Total || sale.Monto || sale.Importe || 0);
           return sum + amount;
@@ -156,9 +183,8 @@ class GoogleSheetsService {
         salesByMonth: this.groupSalesByMonth(salesData.data),
         topProducts: this.getTopProducts(salesData.data),
         lastUpdated: new Date().toISOString(),
-        note: `Métricas calculadas con los últimos ${salesData.data.length} registros de ${salesData.total} totales`
+        note: `Métricas calculadas con los últimos ${salesData.data.length} registros de ${salesData.total} totales (limit: ${limit}, offset: ${offset})`
       };
-
       return metrics;
     } catch (error) {
       Logger.error('Error calculating dashboard metrics:', error);

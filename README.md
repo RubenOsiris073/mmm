@@ -70,3 +70,7 @@ Fondos insuficientes:
 Número: 4000 0000 0000 9995
 CVV: 123
 Fecha: 12/34
+
+Hoja productos: nombre, cantidad, perecedero, ubicacion, lote, categoria, marca, productId, codigo, precio, id, fechaCaducidad, diasParaCaducar, estadoCaducidad.
+
+Hoja ventas: subtotal, venta_paymentMethod, venta_amountReceived, venta_change, venta_timestamp, venta_createdAt, venta_total, venta_updatedAt, venta_clientName, venta_id, productId (para referencia al producto vendido).
