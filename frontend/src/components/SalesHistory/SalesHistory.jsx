@@ -515,7 +515,7 @@ const SalesHistory = memo(({ onGenerateInvoice, onSalesDataUpdate }) => {
         <div className="sales-history-footer">
           <div>
             <small className="text-muted">
-              Total de ventas: <strong>{filteredSales.length}</strong>
+              Total de ventas paginadas: <strong>{filteredSales.length}</strong>
             </small>
           </div>
           <div>

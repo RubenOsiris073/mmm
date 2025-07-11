@@ -9,7 +9,7 @@ const Logger = require('../utils/logger');
  */
 async function getAllSales() {
   try {
-    const sales = await firestoreAdmin.queryDocs(COLLECTIONS.SALES, [], 'timestamp', 'desc');
+    const sales = await firestoreAdmin.queryDocs(COLLECTIONS.SALES, [], 'timestamp', 'desc', 50); // solo 50 ventas
 
     const processedSales = sales.map(sale => ({
       ...sale,

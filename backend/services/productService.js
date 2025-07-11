@@ -69,34 +69,37 @@ async function updateProductStock(productId, adjustment, reason = 'Ajuste de sto
   try {
     Logger.info(`Actualizando stock en PRODUCTS - ID: ${productId}, Ajuste: ${adjustment}`);
     
-    const productRef = doc(db, COLLECTIONS.PRODUCTS, productId);
-    const productDoc = await getDoc(productRef);
+    const productRef = db.collection(COLLECTIONS.PRODUCTS).doc(productId);
+    const productDoc = await productRef.get();
     
-    if (!productDoc.exists()) {
+    if (!productDoc.exists) {
       throw new Error(`Producto ${productId} no encontrado`);
     }
     
     const productData = productDoc.data();
     const currentStock = productData.cantidad || 0;
-    const newStock = Math.max(0, currentStock + adjustment); // No permitir stock negativo
-    
-    // Actualizar stock en Firebase
-    await updateDoc(productRef, {
+    const newStock = Math.max(0, currentStock + adjustment);
+
+    const batch = db.batch();
+
+    batch.update(productRef, {
       cantidad: newStock,
-      stock: newStock, // Mantener compatibilidad
-      updatedAt: serverTimestamp(),
+      stock: newStock,
+      updatedAt: db.FieldValue.serverTimestamp(),
       lastStockUpdate: {
         adjustment,
         reason,
         previousStock: currentStock,
         newStock,
-        timestamp: serverTimestamp(),
+        timestamp: db.FieldValue.serverTimestamp(),
         user: 'system'
       }
     });
-    
+
+    await batch.commit();
+
     Logger.info(`Stock actualizado: ${productData.nombre} - ${currentStock} → ${newStock}`);
-    
+
     return {
       success: true,
       productId,
@@ -110,7 +113,6 @@ async function updateProductStock(productId, adjustment, reason = 'Ajuste de sto
     throw error;
   }
 }
-
 /**
  * Obtiene el stock actual de un producto desde PRODUCTS
  */
