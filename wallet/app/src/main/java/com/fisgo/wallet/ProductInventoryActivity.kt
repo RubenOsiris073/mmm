@@ -129,7 +129,7 @@ class ProductInventoryActivity : AppCompatActivity() {
 
     private suspend fun fetchProductsFromAPI(): List<Product> {
         return try {
-            val url = URL("https://psychic-bassoon-j65x4rxrvj4c5p54-3000.app.github.dev/api/products")
+            val url = URL("https://psychic-bassoon-j65x4rxrvj4c5p54-5000.app.github.dev/api/products")
             val connection = url.openConnection() as HttpURLConnection
             
             connection.requestMethod = "GET"
@@ -143,24 +143,23 @@ class ProductInventoryActivity : AppCompatActivity() {
                     it.readText()
                 }
 
-                if (!response.trim().startsWith("[") && !response.trim().startsWith("{")) {
-                    Log.e("ProductInventory", "Respuesta no es JSON válida: $response")
-                    return emptyList()
+                if (response.trim().startsWith("{")) {
+                    parseProductsFromJSON(response) // Pass the raw JSON string
+                } else {
+                    Log.e(
+                        "ProductInventory",
+                        "Respuesta no es JSON válida o no es un objeto: $response"
+                    )
+                    emptyList() // Return empty list if not a valid JSON object
                 }
-
-                val jsonArray = JSONArray(response)
-
-
-                parseProductsFromJSON(response)
             } else {
                 throw Exception("Error del servidor: $responseCode")
             }
         } catch (e: Exception) {
             Log.e("ProductInventory", "Error fetching products", e)
-            throw e
+            throw e // Re-throw the exception to be caught by the calling coroutine
         }
     }
-
     private fun parseProductsFromJSON(jsonString: String): List<Product> {
         val products = mutableListOf<Product>()
         

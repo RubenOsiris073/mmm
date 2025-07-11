@@ -438,7 +438,7 @@ class SyncCodeActivity : AppCompatActivity() {
     private suspend fun syncCartWithBackend(code: String): SyncResult {
         return withContext(Dispatchers.IO) {
             try {
-                val url = URL("https://psychic-bassoon-j65x4rxrvj4c5p54-3000.app.github.dev/api/cart/sync/$code")
+                val url = URL("https://psychic-bassoon-j65x4rxrvj4c5p54-5000.app.github.dev/api/cart/sync/$code")
                 val connection = url.openConnection() as HttpURLConnection
                 
                 connection.requestMethod = "POST"
@@ -511,7 +511,7 @@ class SyncCodeActivity : AppCompatActivity() {
     private suspend fun processPaymentWithBackend(paymentMethod: String): PaymentResult {
         return withContext(Dispatchers.IO) {
             try {
-                val url = URL("https://psychic-bassoon-j65x4rxrvj4c5p54-3000.app.github.dev/api/cart/process-payment")
+                val url = URL("https://psychic-bassoon-j65x4rxrvj4c5p54-5000.app.github.dev/api/cart/process-payment")
                 val connection = url.openConnection() as HttpURLConnection
                 
                 connection.requestMethod = "POST"

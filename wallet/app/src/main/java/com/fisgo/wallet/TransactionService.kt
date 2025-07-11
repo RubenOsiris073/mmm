@@ -17,9 +17,8 @@ class TransactionService {
     private val client = OkHttpClient()
     private val gson = Gson()
     // Actualizar URL para coincidir con el backend
-    private val baseUrl = "https://psychic-bassoon-j65x4rxrvj4c5p54-3000.app.github.dev" // Para emulador Android
-    // private val baseUrl = "http://192.168.1.100:5000" // Para dispositivo físico
-    
+    private val baseUrl = "https://psychic-bassoon-j65x4rxrvj4c5p54-5000.app.github.dev" // Para emulador Android
+
     suspend fun getUserTransactions(userId: String): Result<List<Transaction>> {
         return withContext(Dispatchers.IO) {
             try {
