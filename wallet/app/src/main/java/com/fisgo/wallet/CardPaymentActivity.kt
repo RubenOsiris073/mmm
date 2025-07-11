@@ -37,7 +37,7 @@ class CardPaymentActivity : AppCompatActivity() {
     private val gson = Gson()
     
     // URL de tu backend - cambiar según tu configuración
-    private val baseUrl = "http://10.0.2.2:5000" // Para emulador
+    private val baseUrl = "https://psychic-bassoon-j65x4rxrvj4c5p54-3000.app.github.dev/api/pay" // Para emulador
     // private val baseUrl = "http://192.168.1.100:5000" // Para dispositivo físico
     
     companion object {

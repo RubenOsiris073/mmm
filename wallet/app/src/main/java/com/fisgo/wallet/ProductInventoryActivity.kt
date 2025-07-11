@@ -129,7 +129,7 @@ class ProductInventoryActivity : AppCompatActivity() {
 
     private suspend fun fetchProductsFromAPI(): List<Product> {
         return try {
-            val url = URL("http://10.0.2.2:5000/api/products")
+            val url = URL("https://psychic-bassoon-j65x4rxrvj4c5p54-3000.app.github.dev/api/products")
             val connection = url.openConnection() as HttpURLConnection
             
             connection.requestMethod = "GET"
@@ -139,10 +139,18 @@ class ProductInventoryActivity : AppCompatActivity() {
             
             val responseCode = connection.responseCode
             if (responseCode == HttpURLConnection.HTTP_OK) {
-                val response = BufferedReader(InputStreamReader(connection.inputStream)).use { 
-                    it.readText() 
+                val response = BufferedReader(InputStreamReader(connection.inputStream)).use {
+                    it.readText()
                 }
-                
+
+                if (!response.trim().startsWith("[") && !response.trim().startsWith("{")) {
+                    Log.e("ProductInventory", "Respuesta no es JSON válida: $response")
+                    return emptyList()
+                }
+
+                val jsonArray = JSONArray(response)
+
+
                 parseProductsFromJSON(response)
             } else {
                 throw Exception("Error del servidor: $responseCode")
@@ -247,7 +255,6 @@ class ProductInventoryActivity : AppCompatActivity() {
     private fun showEmptyState() {
         emptyStateText.visibility = View.VISIBLE
         productsRecyclerView.visibility = View.GONE
-        // El texto ya está definido en el layout XML, no necesitamos cambiarlo dinámicamente
     }
 
     private fun hideEmptyState() {
