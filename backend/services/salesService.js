@@ -136,7 +136,59 @@ async function createSale(saleData) {
   }
 }
 
+/**
+ * Obtiene ventas paginadas
+ * @param {Object} options
+ * @param {number} options.limit - Cantidad de ventas por página
+ * @param {string} [options.startAfter] - Timestamp o ID para paginación
+ */
+async function getSalesPaginated({ limit = 50, startAfter } = {}) {
+  try {
+    let queryOptions = [];
+    if (startAfter) {
+      queryOptions.push({ field: 'timestamp', op: '<', value: startAfter });
+    }
+    const sales = await firestoreAdmin.queryDocs(
+      COLLECTIONS.SALES,
+      queryOptions,
+      'timestamp',
+      'desc',
+      limit
+    );
+    const processedSales = sales.map(sale => ({
+      ...sale,
+      timestamp: processTimestamp(sale.timestamp)
+    }));
+    Logger.info(`Obtenidas ${processedSales.length} ventas paginadas desde Firebase`);
+    return processedSales;
+  } catch (error) {
+    Logger.error('Error al obtener ventas paginadas', { error: error.message });
+    throw error;
+  }
+}
+
+// Cache simple en memoria para historial de ventas recientes
+const salesCache = {
+  data: [],
+  lastUpdated: 0,
+  ttl: 60 * 1000, // 1 minuto
+};
+
+async function getCachedSales(limit = 50) {
+  const now = Date.now();
+  if (salesCache.data.length && now - salesCache.lastUpdated < salesCache.ttl) {
+    Logger.info('Ventas obtenidas desde cache');
+    return salesCache.data.slice(0, limit);
+  }
+  const sales = await getSalesPaginated({ limit });
+  salesCache.data = sales;
+  salesCache.lastUpdated = now;
+  return sales;
+}
+
 module.exports = {
   getAllSales,
-  createSale
+  createSale,
+  getSalesPaginated,
+  getCachedSales
 };

@@ -30,6 +30,8 @@ const SalesHistory = memo(({ onGenerateInvoice, onSalesDataUpdate }) => {
   // Estados para paginación
   const [itemsPerPage] = useState(100);
   const [hasMoreData, setHasMoreData] = useState(true);
+  const [lastSaleTimestamp, setLastSaleTimestamp] = useState(null);
+  const [useBackendCache, setUseBackendCache] = useState(false);
   
   // Usar useRef para mantener una referencia estable a onSalesDataUpdate
   const onSalesDataUpdateRef = useRef(onSalesDataUpdate);
@@ -107,6 +109,39 @@ const SalesHistory = memo(({ onGenerateInvoice, onSalesDataUpdate }) => {
     }
   }, [isComponentMounted]); // Solo isComponentMounted como dependencia
 
+  // Función para cargar ventas paginadas
+  const loadSalesPaginated = useCallback(async (reset = false) => {
+    try {
+      setLoading(true);
+      setError(null);
+      let salesData;
+      if (useBackendCache) {
+        salesData = await apiService.getSalesCached(itemsPerPage);
+      } else {
+        salesData = await apiService.getSalesPaginated({
+          limit: itemsPerPage,
+          startAfter: reset ? undefined : lastSaleTimestamp
+        });
+      }
+      if (reset) {
+        setSales(salesData);
+        setDisplayedSales(salesData);
+        setHasMoreData(salesData.length === itemsPerPage);
+      } else {
+        setSales(prev => [...prev, ...salesData]);
+        setDisplayedSales(prev => [...prev, ...salesData]);
+        setHasMoreData(salesData.length === itemsPerPage);
+      }
+      if (salesData.length > 0) {
+        setLastSaleTimestamp(salesData[salesData.length - 1].timestamp);
+      }
+    } catch (err) {
+      setError('Error al cargar ventas paginadas');
+    } finally {
+      setLoading(false);
+    }
+  }, [itemsPerPage, lastSaleTimestamp, useBackendCache]);
+
   // Función para aplicar filtros - declarada antes de los useEffect
   const applyFilters = useCallback(() => {
     if (!Array.isArray(sales)) return;
@@ -156,8 +191,9 @@ const SalesHistory = memo(({ onGenerateInvoice, onSalesDataUpdate }) => {
 
   // useEffect para cargar ventas al montar el componente
   useEffect(() => {
-    loadSales();
-  }, [loadSales]);
+    loadSalesPaginated(true);
+    // eslint-disable-next-line
+  }, [useBackendCache]);
 
   // useEffect para aplicar filtros cuando cambien
   useEffect(() => {

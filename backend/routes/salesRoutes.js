@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const salesService = require('../services/salesService');
 const Logger = require('../utils/logger.js');
+const salesController = require('../controllers/salesController');
 
 // Obtener todas las ventas
 router.get('/', async (req, res) => {
@@ -25,5 +26,11 @@ router.post('/', async (req, res) => {
     res.status(500).json({ error: error.message || "Error al crear venta" });
   }
 });
+
+// Obtener ventas paginadas
+router.get('/paginated', salesController.getSalesPaginatedController);
+
+// Obtener ventas desde cache
+router.get('/cached', salesController.getCachedSalesController);
 
 module.exports = router;

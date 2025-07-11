@@ -164,6 +164,40 @@ const apiService = {
     }
   },
 
+  // Obtener ventas paginadas
+  getSalesPaginated: async ({ limit = 50, startAfter } = {}, useCache = false) => {
+    try {
+      const cacheKey = `sales-paginated-${limit}-${startAfter || 'init'}`;
+      if (useCache) {
+        const cachedData = getCachedData(cacheKey);
+        if (cachedData) return cachedData;
+      }
+      const response = await api.get('/sales/paginated', {
+        params: { limit, startAfter }
+      });
+      setCachedData(cacheKey, response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error en getSalesPaginated:', error.message);
+      throw error;
+    }
+  },
+
+  // Obtener ventas desde cache backend
+  getSalesCached: async (limit = 50) => {
+    try {
+      const cacheKey = `sales-cached-${limit}`;
+      const cachedData = getCachedData(cacheKey);
+      if (cachedData) return cachedData;
+      const response = await api.get('/sales/cached', { params: { limit } });
+      setCachedData(cacheKey, response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error en getSalesCached:', error.message);
+      throw error;
+    }
+  },
+
   // Función para crear venta (invalida caché de ventas)
   createSale: async (saleData) => {
     try {
