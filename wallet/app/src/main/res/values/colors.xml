@@ -9,7 +9,8 @@
     <color name="text_primary">#1D1D1F</color>
     <color name="text_secondary">#8E8E93</color>
     <color name="text_tertiary">#C7C7CC</color>
-    
+    <color name="text_input_layout_stroke_color_login">#BDBDBD</color>
+
     <!-- Colores de fondo -->
     <color name="background_primary">#FFFFFF</color>
     <color name="background_secondary">#F2F2F7</color>

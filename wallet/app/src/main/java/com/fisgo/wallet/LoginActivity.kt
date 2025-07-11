@@ -79,9 +79,7 @@ class LoginActivity : AppCompatActivity() {
         }
         
         // Configurar listener para registro (funcionalidad futura)
-        binding.registerTextView.setOnClickListener {
-            Toast.makeText(this, "Funcionalidad de registro en desarrollo", Toast.LENGTH_SHORT).show()
-        }
+
     }
     
     private fun goToMainScreen() {
