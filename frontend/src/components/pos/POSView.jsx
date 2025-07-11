@@ -69,21 +69,10 @@ const POSView = () => {
             {error}
           </Alert>
         )}
-
-        {/* Layout principal - Productos a la izquierda, carrito a la derecha */}
+        
+        {/* Layout principal - Carrito a la izquierda, Productos a la derecha */}
         <div className="pos-main-row g-0">
-          {/* Panel izquierdo - Productos (70%) */}
-          <div className="products-panel">
-            <ProductList
-              products={filteredProducts}
-              loading={productsLoading}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              addToCart={addToCart}
-            />
-          </div>
-          
-          {/* Panel derecho - Carrito y resumen (30%) */}
+          {/* Panel izquierdo - Carrito y resumen (30%) */}
           <div className="cart-sidebar-panel">
             <CartPanel
               cartItems={cartItems}
@@ -126,6 +115,17 @@ const POSView = () => {
                 {loading ? 'Processing...' : 'Proceed to Checkout'}
               </button>
             </div>
+          </div>
+
+          {/* Panel derecho - Productos (70%) */}
+          <div className="products-panel">
+            <ProductList
+              products={filteredProducts}
+              loading={productsLoading}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              addToCart={addToCart}
+            />
           </div>
         </div>
 
