@@ -31,7 +31,7 @@ const MobileWalletPayment = ({ amount, items, onPaymentConfirmed }) => {
           total: amount
         };
 
-        const response = await fetch('http://localhost:5000/api/cart/sync', {
+        const response = await fetch('https://psychic-bassoon-j65x4rxrvj4c5p54-5000.app.github.dev/api/cart/sync', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -67,7 +67,7 @@ const MobileWalletPayment = ({ amount, items, onPaymentConfirmed }) => {
       setCheckingPayment(true);
       
       try {
-        const response = await fetch(`http://localhost:5000/api/cart/${sessionId}`, {
+        const response = await fetch(`https://psychic-bassoon-j65x4rxrvj4c5p54-5000.app.github.dev/api/cart/${sessionId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
