@@ -313,11 +313,20 @@
   background: #f8f9fa; /* Example background */
 }
 
+/* Cart Total Section - Moved to the top */
+.cart-total-section-top {
+  background-color: #d1d1d1; /* Example orange color */
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
 /* Panel inferior - Productos */
 .products-panel-bottom {
   flex: 1;
   overflow-y: auto;
   padding: 20px;
+  height: 50vh; /* Added height to enable scrolling */
 }
 
 
@@ -657,6 +666,7 @@
   flex: 1;
   overflow-y: auto;
   padding: 20px;
+  height: 70vh; /* Added height to enable scrolling */
 }
 
 /* New styles */
