@@ -812,7 +812,7 @@
 
 /* Cart Total Section - Moved to the top */
 .cart-total-section-top {
-  background-color: #ffe0b2; /* Example orange color */
+  background-color: #eee9e2; /* Example orange color */
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 20px;
@@ -828,7 +828,7 @@
 /* New styles */
 .pos-top-section {
   display: flex;
-  padding: 30px 15px;
+  padding: 30px 20px;
 }
 
 .shopping-bag-col {
