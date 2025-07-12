@@ -276,7 +276,7 @@
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow-y: auto; /* Cambiado de 'hidden' a 'auto' para permitir el scroll vertical */
 }
 
 .pos-container-fluid {
