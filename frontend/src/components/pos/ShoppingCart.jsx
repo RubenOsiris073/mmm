@@ -1,16 +1,16 @@
 import React from 'react';
 import { Button, Table } from 'react-bootstrap';
-import './styles/ShoppingCart.css';
+import styles from './styles/ShoppingCart.module.css';
 
 const ShoppingCart = ({ items, onRemove, onUpdateQuantity }) => {
   // Protección contra props indefinidos
   const cartItems = items || [];
-  
+
   // Verificar si está vacío primero
   if (!cartItems.length) {
     return (
-      <div className="empty-cart">
-        <div className="empty-cart-icon">🛒</div>
+      <div className={styles['empty-cart']}>
+        <div className={styles['empty-cart-icon']}>🛒</div>
         <h5>Tu carrito está vacío</h5>
         <p className="text-muted">Agrega productos para comenzar</p>
       </div>
@@ -18,18 +18,18 @@ const ShoppingCart = ({ items, onRemove, onUpdateQuantity }) => {
   }
 
   return (
-    <div className="shopping-bag-container">
+    <div className={styles['shopping-bag-container']}>
       {/* Header estilo Shopping Bag */}
-      <div className="shopping-bag-header">
-        <h4 className="bag-title">Shopping Bag</h4>
-        <p className="bag-subtitle">{cartItems.length} items in your bag.</p>
+      <div className={styles['shopping-bag-header']}>
+        <h4 className={styles['bag-title']}>Shopping Bag</h4>
+        <p className={styles['bag-subtitle']}>{cartItems.length} items in your bag.</p>
       </div>
-      
+
       {/* Tabla de productos */}
-      <div className="products-table-container">
-        <Table className="products-table" borderless>
+      <div className={styles['products-table-container']}>
+        <Table className={styles['products-table']} borderless>
           <thead>
-            <tr className="table-header">
+            <tr className={styles['table-header']}>
               <th>Product</th>
               <th>Price</th>
               <th>Quantity</th>
@@ -38,66 +38,66 @@ const ShoppingCart = ({ items, onRemove, onUpdateQuantity }) => {
           </thead>
           <tbody>
             {cartItems.map((item) => (
-              <tr key={item.id} className="product-row">
+              <tr key={item.id} className={styles['product-row']}>
                 {/* Columna Product */}
-                <td className="product-cell">
-                  <div className="product-info-container">
-                    <div className="product-image-wrapper">
-                      <img 
-                        src={item.imagen || '/no-image.jpg'} 
+                <td className={styles['product-cell']}>
+                  <div className={styles['product-info-container']}>
+                    <div className={styles['product-image-wrapper']}>
+                      <img
+                        src={item.imagen || '/no-image.jpg'}
                         alt={item.nombre || 'Producto'}
-                        className="product-thumbnail"
+                        className={styles['product-thumbnail']}
                         onError={(e) => {
                           e.target.src = '/no-image.jpg';
                         }}
                       />
                     </div>
-                    <div className="product-details">
-                      <h6 className="product-name">{item.nombre || 'Producto'}</h6>
-                      <div className="product-meta">
-                        <span className="product-brand">PRODUCTO</span>
-                        <div className="product-specs">
+                    <div className={styles['product-details']}>
+                      <h6 className={styles['product-name']}>{item.nombre || 'Producto'}</h6>
+                      <div className={styles['product-meta']}>
+                        <span className={styles['product-brand']}>PRODUCTO</span>
+                        <div className={styles['product-specs']}>
                           <span>Size: • 42</span>
                         </div>
                       </div>
                     </div>
                   </div>
                 </td>
-                
+
                 {/* Columna Price */}
-                <td className="price-cell">
-                  <span className="unit-price">${(item.precio || 0).toFixed(2)}</span>
+                <td className={styles['price-cell']}>
+                  <span className={styles['unit-price']}>${(item.precio || 0).toFixed(2)}</span>
                 </td>
-                
+
                 {/* Columna Quantity */}
-                <td className="quantity-cell">
-                  <div className="quantity-controls">
+                <td className={styles['quantity-cell']}>
+                  <div className={styles['quantity-controls']}>
                     <Button
-                      className="quantity-btn"
+                      className={styles['quantity-btn']}
                       onClick={() => typeof onUpdateQuantity === 'function' && onUpdateQuantity(item.id, (item.quantity || 0) - 1)}
                       disabled={(item.quantity || 1) <= 1}
                     >
                       -
                     </Button>
-                    <span className="quantity-value">{item.quantity || 1}</span>
+                    <span className={styles['quantity-value']}>{item.quantity || 1}</span>
                     <Button
-                      className="quantity-btn"
+                      className={styles['quantity-btn']}
                       onClick={() => typeof onUpdateQuantity === 'function' && onUpdateQuantity(item.id, (item.quantity || 0) + 1)}
                     >
                       +
                     </Button>
                   </div>
                 </td>
-                
+
                 {/* Columna Total Price */}
-                <td className="total-cell">
-                  <div className="total-price-container">
-                    <span className="item-total-price">
+                <td className={styles['total-cell']}>
+                  <div className={styles['total-price-container']}>
+                    <span className={styles['item-total-price']}>
                       ${((item.precio || 0) * (item.quantity || 1)).toFixed(2)}
                     </span>
-                    <Button 
-                      variant="link" 
-                      className="remove-product-btn"
+                    <Button
+                      variant="link"
+                      className={styles['remove-product-btn']}
                       onClick={() => typeof onRemove === 'function' && onRemove(item.id)}
                       title="Remove item"
                     >

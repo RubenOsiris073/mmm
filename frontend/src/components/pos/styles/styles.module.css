@@ -289,31 +289,45 @@
 
 .pos-main-row {
   display: flex;
-  height: 100vh; /* Adjust height as needed */
+  min-height: calc(100vh - 150px); /* Adjust height as needed */
   width: 100%;
   margin: 0 !important; /* Ensure no extra margin from Bootstrap */
 }
-.products-panel .cart-total-section { /* Target the Total section */
-  /* Ensure the total section styles are appropriate for the sidebar */
-}
+
 /* Panel izquierdo - Productos (70%) */
-.products-panel { /* This will now be the right sidebar */
+.cart-sidebar-panel {
   flex: 0 0 30%; /* Take 30% of the width */
   overflow-y: auto; /* Add scroll if content exceeds height */
   padding: 20px; /* Adjust padding as needed */
-  background: white; /* Example background */
+  background: #f8f9fa; /* Example background */
+  border-right: 1px solid #e9ecef; /* Optional separator */
 }
 
 /* Panel derecho - Carrito sidebar (30%) */
-.cart-sidebar-panel { /* This will now be the left content area */
+.products-panel {
   flex: 0 0 70%; /* Take 70% of the width */
   display: flex;
   flex-direction: column; /* Stack children vertically */
   overflow-y: auto; /* Add scroll if content exceeds height */
   padding: 20px; /* Adjust padding as needed */
   background: #f8f9fa; /* Example background */
-  border-right: 1px solid #e9ecef; /* Optional separator */
 }
+
+/* Cart Total Section - Moved to the top */
+.cart-total-section-top {
+  background-color: #ffe0b2; /* Example orange color */
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+/* Panel inferior - Productos */
+.products-panel-bottom {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
 
 /* Ajustes para CartPanel en sidebar */
 .cart-sidebar-panel .cart-panel-modern { /* Target CartPanel */
@@ -795,19 +809,17 @@
   cursor: not-allowed;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .products-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 15px;
-  }
+/* Cart Total Section - Moved to the top */
+.cart-total-section-top {
+  background-color: #ffe0b2; /* Example orange color */
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
 
-  .category-tabs {
-    gap: 6px;
-  }
-
-  .category-tab {
-    padding: 6px 12px;
-    font-size: 0.8rem;
-  }
+/* Panel inferior - Productos */
+.products-panel-bottom {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
 }
