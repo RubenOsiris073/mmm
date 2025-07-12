@@ -823,3 +823,27 @@
   overflow-y: auto;
   padding: 20px;
 }
+
+/* New styles */
+.pos-top-section {
+  display: flex;
+}
+
+.shopping-bag-col {
+  flex: 0 0 70%;
+  padding: 10px;
+}
+
+.cart-total-col {
+  flex: 0 0 30%;
+  padding: 10px;
+}
+
+.pos-middle-section {
+  flex: 1;
+  padding: 10px;
+}
+
+.pos-bottom-section {
+  padding: 10px;
+}

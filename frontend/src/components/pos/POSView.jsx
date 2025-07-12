@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Alert } from 'react-bootstrap';
+import { Alert, Row, Col } from 'react-bootstrap';
 
 // Importaciones de componentes refactorizados
 import ProductList from './ProductList';
@@ -68,43 +68,10 @@ const POSView = () => {
             {error}
           </Alert>
         )}
-        
-        {/* Cart Total Section - Moved to the top */}
-        <div className={styles['cart-total-section-top']}>
-          <h5 className={styles['section-title']}>Cart Total</h5>
-          
-          <div className={styles['total-breakdown']}>
-            <div className={styles['total-line']}>
-              <span>Cart Subtotal</span>
-              <span>${calculateTotal().toFixed(2)}</span>
-            </div>
-            <div className={styles['total-line']}>
-              <span>Shipping</span>
-              <span>Free</span>
-            </div>
-            <div className={styles['total-line']}>
-              <span>Discount</span>
-              <span>--</span>
-            </div>
-            <div className={styles['total-line'] + ' ' + styles['final-total']}>
-              <span>Cart Total</span>
-              <span>${calculateTotal().toFixed(2)}</span>
-            </div>
-          </div>
-          
-          <button 
-            className={styles['checkout-btn']}
-            onClick={() => setShowPaymentModal(true)}
-            disabled={cartItems.length === 0 || loading}
-          >
-            {loading ? 'Processing...' : 'Proceed to Checkout'}
-          </button>
-        </div>
-        
-        {/* Layout principal - Carrito a la izquierda, Productos abajo */}
-        <div className={styles['pos-main-row'] + ' g-0'}>
-          {/* Panel izquierdo - Carrito y resumen  */}
-          <div className={styles['cart-sidebar-panel']}>
+
+        {/* Top Section: Shopping Bag and Cart Total */}
+        <Row className={styles['pos-top-section']}>
+          <Col md={9} className={styles['shopping-bag-col']}>
             <CartPanel
               cartItems={cartItems}
               onRemove={removeFromCart}
@@ -114,18 +81,53 @@ const POSView = () => {
               loading={loading}
               isMainView={false}
             />
-          </div>
+          </Col>
+          <Col md={3} className={styles['cart-total-col']}>
+            <div className={styles['cart-total-section-top']}>
+              <h5 className={styles['section-title']}>Cart Total</h5>
+              <div className={styles['total-breakdown']}>
+                <div className={styles['total-line']}>
+                  <span>Cart Subtotal</span>
+                  <span>${calculateTotal().toFixed(2)}</span>
+                </div>
+                <div className={styles['total-line']}>
+                  <span>Shipping</span>
+                  <span>Free</span>
+                </div>
+                <div className={styles['total-line']}>
+                  <span>Discount</span>
+                  <span>--</span>
+                </div>
+                <div className={styles['total-line'] + ' ' + styles['final-total']}>
+                  <span>Cart Total</span>
+                  <span>${calculateTotal().toFixed(2)}</span>
+                </div>
+              </div>
+              <button
+                className={styles['checkout-btn']}
+                onClick={() => setShowPaymentModal(true)}
+                disabled={cartItems.length === 0 || loading}
+              >
+                {loading ? 'Processing...' : 'Proceed to Checkout'}
+              </button>
+            </div>
+          </Col>
+        </Row>
 
-          {/* Panel inferior - Productos  */}
-          <div className={styles['products-panel-bottom']}>
-            <ProductList
-              products={filteredProducts}
-              loading={productsLoading}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              addToCart={addToCart}
-            />
-          </div>
+        {/* Middle Section: Empty Placeholder */}
+        <div className={styles['pos-middle-section']}>
+          {/* Add content or a placeholder here */}
+        </div>
+
+        {/* Bottom Section: Product List */}
+        <div className={styles['pos-bottom-section']}>
+          <ProductList
+            products={filteredProducts}
+            loading={productsLoading}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            addToCart={addToCart}
+          />
         </div>
 
         <PaymentModal
