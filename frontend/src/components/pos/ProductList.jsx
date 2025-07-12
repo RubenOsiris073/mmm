@@ -36,7 +36,7 @@ const ProductList = ({ products, loading, searchTerm, setSearchTerm, addToCart }
     return categoryList;
   }, [products]);
 
-  // Filtrar productos por categoría y búsqueda
+  // Filtrar productos por categoría y búsquedaa
   const filteredProducts = useMemo(() => {
     let filtered = products;
 
