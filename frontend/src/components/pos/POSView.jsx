@@ -47,10 +47,10 @@ const POSView = () => {
     setAmountReceived,
     processSale
   } = usePayment({ cartItems, calculateTotal, setError });
-
+  
   // Estado de carga combinado
   const loading = productsLoading || paymentLoading;
-
+  
   // Escuchar evento para limpiar carrito después de venta exitosa
   useEffect(() => {
     const handleSaleCompleted = () => {
@@ -69,11 +69,11 @@ const POSView = () => {
             {error}
           </Alert>
         )}
-
-        {/* Layout principal: Contenido a la izquierda, Sidebar a la derecha */}
+        
+        {/* Layout principal - Carrito a la izquierda, Productos a la derecha */}
         <div className="pos-main-row g-0">
-          {/* Área de Contenido Principal Izquierda */}
-          <div className="pos-main-content-area">
+          {/* Panel izquierdo - Carrito y resumen (30%) */}
+          <div className="cart-sidebar-panel">
             <CartPanel
               cartItems={cartItems}
               onRemove={removeFromCart}
@@ -83,32 +83,30 @@ const POSView = () => {
               loading={loading}
               isMainView={false}
             />
-
-            <ProductList
-              products={filteredProducts}
-              loading={productsLoading}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              addToCart={addToCart}
-            />
-          </div>
-
-          {/* Sidebar Derecha */}
-          <div className="pos-right-sidebar">
+            
+            {/* Cart Total Section adicional en el sidebar */}
             <div className="cart-total-section">
-              <h5 className="section-title">Total del Carrito</h5>
-
+              <h5 className="section-title">Cart Total</h5>
+              
               <div className="total-breakdown">
                 <div className="total-line">
-                  <span>Subtotal del Carrito</span>
+                  <span>Cart Subtotal</span>
                   <span>${calculateTotal().toFixed(2)}</span>
                 </div>
+                <div className="total-line">
+                  <span>Shipping</span>
+                  <span>Free</span>
+                </div>
+                <div className="total-line">
+                  <span>Discount</span>
+                  <span>--</span>
+                </div>
                 <div className="total-line final-total">
-                  <span>Total del Carrito</span>
+                  <span>Cart Total</span>
                   <span>${calculateTotal().toFixed(2)}</span>
                 </div>
               </div>
-
+              
               <button 
                 className="checkout-btn"
                 onClick={() => setShowPaymentModal(true)}
@@ -117,6 +115,17 @@ const POSView = () => {
                 {loading ? 'Processing...' : 'Proceed to Checkout'}
               </button>
             </div>
+          </div>
+
+          {/* Panel derecho - Productos (70%) */}
+          <div className="products-panel">
+            <ProductList
+              products={filteredProducts}
+              loading={productsLoading}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              addToCart={addToCart}
+            />
           </div>
         </div>
 
