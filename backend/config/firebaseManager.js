@@ -119,7 +119,6 @@ module.exports = {
   admin, // Exportar admin para compatibilidad
   COLLECTIONS: {
     PRODUCTS: 'products',
-    INVENTORY: 'inventory',
     INVENTORY_MOVEMENTS: 'inventory_movements',
     SALES: 'sales',
     TRANSACTIONS: 'transactions',

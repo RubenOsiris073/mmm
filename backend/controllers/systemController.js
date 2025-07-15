@@ -14,7 +14,6 @@ const healthCheck = (req, res) => {
       system: ['/api/health', '/api/status', '/api/firebase-config'],
       auth: ['/api/auth/login', '/api/auth/verify', '/api/auth/logout'],
       products: ['/api/products', '/api/products/:id'],
-      inventory: ['/api/inventory', '/api/inventory/movements', '/api/inventory/summary'],
       detection: ['/api/detection', '/api/detection/capture'],
       sales: ['/api/sales', '/api/sales/:id'],
       transactions: ['/api/transactions', '/api/transactions/:id'],

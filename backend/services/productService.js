@@ -65,7 +65,7 @@ async function getAllProducts() {
  * Actualiza el stock de un producto directamente en PRODUCTS
  * Esta función reemplaza al inventoryService para unificar el manejo de stock
  */
-async function updateProductStock(productId, adjustment, reason = 'Ajuste de stock') {
+async function updateProductStock(productId, adjustment, reason = 'Ajuste de stock', userId = 'system') {
   try {
     Logger.info(`Actualizando stock en PRODUCTS - ID: ${productId}, Ajuste: ${adjustment}`);
     
@@ -92,7 +92,7 @@ async function updateProductStock(productId, adjustment, reason = 'Ajuste de sto
         previousStock: currentStock,
         newStock,
         timestamp: db.FieldValue.serverTimestamp(),
-        user: 'system'
+        user: userId
       }
     });
 
