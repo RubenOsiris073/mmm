@@ -57,8 +57,8 @@
   box-shadow: var(--shadow-sm);
   overflow: hidden;
   padding: 3rem 4rem;
-  margin: 0 0.2rem;
-  width: calc(100% - 0.4rem);
+  margin: 0 2rem;
+  width: calc(100% - 4rem);
   min-height: 600px;
 }
 
