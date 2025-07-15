@@ -2,18 +2,9 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const Logger = require('../utils/logger.js');
 
-// Usar firebase-admin en lugar de client SDK
-const { admin } = require('../config/firebaseManager');
-
-// Obtener referencia a Firestore
-const db = admin.firestore();
-
-// Colecciones
-const COLLECTIONS = {
-  PRODUCTS: 'products',
-  SALES: 'sales',
-  INVENTORY: 'inventory'
-};
+// Usar firebase-admin y configuración centralizada
+const { COLLECTIONS } = require('../config/firebaseManager');
+const firestore = require('../utils/firestoreAdmin');
 
 // Función para generar fechas de caducidad aleatorias
 function generarFechaCaducidad(perecedero, categoria) {
@@ -1133,8 +1124,8 @@ async function initializeProducts() {
     
     // Primero, limpiar productos existentes (opcional)
     Logger.info('🧹 Limpiando productos existentes...');
-    const existingProducts = await getDocs(collection(db, COLLECTIONS.PRODUCTS));
-    const deletePromises = existingProducts.docs.map(doc => deleteDoc(doc.ref));
+    const existingProducts = await firestore.collection(COLLECTIONS.PRODUCTS).get();
+    const deletePromises = existingProducts.docs.map(doc => doc.ref.delete());
     await Promise.all(deletePromises);
     Logger.info(`✅ Se eliminaron ${existingProducts.size} productos existentes`);
     
@@ -1152,12 +1143,12 @@ async function initializeProducts() {
           createdAt: new Date(),
           updatedAt: new Date(),
           activo: true,
-          stock: Math.floor(Math.random() * 50) + producto.stockMinimo, // Stock aleatorio
+          cantidad: Math.floor(Math.random() * 50) + producto.stockMinimo, // Stock aleatorio usando 'cantidad'
           detectionId: null, // Para futuras detecciones de IA
           precisionDeteccion: null
         };
         
-        const docRef = await addDoc(collection(db, COLLECTIONS.PRODUCTS), productoConFecha);
+        const docRef = await firestore.collection(COLLECTIONS.PRODUCTS).add(productoConFecha);
         
         Logger.info(`✅ ${index + 1}/${productos.length} - ${producto.nombre} (Caduca: ${fechaCaducidad.toLocaleDateString('es-MX')})`);
         return { id: docRef.id, ...productoConFecha };

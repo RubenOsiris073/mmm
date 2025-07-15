@@ -14,7 +14,7 @@ async function cleanFakeSales() {
     
     // Obtener todas las ventas
     Logger.info('📊 Obteniendo ventas existentes...');
-    const salesSnapshot = await getDocs(collection(db, COLLECTIONS.SALES));
+    const salesSnapshot = await firestore.collection(COLLECTIONS.SALES).get();
     
     if (salesSnapshot.empty) {
       Logger.info('✅ No hay ventas para limpiar.');
@@ -46,7 +46,7 @@ async function cleanFakeSales() {
       
       const deletePromises = batch.map(async (saleDoc) => {
         try {
-          await deleteDoc(doc(db, COLLECTIONS.SALES, saleDoc.id));
+          await saleDoc.ref.delete();
           return true;
         } catch (error) {
           Logger.error(`Error eliminando venta ${saleDoc.id}:`, error);
@@ -67,7 +67,7 @@ async function cleanFakeSales() {
     Logger.info(`💾 Base de datos limpia y lista para datos reales`);
     
     // Verificar que la limpieza fue exitosa
-    const verificationSnapshot = await getDocs(collection(db, COLLECTIONS.SALES));
+    const verificationSnapshot = await firestore.collection(COLLECTIONS.SALES).get();
     Logger.info(`🔍 Verificación: ${verificationSnapshot.size} ventas restantes en la base de datos`);
     
     if (verificationSnapshot.size === 0) {
@@ -95,7 +95,7 @@ async function cleanOnlyFakeSales() {
   try {
     Logger.info('🔍 Identificando ventas falsas por patrones...');
     
-    const salesSnapshot = await getDocs(collection(db, COLLECTIONS.SALES));
+    const salesSnapshot = await firestore.collection(COLLECTIONS.SALES).get();
     
     if (salesSnapshot.empty) {
       Logger.info('✅ No hay ventas para analizar.');
@@ -147,7 +147,7 @@ async function cleanOnlyFakeSales() {
       
       const deletePromises = batch.map(async (sale) => {
         try {
-          await deleteDoc(doc(db, COLLECTIONS.SALES, sale.id));
+          await firestore.collection(COLLECTIONS.SALES).doc(sale.id).delete();
           return true;
         } catch (error) {
           Logger.error(`Error eliminando venta falsa ${sale.id}:`, error);

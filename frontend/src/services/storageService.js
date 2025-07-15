@@ -98,25 +98,12 @@ export const getRegisteredProducts = async () => {
 // Importaciones de Firebase Client SDK y getDb ya no se usan directamente aquí, pero podrían ser necesarias en otros archivos.
 // import { collection, getDocs, addDoc, updateDoc, deleteDoc, query, orderBy, doc } from 'firebase/firestore';
 // import { COLLECTIONS, getDb } from './firebase';
-export const getDetections = async () => {
+export const getDetections = async (limit = 10) => {
   try {
-    // Esta función aún podría ser necesaria si 'detections' sigue siendo una colección separada
-    // con un propósito específico (ej. historial de detecciones crudas).
-    // Si se integra, esta función o su uso en el frontend deberá ser modificado.
-    // Por ahora, la dejo sin modificar para evitar romper la funcionalidad existente
-    // que pueda depender de ella.
-    // **Nota**: Esta función aún usa Firebase Client SDK. Debería refactorizarse para usar backend API.
-    // Necesitaría las importaciones de Firebase Client SDK y getDb si no se mueven a otro lugar.
-    console.warn("getDetections is still using Firebase Client SDK. Consider refactoring to use backend API.");
-    // Placeholder - You would need to add the Firebase Client SDK imports back if you keep this function using it directly.
-    // Or preferably, create a backend endpoint for detections.
-
-    // Implementación placeholder que podría lanzar un error si no se refactoriza:
-    // throw new Error("getDetections needs refactoring to use backend API or removed if no longer needed.");
-    
-    // Para evitar romper la aplicación de inmediato, retorno un array vacío.
-    return []; 
-
+    // Refactored to use backend API instead of Firebase Client SDK
+    const apiService = (await import('./apiService')).default;
+    const response = await apiService.getDetections(limit);
+    return response.detections || [];
   } catch (error) {
     console.error('Error al obtener detecciones:', error);
     // Manejo de error de axios si se refactoriza a usar backend

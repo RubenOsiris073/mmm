@@ -446,6 +446,42 @@ const apiService = {
       console.error('Error descargando logs:', error.message);
       throw error;
     }
+  },
+
+  // Funciones para Detección de Productos
+  triggerDetection: async (imageData) => {
+    try {
+      console.log('Enviando imagen para detección...');
+      const response = await api.post('/detection/detect', {
+        image: imageData
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error en detección:', error.message);
+      throw error;
+    }
+  },
+
+  getDetections: async (limit = 10) => {
+    try {
+      const response = await api.get('/detection/recent', {
+        params: { limit }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error obteniendo detecciones:', error.message);
+      throw error;
+    }
+  },
+
+  getDetectionStatus: async () => {
+    try {
+      const response = await api.get('/detection/status');
+      return response.data;
+    } catch (error) {
+      console.error('Error obteniendo estado de detección:', error.message);
+      throw error;
+    }
   }
 };
 

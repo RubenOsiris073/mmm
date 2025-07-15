@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Alert, Row, Col } from 'react-bootstrap';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Alert, Row, Col, Button, Card } from 'react-bootstrap';
+import Webcam from 'react-webcam';
 
 // Importaciones de componentes refactorizados
 import ProductList from './ProductList';
@@ -9,23 +10,48 @@ import CartPanel from './components/CartPanel';
 // Importaciones de hooks
 import useCart from './hooks/useCart';
 import usePayment from './hooks/usePayment';
-import useProductData from './hooks/useProductData';
+import useDetection from './hooks/useDetection';
 import { useProductVisibility } from '../../contexts/ProductVisibilityContext';
+import apiService from '../../services/apiService';
 import styles from './styles/styles.module.css';
 
 const POSView = () => {
   const [error, setError] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const { showProductList } = useProductVisibility();
 
-  // Custom hooks para datos y lógica
-  const { 
-    products, 
-    loading: productsLoading, 
-    filteredProducts, 
-    searchTerm, 
-    setSearchTerm,
-    loadProducts
-  } = useProductData(setError);
+  // Load products using apiService directly
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await apiService.getProducts();
+      const productsData = response.data?.data || response.data || [];
+      setProducts(productsData);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filter products with stock and search term
+  const filteredProducts = useMemo(() => {
+    const productsWithStock = products.filter(product => {
+      const stock = product.cantidad || product.stock || 0;
+      return stock > 0;
+    });
+
+    if (!searchTerm) return productsWithStock;
+    
+    const term = searchTerm.toLowerCase();
+    return productsWithStock.filter(product => 
+      (product.nombre && product.nombre.toLowerCase().includes(term)) ||
+      (product.name && product.name.toLowerCase().includes(term)) ||
+      (product.codigo && product.codigo.toLowerCase().includes(term))
+    );
+  }, [products, searchTerm]);
 
   const {
     cartItems,
@@ -46,9 +72,28 @@ const POSView = () => {
     setAmountReceived,
     processSale
   } = usePayment({ cartItems, calculateTotal, setError });
+
+  // Detection hook for webcam functionality
+  const {
+    lastDetection,
+    detectionLoading,
+    showWebcam,
+    setShowWebcam,
+    isWebcamReady,
+    setIsWebcamReady,
+    webcamRef,
+    captureFrame,
+    detectFromImage,
+    addDetectedProductToCart
+  } = useDetection({ products, addToCart, setError });
   
   // Estado de carga combinado
-  const loading = productsLoading || paymentLoading;
+  const combinedLoading = loading || paymentLoading || detectionLoading;
+
+  // Load products on mount
+  useEffect(() => {
+    loadProducts();
+  }, []);
   
   // Escuchar evento para limpiar carrito después de venta exitosa
   useEffect(() => {
@@ -59,6 +104,21 @@ const POSView = () => {
     window.addEventListener('sale-completed', handleSaleCompleted);
     return () => window.removeEventListener('sale-completed', handleSaleCompleted);
   }, [setCartItems, loadProducts]);
+
+  // Handle webcam detection
+  const handleDetection = async () => {
+    try {
+      const imageData = await captureFrame();
+      if (imageData) {
+        const detection = await detectFromImage(imageData);
+        if (detection && detection.productInfo) {
+          addDetectedProductToCart(detection.label, detection.productInfo);
+        }
+      }
+    } catch (error) {
+      setError(error.message);
+    }
+  };
 
   return (
     <div className={styles['pos-view-container']}>
@@ -114,16 +174,71 @@ const POSView = () => {
           </Col>
         </Row>
 
-        {/* Middle Section: Empty Placeholder */}
+        {/* Middle Section: Detection Controls */}
         <div className={styles['pos-middle-section']}>
-          {/* Add content or a placeholder here */}
+          <Row>
+            <Col md={12}>
+              <Card className="mb-3">
+                <Card.Header>
+                  <h6 className="mb-0">Product Detection</h6>
+                </Card.Header>
+                <Card.Body>
+                  <div className="d-flex gap-2 align-items-center">
+                    <Button
+                      variant={showWebcam ? "danger" : "primary"}
+                      onClick={() => setShowWebcam(!showWebcam)}
+                      disabled={combinedLoading}
+                    >
+                      {showWebcam ? "Close Camera" : "Open Camera"}
+                    </Button>
+                    
+                    {showWebcam && (
+                      <Button
+                        variant="success"
+                        onClick={handleDetection}
+                        disabled={!isWebcamReady || detectionLoading}
+                      >
+                        {detectionLoading ? "Detecting..." : "Detect Product"}
+                      </Button>
+                    )}
+                    
+                    {lastDetection && (
+                      <div className="ms-3">
+                        <small className="text-muted">
+                          Last detection: {lastDetection.label} ({lastDetection.similarity}%)
+                        </small>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {showWebcam && (
+                    <div className="mt-3">
+                      <Webcam
+                        ref={webcamRef}
+                        audio={false}
+                        screenshotFormat="image/jpeg"
+                        width={320}
+                        height={240}
+                        onUserMedia={() => setIsWebcamReady(true)}
+                        onUserMediaError={() => {
+                          setError("Error accessing camera");
+                          setShowWebcam(false);
+                        }}
+                        style={{ border: "1px solid #ddd", borderRadius: "4px" }}
+                      />
+                    </div>
+                  )}
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
         </div>
 
         {/* Bottom Section: Product List */}
         <div className={styles['pos-bottom-section']}>
           <ProductList
             products={filteredProducts}
-            loading={productsLoading}
+            loading={loading}
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
             addToCart={addToCart}

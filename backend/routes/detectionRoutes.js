@@ -29,6 +29,18 @@ router.post('/detect', async (req, res) => {
 });
 
 // Obtener detecciones recientes
+router.get('/recent', async (req, res) => {
+  try {
+    const limitParam = parseInt(req.query.limit) || 10;
+    const detections = await detectionService.getRecentDetections(limitParam);
+    res.json({ detections });
+  } catch (error) {
+    Logger.error("Error al obtener detecciones:", error);
+    res.status(500).json({ error: "Error al obtener detecciones", detections: [] });
+  }
+});
+
+// Mantener compatibilidad con ruta anterior
 router.get('/detections', async (req, res) => {
   try {
     const limitParam = parseInt(req.query.limit) || 10;
@@ -60,7 +72,18 @@ router.post('/detection-mode', (req, res) => {
   });
 });
 
-// Consultar estado de detección continua
+// Obtener estado de detección (ruta simplificada)
+router.get('/status', async (req, res) => {
+  try {
+    const status = await detectionService.getDetectionStatus();
+    res.json(status);
+  } catch (error) {
+    Logger.error("Error al obtener estado de detección:", error);
+    res.status(500).json({ error: "Error al obtener estado de detección" });
+  }
+});
+
+// Consultar estado de detección continua (mantener compatibilidad)
 router.get('/detection/continuous/status', async (req, res) => {
   try {
     const status = await detectionService.getDetectionStatus();

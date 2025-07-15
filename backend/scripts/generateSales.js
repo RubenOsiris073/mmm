@@ -256,7 +256,7 @@ async function generateSales() {
     
     // Obtener productos existentes
     Logger.info('Obteniendo productos desde Firebase...');
-    const productosSnapshot = await getDocs(collection(db, COLLECTIONS.PRODUCTS));
+    const productosSnapshot = await firestore.collection(COLLECTIONS.PRODUCTS).get();
     
     if (productosSnapshot.empty) {
       throw new Error('No hay productos en la base de datos. Ejecuta primero initializeProducts.js');
@@ -274,7 +274,7 @@ async function generateSales() {
     
     // Limpiar ventas existentes (opcional)
     Logger.info('🧹 Limpiando ventas existentes...');
-    const existingSales = await getDocs(collection(db, COLLECTIONS.SALES));
+    const existingSales = await firestore.collection(COLLECTIONS.SALES).get();
     if (!existingSales.empty) {
       Logger.info(`⚠️ Se encontraron ${existingSales.size} ventas existentes. Se agregarán las nuevas ventas.`);
     }
@@ -330,7 +330,7 @@ async function generateSales() {
       // Guardar lote en Firebase
       const promesasVentas = ventasLote.map(async (venta, index) => {
         try {
-          const docRef = await addDoc(collection(db, COLLECTIONS.SALES), venta);
+          const docRef = await firestore.collection(COLLECTIONS.SALES).add(venta);
           return { id: docRef.id, ...venta };
         } catch (error) {
           Logger.error(`Error creando venta ${ventasCreadas + index + 1}:`, error);
