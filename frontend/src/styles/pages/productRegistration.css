@@ -56,9 +56,10 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
-  padding: 2rem 3rem;
-  margin: 0 1.5rem;
-  width: calc(100% - 3rem);
+  padding: 3rem 4rem;
+  margin: 0 0.5rem;
+  width: calc(100% - 1rem);
+  min-height: 600px;
 }
 
 /* Estilos para las tarjetas de selección */
