@@ -15,7 +15,7 @@
 .product-registration-header {
   background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
   color: white;
-  padding: 2rem 2rem 3rem 2rem;
+  padding: 2rem 3rem 3rem 3rem;
   margin-bottom: 2rem;
   border-radius: 0 0 1rem 1rem;
   box-shadow: 0 4px 20px rgba(30, 58, 138, 0.15);
@@ -25,8 +25,9 @@
 .product-header-content {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  max-width: 100%;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .product-header-left {
@@ -57,6 +58,8 @@
   box-shadow: var(--shadow-sm);
   overflow: hidden;
   padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 /* Estilos para las tarjetas de selección */
@@ -75,14 +78,16 @@
 .method-card {
   background: var(--bg-surface);
   border: 2px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 2rem;
+  border-radius: 1.5rem;
+  padding: 2.5rem;
   text-align: center;
   transition: all 0.3s ease;
   height: 100%;
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
 .method-card::before {
