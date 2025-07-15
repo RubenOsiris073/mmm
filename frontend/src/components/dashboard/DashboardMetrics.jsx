@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaShoppingCart, FaDollarSign, FaBoxes, FaUsers, FaArrowUp, FaArrowDown, FaClock, FaTarget } from 'react-icons/fa';
+import { FaShoppingCart, FaDollarSign, FaBoxes, FaUsers, FaArrowUp, FaArrowDown, FaClock, FaBullseye } from 'react-icons/fa';
 
 const MetricCard = ({ icon: Icon, iconClass, value, label, change, changeType }) => (
   <div className="metric-card">
@@ -75,7 +75,7 @@ export const DashboardMetrics = ({ metrics, formatCurrency }) => {
         changeType="positive"
       />
       <MetricCard
-        icon={FaTarget}
+        icon={FaBullseye}
         iconClass="target"
         value="68%"
         label="Meta Mensual"
