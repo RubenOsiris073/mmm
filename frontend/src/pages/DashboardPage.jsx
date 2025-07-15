@@ -443,7 +443,7 @@ const DashboardPage = () => {
 
   return (
     <div className="dashboard-main-container">
-      {/* Header del Dashboard con fondo azul */}
+      {/* Header del Dashboard con fondo azul que incluye las métricas */}
       <div className="dashboard-blue-header">
         <div className="dashboard-header-content">
           <div className="dashboard-header-left">
@@ -465,21 +465,26 @@ const DashboardPage = () => {
             <span className="ms-2">Actualizar</span>
           </Button>
         </div>
+        
+        {/* Métricas principales dentro del header azul */}
+        {chartData && (
+          <div className="dashboard-metrics-in-header">
+            <DashboardMetrics 
+              metrics={chartData.metrics}
+              formatCurrency={formatCurrency}
+            />
+          </div>
+        )}
       </div>
 
       {error && (
-        <Alert variant="danger" className="mb-4" dismissible onClose={() => setError(null)}>
+        <Alert variant="danger" className="mb-4 mx-4" dismissible onClose={() => setError(null)}>
           {error}
         </Alert>
       )}
 
       {chartData && (
         <>
-          {/* Métricas principales */}
-          <DashboardMetrics 
-            metrics={chartData.metrics}
-            formatCurrency={formatCurrency}
-          />
 
           {/* Gráficos principales en grid mejorado */}
           <div className="dashboard-charts-grid">

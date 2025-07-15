@@ -20,10 +20,11 @@
 .dashboard-blue-header {
   background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
   color: white;
-  padding: 2rem;
+  padding: 2rem 2rem 3rem 2rem;
   margin-bottom: 2rem;
   border-radius: 0 0 1rem 1rem;
   box-shadow: 0 4px 20px rgba(30, 58, 138, 0.15);
+  position: relative;
 }
 
 .dashboard-header-content {
@@ -88,6 +89,30 @@
   border-color: rgba(255, 255, 255, 0.4);
   color: white;
   box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+}
+
+/* Métricas dentro del header azul */
+.dashboard-metrics-in-header {
+  margin-top: 2rem;
+}
+
+.dashboard-metrics-in-header .dashboard-metrics {
+  padding: 0;
+  margin-bottom: 0;
+}
+
+.dashboard-metrics-in-header .metric-card {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  min-height: 140px;
+}
+
+.dashboard-metrics-in-header .metric-card:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
 }
 
 /* Ajustes para contenido del dashboard dentro del sistema de sidebar */
@@ -729,7 +754,7 @@
   }
   
   .dashboard-blue-header {
-    padding: 1.5rem 1rem;
+    padding: 1.5rem 1rem 2rem 1rem;
     margin-bottom: 1.5rem;
   }
   
@@ -759,6 +784,19 @@
   .dashboard-refresh-btn {
     align-self: stretch;
     justify-content: center;
+  }
+  
+  .dashboard-metrics-in-header {
+    margin-top: 1.5rem;
+  }
+  
+  .dashboard-metrics-in-header .dashboard-metrics {
+    gap: var(--space-3);
+  }
+  
+  .dashboard-metrics-in-header .metric-card {
+    min-height: 120px;
+    padding: var(--space-4);
   }
   
   .dashboard-metrics {
