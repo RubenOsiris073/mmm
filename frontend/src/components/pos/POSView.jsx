@@ -163,15 +163,17 @@ const POSView = () => {
         </div>
 
         {/* Bottom Section: Product List */}
-        <div className={styles['pos-bottom-section']}>
-          <ProductList
-            products={filteredProducts}
-            loading={loading}
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            addToCart={addToCart}
-          />
-        </div>
+        {showProductList && (
+          <div className={styles['pos-bottom-section']}>
+            <ProductList
+              products={filteredProducts}
+              loading={loading}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              addToCart={addToCart}
+            />
+          </div>
+        )}
 
         <PaymentModal
           show={showPaymentModal}

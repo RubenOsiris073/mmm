@@ -205,15 +205,7 @@ const Navigation = ({ onSidebarToggle }) => {
         <div className="sidebar-section">
           {!collapsed && <div className="sidebar-section-title">Registro</div>}
           
-          <Nav.Link 
-            as={Link} 
-            to="/products/new" 
-            className={`sidebar-menu-item ${isActive('/products/new') ? 'active' : ''}`}
-          >
-            <FaReceipt className="sidebar-icon" />
-            {!collapsed && <span>Nuevo Producto</span>}
-          </Nav.Link>
-          
+
           <Nav.Link 
             as={Link} 
             to="/products/register" 
