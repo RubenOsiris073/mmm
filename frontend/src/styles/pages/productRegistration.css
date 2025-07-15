@@ -15,7 +15,7 @@
 .product-registration-header {
   background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
   color: white;
-  padding: 2rem 3rem 3rem 3rem;
+  padding: 1.5rem 2rem;
   margin-bottom: 2rem;
   border-radius: 0 0 1rem 1rem;
   box-shadow: 0 4px 20px rgba(30, 58, 138, 0.15);
@@ -25,7 +25,7 @@
 .product-header-content {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   max-width: 1200px;
   margin: 0 auto;
 }

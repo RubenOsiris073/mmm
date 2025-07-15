@@ -197,7 +197,8 @@ const ProductRegistrationPage = () => {
       <Container fluid className="py-4">
         <Row className="justify-content-center">
           <Col lg={10}>
-            <div className="product-registration-content">
+            <div className="product-registration-content"
+                 style={{ marginTop: '2rem' }}>
               {error && (
                 <Alert variant="danger" dismissible onClose={() => setError(null)}>
                   {error}
