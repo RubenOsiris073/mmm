@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
-import StripeCardPayment from './StripeCardPayment';
-import SimpleQRPayment from './SimpleQRPayment';
 import MobileWalletPayment from './MobileWalletPayment';
 import './styles/PaymentModal.css';
 
@@ -17,9 +15,6 @@ const PaymentModal = ({
   loading,
   cartItems
 }) => {
-  const [isFormValid, setIsFormValid] = useState(false);
-  const [qrPaymentConfirmed, setQrPaymentConfirmed] = useState(false);
-  const [cardPaymentData, setCardPaymentData] = useState(null);
   const [walletPaymentData, setWalletPaymentData] = useState(null);
 
   // Verificamos que todas las funciones sean realmente funciones
@@ -35,53 +30,11 @@ const PaymentModal = ({
     if (loading) return;
     
     // Limpiar estados
-    setQrPaymentConfirmed(false);
-    setCardPaymentData(null);
     setWalletPaymentData(null);
     
     if (typeof onHide === 'function') {
       onHide();
     }
-  };
-
-  // Validar formulario según método de pago
-  useEffect(() => {
-    let valid = false;
-    
-    if (paymentMethod === 'efectivo') {
-      valid = parseFloat(amountReceived || 0) >= total;
-    } else if (paymentMethod === 'qr-spei') {
-      valid = qrPaymentConfirmed;
-    } else if (paymentMethod === 'tarjeta') {
-      valid = cardPaymentData !== null;
-    } else if (paymentMethod === 'mobile-wallet') {
-      valid = walletPaymentData !== null;
-    }
-    
-    setIsFormValid(valid);
-  }, [amountReceived, total, paymentMethod, qrPaymentConfirmed, cardPaymentData, walletPaymentData]);
-
-  // Manejar confirmación de pago QR
-  const handleQRPaymentConfirmed = (paymentData) => {
-    setQrPaymentConfirmed(true);
-    console.log('Pago QR confirmado:', paymentData);
-  };
-
-  // Manejar éxito del pago con tarjeta
-  const handleCardPaymentSuccess = (paymentData) => {
-    console.log('Pago con tarjeta exitoso:', paymentData);
-    setCardPaymentData(paymentData);
-    
-    // Procesar la venta automáticamente después del pago exitoso
-    if (handleProcessSale) {
-      handleProcessSale(paymentData);
-    }
-  };
-
-  // Manejar error del pago con tarjeta
-  const handleCardPaymentError = (error) => {
-    console.error('Error en pago con tarjeta:', error);
-    setCardPaymentData(null);
   };
   
   // Manejar pago confirmado desde la wallet móvil
@@ -97,8 +50,6 @@ const PaymentModal = ({
 
   // Reiniciar estados cuando se cambia el método de pago
   useEffect(() => {
-    setQrPaymentConfirmed(false);
-    setCardPaymentData(null);
     setWalletPaymentData(null);
   }, [paymentMethod]);
 
@@ -124,8 +75,6 @@ const PaymentModal = ({
               disabled={loading}
               className="payment-form-select"
             >
-              <option value="tarjeta">Tarjeta de Crédito/Débito</option>
-              <option value="qr-spei">Transferencia QR SPEI</option>
               <option value="mobile-wallet">App Móvil Wallet</option>
             </Form.Select>
           </Form.Group>
@@ -163,58 +112,23 @@ const PaymentModal = ({
             </>
           )} */}
 
-          {paymentMethod === 'tarjeta' && (
-            <StripeCardPayment
-              amount={total}
-              onPaymentSuccess={handleCardPaymentSuccess}
-              onPaymentError={handleCardPaymentError}
-              loading={loading}
-            />
-          )}
-
-          {paymentMethod === 'qr-spei' && (
-            <SimpleQRPayment 
-              amount={total}
-              concept={`POS Sale ${Date.now()}`}
-              onPaymentConfirmed={handleQRPaymentConfirmed}
-            />
-          )}
-          
-          {paymentMethod === 'mobile-wallet' && (
-            <MobileWalletPayment
-              amount={total}
-              items={cartItems}
-              onPaymentConfirmed={handleWalletPaymentConfirmed}
-            />
-          )}
-          
-          {(paymentMethod !== 'qr-spei' && paymentMethod !== 'tarjeta' && paymentMethod !== 'mobile-wallet') && (
-            <div className="payment-total-section">
-              <h5>Total a Pagar: ${total.toFixed(2)}</h5>
-            </div>
-          )}
+          <MobileWalletPayment
+            amount={total}
+            items={cartItems}
+            onPaymentConfirmed={handleWalletPaymentConfirmed}
+          />
         </Form>
       </Modal.Body>
       <Modal.Footer className="payment-modal-footer">
         <Button variant="outline-secondary" onClick={safeOnHide} disabled={loading} className="payment-btn-cancel">
           Cancelar
         </Button>
-        {paymentMethod !== 'tarjeta' && paymentMethod !== 'mobile-wallet' && (
-          <Button 
-            variant="dark" 
-            onClick={safeHandleProcessSale}
-            disabled={!isFormValid || loading}
-            className="payment-btn-confirm"
-          >
-            {loading ? 'Procesando...' : 'Confirmar Pago'}
-          </Button>
-        )}
-        {(paymentMethod === 'tarjeta' && cardPaymentData) || (paymentMethod === 'mobile-wallet' && walletPaymentData) ? (
+        {walletPaymentData && (
           <div className="payment-success-message">
             <i className="fas fa-check-circle me-2"></i>
             Pago procesado exitosamente
           </div>
-        ) : null}
+        )}
       </Modal.Footer>
     </Modal>
   );

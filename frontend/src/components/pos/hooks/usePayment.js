@@ -4,12 +4,12 @@ import apiService from '../../../services/apiService';
 
 const usePayment = ({ cartItems, calculateTotal, setError }) => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('efectivo');
+  const [paymentMethod, setPaymentMethod] = useState('mobile-wallet');
   const [amountReceived, setAmountReceived] = useState('');
   const [loading, setLoading] = useState(false);
 
   // Función para procesar la venta - SIN campo clientName
-  const processSale = useCallback(async () => {
+  const processSale = useCallback(async (paymentData = null) => {
     if (cartItems.length === 0) {
       setError('No hay productos en el carrito');
       setTimeout(() => setError(null), 3000);
@@ -31,10 +31,16 @@ const usePayment = ({ cartItems, calculateTotal, setError }) => {
       // Preparar los datos de la venta - Cliente general por defecto
       const saleData = {
         client: 'Cliente general',
-        paymentMethod: paymentMethod,
+        paymentMethod: paymentData ? paymentData.method : paymentMethod,
         total: total,
         amountReceived: paymentMethod === 'efectivo' ? parseFloat(amountReceived) : total,
         change: paymentMethod === 'efectivo' ? parseFloat(amountReceived) - total : 0,
+        // Agregar datos de pago de Stripe si están disponibles
+        ...(paymentData && {
+          paymentIntentId: paymentData.paymentIntentId,
+          stripePaymentStatus: paymentData.status,
+          stripeCurrency: paymentData.currency
+        }),
         items: cartItems.map(item => {
           console.log("Procesando item del carrito:", item);
           return {
