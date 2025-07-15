@@ -464,9 +464,11 @@ const DashboardPage = () => {
       <div className="dashboard-blue-header">
         <div className="dashboard-header-content">
           <div className="dashboard-header-left">
-            <FaBoxes className="dashboard-header-icon" />
             <div>
-              <h2 className="dashboard-header-title">Dashboard Analytics</h2>
+              <h2 className="dashboard-header-title">
+                <FaBoxes className="me-3" />
+                Dashboard Analytics
+              </h2>
               <p className="dashboard-header-subtitle">Visualice, analice y administre las métricas de su negocio</p>
             </div>
           </div>
