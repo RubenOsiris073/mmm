@@ -46,7 +46,20 @@ const ProductRegistrationPage = () => {
 
       // Search for existing product by class_name/label
       const products = await apiService.getProducts();
-      const productsData = products.data || products;
+      console.log('Products response:', products);
+      
+      // Extraer correctamente el array de productos
+      let productsData = [];
+      if (products.data && Array.isArray(products.data.data)) {
+        productsData = products.data.data;
+      } else if (products.data && Array.isArray(products.data)) {
+        productsData = products.data;
+      } else if (Array.isArray(products)) {
+        productsData = products;
+      }
+      
+      console.log('Products data array:', productsData);
+      console.log('Is array?', Array.isArray(productsData));
       
       // Look for product with matching detection label or similar name
       const foundProduct = productsData.find(product => 
