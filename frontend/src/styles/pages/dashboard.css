@@ -94,6 +94,7 @@
 /* Métricas dentro del header azul */
 .dashboard-metrics-in-header {
   margin-top: 2rem;
+  padding: 0 1rem;
 }
 
 .dashboard-metrics-in-header .dashboard-metrics {
