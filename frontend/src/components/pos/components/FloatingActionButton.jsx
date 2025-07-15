@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FaUser, FaSignOutAlt, FaSun, FaMoon, FaCog, FaPlus, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useProductVisibility } from '../../../contexts/ProductVisibilityContext';
@@ -30,6 +31,19 @@ const FloatingActionButton = () => {
     setIsOpen(false);
   };
 
+  const handleUserInfo = () => {
+    const userName = getUserDisplayName();
+    toast.info(`Usuario actual: ${userName}`, {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+    setIsOpen(false);
+  };
+
   const getUserDisplayName = () => {
     if (user?.displayName) {
       return user.displayName;
@@ -55,7 +69,11 @@ const FloatingActionButton = () => {
 
       <div className={`fab-menu ${isOpen ? 'fab-menu-open' : ''}`}>
         {/* Usuario Info */}
-        <div className="fab-item fab-user" title={getUserDisplayName()}>
+        <div 
+          className="fab-item fab-user" 
+          onClick={handleUserInfo}
+          title={getUserDisplayName()}
+        >
           <FaUser className="fab-item-icon" />
           <span className="fab-tooltip">{getUserDisplayName()}</span>
         </div>
