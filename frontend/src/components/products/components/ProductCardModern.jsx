@@ -29,29 +29,81 @@ const ProductCardModern = ({ product, onManage }) => {
         {/* Información básica del producto */}
         <div className="mb-2">
           <h5 className="product-card-title">{product.nombre || 'Producto sin nombre'}</h5>
+          
+          {/* Marca si existe */}
+          {product.marca && (
+            <p className="product-card-brand mb-1">
+              <small className="text-muted">
+                <i className="bi bi-tag me-1"></i>
+                {product.marca}
+              </small>
+            </p>
+          )}
+          
           <p className="product-card-availability mb-1">
+            <i className="bi bi-box me-1"></i>
             {product.cantidad || 0} disponible{(product.cantidad || 0) !== 1 ? 's' : ''}
           </p>
-          <h4 className="product-card-price mb-2">${parseFloat(product.precio || 0).toFixed(2)}</h4>
+          <h4 className="product-card-price mb-2">
+            <i className="bi bi-currency-dollar me-1"></i>
+            ${parseFloat(product.precio || 0).toFixed(2)}
+          </h4>
         </div>
         
-        {/* Código o descripción corta si existe */}
-        {(product.codigo || product.descripcion) && (
-          <div className="mb-2">
-            {product.codigo && (
-              <p className="product-card-code mb-1">
-                <small>Código: {product.codigo}</small>
-              </p>
-            )}
-            {product.descripcion && (
-              <p className="product-card-description small text-muted mb-0">
-                {product.descripcion.length > 50 
-                  ? `${product.descripcion.substring(0, 50)}...` 
-                  : product.descripcion}
-              </p>
-            )}
-          </div>
-        )}
+        {/* Información adicional */}
+        <div className="mb-2">
+          {/* Código del producto */}
+          {product.codigo && (
+            <p className="product-card-code mb-1">
+              <small>
+                <i className="bi bi-upc-scan me-1"></i>
+                <strong>Código:</strong> {product.codigo}
+              </small>
+            </p>
+          )}
+          
+          {/* Peso o volumen si existe */}
+          {(product.peso || product.volumen) && (
+            <p className="product-card-weight mb-1">
+              <small>
+                <i className="bi bi-speedometer2 me-1"></i>
+                <strong>
+                  {product.peso ? 'Peso:' : 'Volumen:'}
+                </strong> {product.peso || product.volumen}
+              </small>
+            </p>
+          )}
+          
+          {/* Unidad de medida */}
+          {product.unidadMedida && (
+            <p className="product-card-unit mb-1">
+              <small>
+                <i className="bi bi-rulers me-1"></i>
+                <strong>Unidad:</strong> {product.unidadMedida}
+              </small>
+            </p>
+          )}
+          
+          {/* Categoría */}
+          {product.categoria && (
+            <p className="product-card-category mb-1">
+              <small>
+                <i className="bi bi-collection me-1"></i>
+                <strong>Categoría:</strong> {product.categoria}
+              </small>
+            </p>
+          )}
+          
+          {/* Descripción corta si existe */}
+          {product.descripcion && (
+            <p className="product-card-description small text-muted mb-0">
+              <i className="bi bi-info-circle me-1"></i>
+              {product.descripcion.length > 60 
+                ? `${product.descripcion.substring(0, 60)}...` 
+                : product.descripcion}
+            </p>
+          )}
+        </div>
         
         {/* Botones de acción para gestionar el producto */}
         <div className="mt-auto pt-2">

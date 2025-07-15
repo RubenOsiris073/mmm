@@ -113,19 +113,52 @@ const ProductCard = ({ product, onManage }) => {
           {product.precio && (
             <div className="mb-3">
               <Badge className="product-price-badge">
+                <i className="bi bi-currency-dollar me-1"></i>
                 ${parseFloat(product.precio).toFixed(2)}
               </Badge>
             </div>
           )}
           
+          {/* Marca si existe */}
+          {product.marca && (
+            <div className="mb-2">
+              <Badge className="product-brand-badge bg-secondary">
+                <i className="bi bi-tag me-1"></i>
+                {product.marca}
+              </Badge>
+            </div>
+          )}
+          
           <Badge className={`product-stock-badge ${stockStatus} d-block mb-2`}>
+            <i className="bi bi-box me-1"></i>
             Stock: {currentStock} {product.unidadMedida || 'unidades'}
           </Badge>
+          
+          {/* Peso o volumen si existe */}
+          {(product.peso || product.volumen) && (
+            <div className="mb-2">
+              <Badge className="product-weight-badge bg-info">
+                <i className="bi bi-speedometer2 me-1"></i>
+                {product.peso ? `Peso: ${product.peso}` : `Vol: ${product.volumen}`}
+              </Badge>
+            </div>
+          )}
           
           {product.codigo && (
             <div className="mt-2">
               <Badge className="product-code-badge">
+                <i className="bi bi-upc-scan me-1"></i>
                 {product.codigo}
+              </Badge>
+            </div>
+          )}
+          
+          {/* Categoría como badge pequeño */}
+          {product.categoria && (
+            <div className="mt-2">
+              <Badge className="product-category-badge bg-light text-dark" style={{ fontSize: '0.7rem' }}>
+                <i className="bi bi-collection me-1"></i>
+                {product.categoria}
               </Badge>
             </div>
           )}

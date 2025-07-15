@@ -7,7 +7,6 @@ import useProductSync from './hooks/useProductSync';
 import useProductFilters from './hooks/useProductFilters';
 
 // Componentes modulares
-import ProductCard from './components/ProductCard';
 import ProductCardModern from './components/ProductCardModern';
 import ProductManagementModal from './ProductManagementModal';
 
@@ -15,7 +14,6 @@ import ProductManagementModal from './ProductManagementModal';
 import { getCategoryIcon, formatCategoryTitle } from './utils/categoryUtils';
 
 const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
-  const [viewMode, setViewMode] = useState('modern'); // 'modern' o 'grid'
   const [activeCategory, setActiveCategory] = useState('all');
   
   // Estados para el modal de gestión
@@ -158,38 +156,7 @@ const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
     );
   };
 
-  // Renderizar vista de lista (versión original)
-  // La vista de lista ha sido eliminada
 
-  // Renderizar vista de cuadrícula (versión original)
-  const renderGridView = () => {
-    return Object.entries(groupedProducts).map(([category, categoryProducts]) => (
-      <div key={category} className="mb-5">
-        <div className="category-header">
-          <h4 className="d-flex align-items-center">
-            <span className="me-3 fs-4">
-              {getCategoryIcon(category)}
-            </span>
-            {formatCategoryTitle(category)}
-            <Badge className="category-badge-modern">
-              {categoryProducts.length}
-            </Badge>
-          </h4>
-        </div>
-        
-        <Row xs={1} sm={2} md={3} lg={4} xl={5} className="g-4">
-          {categoryProducts.map(product => (
-            <Col key={product.id}>
-              <ProductCard 
-                product={product} 
-                onManage={handleManageProduct}
-              />
-            </Col>
-          ))}
-        </Row>
-      </div>
-    ));
-  };
 
   // Estado de carga
   const isLoading = loading || syncLoading;
@@ -217,25 +184,7 @@ const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
 
   return (
     <div className="product-grid-container">
-      {/* Botones de cambio de vista */}
-      <div className="d-flex justify-content-end mb-3">
-        <div className="btn-group view-mode-buttons">
-          <Button 
-            variant={viewMode === 'modern' ? 'primary' : 'outline-secondary'}
-            onClick={() => setViewMode('modern')}
-            size="sm"
-          >
-            <i className="bi bi-grid-3x3-gap me-1"></i> Moderno
-          </Button>
-          <Button 
-            variant={viewMode === 'grid' ? 'primary' : 'outline-secondary'}
-            onClick={() => setViewMode('grid')}
-            size="sm"
-          >
-            <i className="bi bi-grid me-1"></i> Clásico
-          </Button>
-        </div>
-      </div>
+
 
       {/* Indicador de carga */}
       {isLoading && (
@@ -249,11 +198,7 @@ const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
       {/* Contenido principal */}
       {!isLoading && (
         <div>
-          {viewMode === 'modern' ? (
-            renderModernView()
-          ) : (
-            renderGridView()
-          )}
+          {renderModernView()}
         </div>
       )}
       
