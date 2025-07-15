@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Alert } from 'react-bootstrap';
 import { FaCamera, FaBoxOpen, FaPlus } from 'react-icons/fa';
+import '../styles/pages/productRegistration.css';
 import CameraDetectionComponent from '../components/products/CameraDetectionComponent';
 import ProductRegistrationForm from '../components/products/ProductRegistrationForm';
 import ProductUpdateForm from '../components/products/ProductUpdateForm';
@@ -177,17 +178,26 @@ const ProductRegistrationPage = () => {
   };
 
   return (
-    <Container fluid className="py-4">
-      <Row className="justify-content-center">
-        <Col lg={10}>
-          <Card>
-            <Card.Header className="bg-primary text-white">
-              <h4 className="mb-0">
-                <FaBoxOpen className="me-2" />
-                Registro de Productos con Detección
-              </h4>
-            </Card.Header>
-            <Card.Body>
+    <div className="product-registration-container">
+      {/* Header azul estilo dashboard */}
+      <div className="product-registration-header">
+        <div className="product-header-content">
+          <div className="product-header-left">
+            <div>
+              <h2 className="product-header-title">
+                <FaBoxOpen className="me-3" />
+                Gestión de Inventario
+              </h2>
+              <p className="product-header-subtitle">Registre y administre productos con detección automática o manual</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Container fluid className="py-4">
+        <Row className="justify-content-center">
+          <Col lg={10}>
+            <div className="product-registration-content">
               {error && (
                 <Alert variant="danger" dismissible onClose={() => setError(null)}>
                   {error}
@@ -202,44 +212,40 @@ const ProductRegistrationPage = () => {
 
               {/* Step 1: Selection */}
               {currentStep === 'selection' && (
-                <div className="text-center py-4">
-                  <h5 className="mb-4">Seleccione el método de registro</h5>
+                <div className="selection-cards-container">
+                  <h3 className="selection-title">Seleccione el método de registro</h3>
                   <Row className="justify-content-center">
                     <Col md={6}>
-                      <Card className="h-100 border-primary">
-                        <Card.Body className="text-center">
-                          <FaCamera size={48} className="text-primary mb-3" />
-                          <h6>Registro con Cámara</h6>
-                          <p className="text-muted">
-                            Use la cámara para detectar productos automáticamente
-                          </p>
-                          <Button 
-                            variant="primary" 
-                            onClick={() => setCurrentStep('camera')}
-                            disabled={loading}
-                          >
-                            Activar Cámara
-                          </Button>
-                        </Card.Body>
-                      </Card>
+                      <div className="method-card primary" onClick={() => setCurrentStep('camera')}>
+                        <FaCamera className="method-icon primary" />
+                        <h4 className="method-title">Registro con Cámara</h4>
+                        <p className="method-description">
+                          Use la cámara para detectar productos automáticamente con inteligencia artificial
+                        </p>
+                        <Button 
+                          variant="primary" 
+                          className="method-button"
+                          disabled={loading}
+                        >
+                          Activar Cámara
+                        </Button>
+                      </div>
                     </Col>
                     <Col md={6}>
-                      <Card className="h-100 border-secondary">
-                        <Card.Body className="text-center">
-                          <FaPlus size={48} className="text-secondary mb-3" />
-                          <h6>Registro Manual</h6>
-                          <p className="text-muted">
-                            Registre productos manualmente sin cámara
-                          </p>
-                          <Button 
-                            variant="secondary" 
-                            onClick={() => setCurrentStep('product-registration')}
-                            disabled={loading}
-                          >
-                            Registro Manual
-                          </Button>
-                        </Card.Body>
-                      </Card>
+                      <div className="method-card secondary" onClick={() => setCurrentStep('product-registration')}>
+                        <FaPlus className="method-icon secondary" />
+                        <h4 className="method-title">Registro Manual</h4>
+                        <p className="method-description">
+                          Registre productos manualmente completando el formulario paso a paso
+                        </p>
+                        <Button 
+                          variant="secondary" 
+                          className="method-button"
+                          disabled={loading}
+                        >
+                          Registro Manual
+                        </Button>
+                      </div>
                     </Col>
                   </Row>
                 </div>
@@ -247,10 +253,13 @@ const ProductRegistrationPage = () => {
 
               {/* Step 2: Camera Detection */}
               {currentStep === 'camera' && (
-                <div>
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h5>Detección por Cámara</h5>
-                    <Button variant="outline-secondary" onClick={resetFlow}>
+                <div className="step-container">
+                  <div className="step-header">
+                    <h3 className="step-title">
+                      <FaCamera className="me-2" />
+                      Detección por Cámara
+                    </h3>
+                    <Button variant="outline-secondary" className="back-button" onClick={resetFlow}>
                       Volver
                     </Button>
                   </div>
@@ -264,10 +273,13 @@ const ProductRegistrationPage = () => {
 
               {/* Step 3: Product Update (Existing Product) */}
               {currentStep === 'product-update' && existingProduct && (
-                <div>
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h5>Actualizar Stock - Producto Existente</h5>
-                    <Button variant="outline-secondary" onClick={resetFlow}>
+                <div className="step-container">
+                  <div className="step-header">
+                    <h3 className="step-title">
+                      <FaBoxOpen className="me-2" />
+                      Actualizar Stock - Producto Existente
+                    </h3>
+                    <Button variant="outline-secondary" className="back-button" onClick={resetFlow}>
                       Nuevo Registro
                     </Button>
                   </div>
@@ -282,12 +294,13 @@ const ProductRegistrationPage = () => {
 
               {/* Step 4: Product Registration (New Product) */}
               {currentStep === 'product-registration' && (
-                <div>
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h5>
+                <div className="step-container">
+                  <div className="step-header">
+                    <h3 className="step-title">
+                      <FaPlus className="me-2" />
                       {detectionResult ? 'Registrar Nuevo Producto Detectado' : 'Registro Manual de Producto'}
-                    </h5>
-                    <Button variant="outline-secondary" onClick={resetFlow}>
+                    </h3>
+                    <Button variant="outline-secondary" className="back-button" onClick={resetFlow}>
                       Volver
                     </Button>
                   </div>
@@ -298,11 +311,11 @@ const ProductRegistrationPage = () => {
                   />
                 </div>
               )}
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-    </Container>
+            </div>
+          </Col>
+        </Row>
+      </Container>
+    </div>
   );
 };
 

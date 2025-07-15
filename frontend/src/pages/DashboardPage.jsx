@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Alert, Spinner, Button, Row, Col } from 'react-bootstrap';
-import { FaSyncAlt, FaBoxes } from 'react-icons/fa';
+import { FaSyncAlt, FaChartLine } from 'react-icons/fa';
 import apiService from '../services/apiService';
 import '../styles/pages/dashboard.css';
 
@@ -466,7 +466,7 @@ const DashboardPage = () => {
           <div className="dashboard-header-left">
             <div>
               <h2 className="dashboard-header-title">
-                <FaBoxes className="me-3" />
+                <FaChartLine className="me-3" />
                 Dashboard Analytics
               </h2>
               <p className="dashboard-header-subtitle">Visualice, analice y administre las métricas de su negocio</p>

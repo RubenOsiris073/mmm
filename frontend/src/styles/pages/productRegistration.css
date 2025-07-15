@@ -1,0 +1,237 @@
+/* ============================================
+   PÁGINA DE REGISTRO DE PRODUCTOS - ESTILOS
+   ============================================ */
+
+/* Contenedor principal */
+.product-registration-container {
+  padding: 0;
+  background-color: var(--bg-app);
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+/* Header azul estilo dashboard */
+.product-registration-header {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  color: white;
+  padding: 2rem 2rem 3rem 2rem;
+  margin-bottom: 2rem;
+  border-radius: 0 0 1rem 1rem;
+  box-shadow: 0 4px 20px rgba(30, 58, 138, 0.15);
+  position: relative;
+}
+
+.product-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 100%;
+}
+
+.product-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.product-header-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.product-header-subtitle {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0.25rem 0 0 0;
+  font-weight: 400;
+}
+
+/* Contenido de registro */
+.product-registration-content {
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  padding: 2rem;
+}
+
+/* Estilos para las tarjetas de selección */
+.selection-cards-container {
+  padding: 2rem 0;
+}
+
+.selection-title {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2rem;
+}
+
+.method-card {
+  background: var(--bg-surface);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  height: 100%;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.method-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(59, 130, 246, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.method-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+  border-color: var(--color-primary);
+}
+
+.method-card:hover::before {
+  opacity: 1;
+}
+
+.method-card.primary {
+  border-color: var(--color-primary);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0.02) 100%);
+}
+
+.method-card.secondary {
+  border-color: var(--color-secondary);
+  background: linear-gradient(135deg, rgba(108, 117, 125, 0.05) 0%, rgba(108, 117, 125, 0.02) 100%);
+}
+
+.method-icon {
+  font-size: 3rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.method-icon.primary {
+  color: var(--color-primary);
+}
+
+.method-icon.secondary {
+  color: var(--color-secondary);
+}
+
+.method-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 2;
+}
+
+.method-description {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+  position: relative;
+  z-index: 2;
+}
+
+.method-button {
+  position: relative;
+  z-index: 2;
+  padding: 0.75rem 2rem;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  transition: all 0.3s ease;
+}
+
+/* Estilos para los pasos */
+.step-container {
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.step-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.step-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.back-button {
+  padding: 0.5rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .product-registration-header {
+    padding: 1.5rem 1rem 2rem 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .product-header-title {
+    font-size: 1.5rem;
+  }
+  
+  .product-header-subtitle {
+    font-size: 0.875rem;
+  }
+  
+  .product-registration-content {
+    padding: 1.5rem;
+  }
+  
+  .method-card {
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .method-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .selection-cards-container {
+    padding: 1rem 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .step-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  
+  .back-button {
+    align-self: stretch;
+    text-align: center;
+  }
+}
