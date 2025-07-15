@@ -75,8 +75,8 @@ const CardPaymentForm = ({ amount, onPaymentSuccess, onPaymentError, loading: ex
   useEffect(() => {
     const createPaymentIntent = async () => {
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-        const response = await fetch(`${apiBaseUrl}/api/stripe/create-payment-intent`, {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const response = await fetch(`${apiUrl}/stripe/create-payment-intent`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
