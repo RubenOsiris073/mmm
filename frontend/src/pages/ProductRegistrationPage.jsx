@@ -198,7 +198,7 @@ const ProductRegistrationPage = () => {
         <Row className="justify-content-center">
           <Col lg={10}>
             <div className="product-registration-content"
-                 style={{ marginTop: '2rem' }}>
+                 style={{ marginTop: '1rem' }}>
               {error && (
                 <Alert variant="danger" dismissible onClose={() => setError(null)}>
                   {error}

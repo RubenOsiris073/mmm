@@ -137,7 +137,7 @@ frontend/src/components/pos/
 ├── PaymentModal.jsx              # Modal de pago
 └── hooks/
     ├── useCart.js                # Lógica del carrito
-    ├── usePayment.js             # Procesamiento de pagos
+    ├── usePayment.js            # Procesamiento de pagos
     └── useProductData.js         # ✅ Datos de productos consolidados
 
 3.4. SERVICIOS FRONTEND REFACTORIZADOS
