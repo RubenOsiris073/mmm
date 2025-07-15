@@ -94,7 +94,8 @@
 /* Métricas dentro del header azul */
 .dashboard-metrics-in-header {
   margin-top: 2rem;
-  padding: 0 1rem;
+  padding: 0 3rem !important;
+  box-sizing: border-box;
 }
 
 .dashboard-metrics-in-header .dashboard-metrics {
@@ -142,12 +143,20 @@
   color: var(--text-secondary);
 }
 
-.dashboard-metrics {
+.dashboard-metrics:not(.dashboard-metrics-in-header .dashboard-metrics) {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: var(--space-6);
   margin-bottom: var(--space-8);
   padding: 0 2rem;
+}
+
+.dashboard-metrics-in-header .dashboard-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-6);
+  margin-bottom: 0;
+  padding: 0;
 }
 
 @media (max-width: 1200px) {
@@ -789,6 +798,7 @@
   
   .dashboard-metrics-in-header {
     margin-top: 1.5rem;
+    padding: 0 2rem !important;
   }
   
   .dashboard-metrics-in-header .dashboard-metrics {
@@ -800,7 +810,7 @@
     padding: var(--space-4);
   }
   
-  .dashboard-metrics {
+  .dashboard-metrics:not(.dashboard-metrics-in-header .dashboard-metrics) {
     gap: var(--space-3);
     padding: 0 1rem;
   }
