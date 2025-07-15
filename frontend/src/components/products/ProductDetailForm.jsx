@@ -450,7 +450,7 @@ const ProductDetailForm = ({ initialProduct = null, onSuccess }) => {
         </div>
       </Form>
 
-      <style jsx>{`
+      <style>{`
         .modern-form-container {
           max-width: 100%;
           margin: 0 auto;

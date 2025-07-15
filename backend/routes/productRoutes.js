@@ -154,6 +154,59 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// PUT /api/products/:id - Actualizar producto completo
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+    
+    Logger.info(`Actualizando producto: ${id}`);
+    
+    // Validar que el producto existe
+    const existingProduct = await firestore.collection(COLLECTIONS.PRODUCTS).doc(id).get();
+    
+    if (!existingProduct.exists) {
+      return res.status(404).json({
+        success: false,
+        error: 'Producto no encontrado'
+      });
+    }
+    
+    // Preparar datos de actualización
+    const updatedData = {
+      ...updateData,
+      updatedAt: new Date(),
+      // Mantener campos importantes si no se proporcionan
+      id: existingProduct.id,
+      createdAt: existingProduct.data().createdAt || new Date()
+    };
+    
+    // Actualizar el producto
+    await existingProduct.ref.update(updatedData);
+    
+    // Obtener el producto actualizado
+    const updatedProduct = await existingProduct.ref.get();
+    
+    Logger.info(`Producto actualizado exitosamente: ${updatedData.nombre || id}`);
+    
+    res.json({
+      success: true,
+      message: 'Producto actualizado exitosamente',
+      product: {
+        id: updatedProduct.id,
+        ...updatedProduct.data()
+      }
+    });
+  } catch (error) {
+    Logger.error(`Error actualizando producto ${req.params.id}:`, error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al actualizar producto',
+      message: error.message
+    });
+  }
+});
+
 // PUT /api/products/:id/stock - Actualizar stock directamente en el producto
 router.put('/:id/stock', async (req, res) => {
   try {
