@@ -1,55 +1,49 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Card, Button, Alert, Spinner, Row, Col } from 'react-bootstrap';
 import { FaCamera, FaStop, FaSync } from 'react-icons/fa';
+import Webcam from 'react-webcam';
 
 const CameraDetectionComponent = ({ onDetectionResult, onError, loading }) => {
   const [isWebcamActive, setIsWebcamActive] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
   const [lastDetection, setLastDetection] = useState(null);
   const [webcamError, setWebcamError] = useState(null);
-  const videoRef = useRef(null);
-  const streamRef = useRef(null);
+  const webcamRef = useRef(null);
 
-  // Initialize webcam
-  const startWebcam = useCallback(async () => {
+  // Start webcam
+  const startWebcam = useCallback(() => {
     try {
       setWebcamError(null);
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          width: { ideal: 640 },
-          height: { ideal: 480 },
-          facingMode: 'environment' // Use back camera on mobile
-        } 
-      });
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        streamRef.current = stream;
-        setIsWebcamActive(true);
-      }
+      setIsWebcamActive(true);
     } catch (error) {
-      console.error('Error accessing webcam:', error);
-      setWebcamError('No se pudo acceder a la cámara. Verifique los permisos.');
-      onError?.('Error accessing camera: ' + error.message);
+      console.error('Error starting webcam:', error);
+      setWebcamError('No se pudo iniciar la cámara. Verifique los permisos.');
+      onError?.('Error starting camera: ' + error.message);
     }
   }, [onError]);
 
   // Stop webcam
   const stopWebcam = useCallback(() => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
-    }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
     setIsWebcamActive(false);
   }, []);
 
+  // Handle webcam ready
+  const handleWebcamReady = useCallback(() => {
+    console.log('Webcam is ready');
+  }, []);
+
+  // Handle webcam error
+  const handleWebcamError = useCallback((error) => {
+    console.error('Webcam error:', error);
+    setWebcamError('Error de cámara: ' + error.message);
+    setIsWebcamActive(false);
+    onError?.('Webcam error: ' + error.message);
+  }, [onError]);
+
   // Capture frame and send for detection
   const captureAndDetect = useCallback(async () => {
-    if (!videoRef.current || !isWebcamActive) {
-      onError?.('Camera not ready');
+    if (!webcamRef.current || !isWebcamActive) {
+      setWebcamError('Cámara no está lista');
       return;
     }
 
@@ -57,17 +51,12 @@ const CameraDetectionComponent = ({ onDetectionResult, onError, loading }) => {
       setIsDetecting(true);
       setWebcamError(null);
 
-      // Create canvas to capture frame
-      const canvas = document.createElement('canvas');
-      const video = videoRef.current;
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      // Capture screenshot from webcam
+      const imageData = webcamRef.current.getScreenshot();
       
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0);
-      
-      // Convert to base64
-      const imageData = canvas.toDataURL('image/jpeg', 0.8);
+      if (!imageData) {
+        throw new Error('No se pudo capturar la imagen');
+      }
       
       console.log('Sending image for detection...');
       
@@ -115,13 +104,6 @@ const CameraDetectionComponent = ({ onDetectionResult, onError, loading }) => {
     }
   }, [isWebcamActive, onDetectionResult, onError]);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      stopWebcam();
-    };
-  }, [stopWebcam]);
-
   return (
     <Card>
       <Card.Body>
@@ -143,13 +125,21 @@ const CameraDetectionComponent = ({ onDetectionResult, onError, loading }) => {
                 </div>
               ) : (
                 <div className="position-relative">
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    muted
+                  <Webcam
+                    ref={webcamRef}
+                    audio={false}
+                    screenshotFormat="image/jpeg"
+                    width={640}
+                    height={480}
+                    onUserMedia={handleWebcamReady}
+                    onUserMediaError={handleWebcamError}
                     className="w-100 rounded"
                     style={{ maxHeight: '400px', objectFit: 'cover' }}
+                    videoConstraints={{
+                      width: 640,
+                      height: 480,
+                      facingMode: 'environment'
+                    }}
                   />
                   <div className="position-absolute top-0 start-0 p-2">
                     <div className="bg-dark bg-opacity-75 text-white px-2 py-1 rounded">
