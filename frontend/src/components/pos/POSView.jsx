@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Alert, Row, Col, Button, Card } from 'react-bootstrap';
-import Webcam from 'react-webcam';
 
 // Importaciones de componentes refactorizados
 import ProductList from './ProductList';
@@ -10,7 +9,6 @@ import CartPanel from './components/CartPanel';
 // Importaciones de hooks
 import useCart from './hooks/useCart';
 import usePayment from './hooks/usePayment';
-import useDetection from './hooks/useDetection';
 import { useProductVisibility } from '../../contexts/ProductVisibilityContext';
 import apiService from '../../services/apiService';
 import styles from './styles/styles.module.css';
@@ -73,22 +71,8 @@ const POSView = () => {
     processSale
   } = usePayment({ cartItems, calculateTotal, setError });
 
-  // Detection hook for webcam functionality
-  const {
-    lastDetection,
-    detectionLoading,
-    showWebcam,
-    setShowWebcam,
-    isWebcamReady,
-    setIsWebcamReady,
-    webcamRef,
-    captureFrame,
-    detectFromImage,
-    addDetectedProductToCart
-  } = useDetection({ products, addToCart, setError });
-  
   // Estado de carga combinado
-  const combinedLoading = loading || paymentLoading || detectionLoading;
+  const combinedLoading = loading || paymentLoading;
 
   // Load products on mount
   useEffect(() => {
@@ -104,21 +88,6 @@ const POSView = () => {
     window.addEventListener('sale-completed', handleSaleCompleted);
     return () => window.removeEventListener('sale-completed', handleSaleCompleted);
   }, [setCartItems, loadProducts]);
-
-  // Handle webcam detection
-  const handleDetection = async () => {
-    try {
-      const imageData = await captureFrame();
-      if (imageData) {
-        const detection = await detectFromImage(imageData);
-        if (detection && detection.productInfo) {
-          addDetectedProductToCart(detection.label, detection.productInfo);
-        }
-      }
-    } catch (error) {
-      setError(error.message);
-    }
-  };
 
   return (
     <div className={styles['pos-view-container']}>
@@ -174,7 +143,7 @@ const POSView = () => {
           </Col>
         </Row>
 
-        {/* Middle Section: Detection Controls */}
+        {/* Middle Section: Detection Controls (Temporarily Disabled) */}
         <div className={styles['pos-middle-section']}>
           <Row>
             <Col md={12}>
@@ -183,51 +152,10 @@ const POSView = () => {
                   <h6 className="mb-0">Product Detection</h6>
                 </Card.Header>
                 <Card.Body>
-                  <div className="d-flex gap-2 align-items-center">
-                    <Button
-                      variant={showWebcam ? "danger" : "primary"}
-                      onClick={() => setShowWebcam(!showWebcam)}
-                      disabled={combinedLoading}
-                    >
-                      {showWebcam ? "Close Camera" : "Open Camera"}
-                    </Button>
-                    
-                    {showWebcam && (
-                      <Button
-                        variant="success"
-                        onClick={handleDetection}
-                        disabled={!isWebcamReady || detectionLoading}
-                      >
-                        {detectionLoading ? "Detecting..." : "Detect Product"}
-                      </Button>
-                    )}
-                    
-                    {lastDetection && (
-                      <div className="ms-3">
-                        <small className="text-muted">
-                          Last detection: {lastDetection.label} ({lastDetection.similarity}%)
-                        </small>
-                      </div>
-                    )}
+                  <div className="text-center text-muted">
+                    <p>Camera detection feature will be available soon.</p>
+                    <small>For now, you can add products manually from the list below.</small>
                   </div>
-                  
-                  {showWebcam && (
-                    <div className="mt-3">
-                      <Webcam
-                        ref={webcamRef}
-                        audio={false}
-                        screenshotFormat="image/jpeg"
-                        width={320}
-                        height={240}
-                        onUserMedia={() => setIsWebcamReady(true)}
-                        onUserMediaError={() => {
-                          setError("Error accessing camera");
-                          setShowWebcam(false);
-                        }}
-                        style={{ border: "1px solid #ddd", borderRadius: "4px" }}
-                      />
-                    </div>
-                  )}
                 </Card.Body>
               </Card>
             </Col>
