@@ -115,11 +115,28 @@ const DashboardPage = () => {
       }, 0);
     }
 
+    // Calcular ventas de hoy
+    let todaySales = 0;
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    
+    if (salesData?.data && salesData.data.length > 0) {
+      todaySales = salesData.data.filter(sale => {
+        const saleDate = sale.Fecha || sale.fecha || sale.Date || sale.timestamp || sale.Timestamp || 
+                        sale.venta_timestamp || sale.created_at;
+        if (saleDate) {
+          const saleDateStr = new Date(saleDate).toISOString().slice(0, 10);
+          return saleDateStr === today;
+        }
+        return false;
+      }).length;
+    }
+
     const realMetrics = {
       totalSales: metrics.totalSales || 0,
       totalRevenue: totalRevenue,
       totalOrders: totalOrders,
-      averageTicket: totalOrders > 0 ? (totalRevenue / totalOrders) : 0
+      averageTicket: totalOrders > 0 ? (totalRevenue / totalOrders) : 0,
+      todaySales: todaySales
     };
     console.log('DEBUG - realMetrics:', realMetrics);
 

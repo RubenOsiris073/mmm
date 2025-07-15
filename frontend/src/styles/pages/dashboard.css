@@ -342,6 +342,26 @@
   background: linear-gradient(135deg, rgba(194, 24, 91, 0.2) 0%, rgba(194, 24, 91, 0.1) 100%);
 }
 
+.metric-icon.today {
+  background: linear-gradient(135deg, rgba(156, 39, 176, 0.1) 0%, rgba(156, 39, 176, 0.05) 100%);
+  color: #9c27b0;
+  box-shadow: 0 4px 15px rgba(156, 39, 176, 0.1);
+}
+
+.metric-icon.today::before {
+  background: linear-gradient(135deg, rgba(156, 39, 176, 0.2) 0%, rgba(156, 39, 176, 0.1) 100%);
+}
+
+.metric-icon.target {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%);
+  color: #4caf50;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.1);
+}
+
+.metric-icon.target::before {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.2) 0%, rgba(76, 175, 80, 0.1) 100%);
+}
+
 .metric-value {
   font-size: var(--font-size-2xl);
   font-weight: 700;
