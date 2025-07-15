@@ -5,6 +5,7 @@ import CameraDetectionComponent from '../components/products/CameraDetectionComp
 import ProductRegistrationForm from '../components/products/ProductRegistrationForm';
 import ProductUpdateForm from '../components/products/ProductUpdateForm';
 import apiService from '../services/apiService';
+import { getProductInfoFromLabel, generateProductCodeFromLabel, getSuggestedExpirationDate } from '../utils/productMapping';
 
 const ProductRegistrationPage = () => {
   const [currentStep, setCurrentStep] = useState('selection'); // selection, camera, form
@@ -31,25 +32,38 @@ const ProductRegistrationPage = () => {
       setError(null);
       
       console.log('Detection result received:', detection);
-      setDetectionResult(detection);
+      
+      // Enriquecer la detección con información del mapeo
+      const productInfo = getProductInfoFromLabel(detection.label);
+      const enrichedDetection = {
+        ...detection,
+        productInfo,
+        suggestedCode: generateProductCodeFromLabel(detection.label),
+        suggestedExpirationDate: getSuggestedExpirationDate(productInfo.categoria, productInfo.perecedero)
+      };
+      
+      setDetectionResult(enrichedDetection);
 
       // Search for existing product by class_name/label
       const products = await apiService.getProducts();
       const productsData = products.data || products;
       
-      // Look for product with matching detection label
+      // Look for product with matching detection label or similar name
       const foundProduct = productsData.find(product => 
         product.detectionId === detection.label ||
         product.nombre?.toLowerCase().includes(detection.label.toLowerCase()) ||
+        product.nombre?.toLowerCase().includes(productInfo.nombre.toLowerCase()) ||
         product.label?.toLowerCase().includes(detection.label.toLowerCase())
       );
 
       if (foundProduct) {
-        // Product found - show simplified form
+        // Product found - show simplified form for stock update
+        console.log('Producto existente encontrado:', foundProduct.nombre);
         setExistingProduct(foundProduct);
         setCurrentStep('product-update');
       } else {
-        // Product not found - show full registration form
+        // Product not found - show full registration form with pre-filled data
+        console.log('Producto nuevo detectado:', productInfo.nombre);
         setExistingProduct(null);
         setCurrentStep('product-registration');
       }

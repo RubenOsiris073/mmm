@@ -4,21 +4,21 @@ import { FaPlus, FaTag, FaDollarSign, FaBoxOpen } from 'react-icons/fa';
 
 const ProductRegistrationForm = ({ detectionResult, onSubmit, loading }) => {
   const [formData, setFormData] = useState({
-    nombre: detectionResult?.label || '',
-    descripcion: '',
+    nombre: detectionResult?.productInfo?.nombre || detectionResult?.label || '',
+    descripcion: detectionResult?.productInfo?.descripcion || '',
     marca: '',
-    categoria: '',
-    subcategoria: '',
-    precio: '',
-    codigo: '',
-    unidadMedida: 'pieza',
-    stockMinimo: 5,
+    categoria: detectionResult?.productInfo?.categoria || '',
+    subcategoria: detectionResult?.productInfo?.subcategoria || '',
+    precio: detectionResult?.productInfo?.precio || '',
+    codigo: detectionResult?.suggestedCode || '',
+    unidadMedida: detectionResult?.productInfo?.unidadMedida || 'pieza',
+    stockMinimo: detectionResult?.productInfo?.stockMinimo || 5,
     ubicacion: '',
-    perecedero: false,
-    notas: '',
+    perecedero: detectionResult?.productInfo?.perecedero || false,
+    notas: detectionResult ? `Detectado automáticamente: ${detectionResult.label} (${detectionResult.similarity}% confianza)` : '',
     // Initial stock data
     initialQuantity: 1,
-    expirationDate: '',
+    expirationDate: detectionResult?.suggestedExpirationDate || '',
     batchNumber: ''
   });
 

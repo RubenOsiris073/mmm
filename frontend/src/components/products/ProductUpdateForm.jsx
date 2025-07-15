@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Button, Card, Row, Col, Alert } from 'react-bootstrap';
 import { FaBoxOpen, FaCalendarAlt, FaHashtag } from 'react-icons/fa';
+import { getSuggestedExpirationDate } from '../../utils/productMapping';
 
 const ProductUpdateForm = ({ product, detectionResult, onSubmit, loading }) => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,18 @@ const ProductUpdateForm = ({ product, detectionResult, onSubmit, loading }) => {
   });
 
   const [errors, setErrors] = useState({});
+
+  // Pre-llenar fecha de caducidad cuando se detecta un producto
+  useEffect(() => {
+    if (detectionResult && product && product.perecedero && !formData.expirationDate) {
+      const suggestedDate = getSuggestedExpirationDate(product.categoria, product.perecedero);
+      setFormData(prev => ({
+        ...prev,
+        expirationDate: suggestedDate,
+        notes: `Detectado automáticamente: ${detectionResult.label} (${detectionResult.similarity}% confianza) - ${new Date(detectionResult.timestamp).toLocaleString()}`
+      }));
+    }
+  }, [detectionResult, product]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -95,7 +108,11 @@ const ProductUpdateForm = ({ product, detectionResult, onSubmit, loading }) => {
               <p><strong>Código:</strong> {product.codigo || 'N/A'}</p>
               <p><strong>Perecedero:</strong> {product.perecedero ? 'Sí' : 'No'}</p>
               {detectionResult && (
-                <p><strong>Confianza de Detección:</strong> {detectionResult.similarity}%</p>
+                <div>
+                  <p><strong>Confianza de Detección:</strong> {detectionResult.similarity}%</p>
+                  <p><strong>Detectado como:</strong> {detectionResult.label}</p>
+                  <p><strong>Timestamp:</strong> {new Date(detectionResult.timestamp).toLocaleString()}</p>
+                </div>
               )}
             </Col>
           </Row>
