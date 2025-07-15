@@ -178,98 +178,96 @@ const CardPaymentForm = ({ amount, onPaymentSuccess, onPaymentError, loading: ex
 
   return (
     <div className="payment-body">
-      <Form onSubmit={handleSubmit}>
-        {error && (
-          <Alert variant="danger" className="error-alert mb-3">
-            <i className="bi bi-exclamation-triangle me-2"></i>
-            {error}
-          </Alert>
-        )}
+      {error && (
+        <Alert variant="danger" className="error-alert mb-3">
+          <i className="bi bi-exclamation-triangle me-2"></i>
+          {error}
+        </Alert>
+      )}
 
-        {/* Resumen del pago */}
-        <div className="payment-summary">
-          <Row>
-            <Col>
-              <div className="mb-1 text-muted" style={{fontSize: '14px'}}>Total a pagar</div>
-              <div className="payment-amount">${amount.toFixed(2)} <span className="payment-currency">MXN</span></div>
+      {/* Resumen del pago */}
+      <div className="payment-summary">
+        <Row>
+          <Col>
+            <div className="mb-1 text-muted" style={{fontSize: '14px'}}>Total a pagar</div>
+            <div className="payment-amount">${amount.toFixed(2)} <span className="payment-currency">MXN</span></div>
+          </Col>
+          {paymentIntentId && (
+            <Col xs="auto" className="text-end">
+              <div className="payment-id">
+                <i className="bi bi-receipt me-1"></i>
+                ID: {paymentIntentId.slice(-8)}
+              </div>
             </Col>
-            {paymentIntentId && (
-              <Col xs="auto" className="text-end">
-                <div className="payment-id">
-                  <i className="bi bi-receipt me-1"></i>
-                  ID: {paymentIntentId.slice(-8)}
-                </div>
-              </Col>
-            )}
-          </Row>
-        </div>
-
-        {/* Logos de tarjetas */}
-        <div className="card-logos-section">
-          <div className={`card-logo visa-logo ${cardBrand === 'visa' ? 'active' : ''}`} title="Visa"></div>
-          <div className={`card-logo mastercard-logo ${cardBrand === 'mastercard' ? 'active' : ''}`} title="MasterCard"></div>
-          <div className={`card-logo amex-logo ${cardBrand === 'amex' ? 'active' : ''}`} title="American Express"></div>
-        </div>
-
-        {/* Campo de tarjeta */}
-        <div className="card-input-section">
-          <div className="card-input-label">
-            <i className="bi bi-credit-card"></i>
-            Información de la Tarjeta
-          </div>
-          
-          <div className={`card-input-container ${cardFocused ? 'focused' : ''}`}>
-            <CardElement 
-              options={cardElementOptions}
-              onFocus={() => setCardFocused(true)}
-              onBlur={() => setCardFocused(false)}
-              onChange={(event) => {
-                if (event.error) {
-                  setError(event.error.message);
-                } else {
-                  setError(null);
-                }
-                
-                // Detectar tipo de tarjeta
-                if (event.brand) {
-                  setCardBrand(event.brand);
-                }
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Badge de seguridad */}
-        <div className="security-badge">
-          <i className="bi bi-shield-lock-fill"></i>
-          Conexión segura SSL • Datos protegidos por Stripe
-        </div>
-
-        {/* Botón de pago */}
-        <Button
-          type="submit"
-          className="payment-button"
-          disabled={!stripe || !clientSecret || isProcessing}
-        >
-          {isProcessing ? (
-            <>
-              <Spinner animation="border" size="sm" className="me-2" />
-              Procesando pago...
-            </>
-          ) : (
-            <>
-              <i className="bi bi-lock-fill me-2"></i>
-              Pagar ${amount.toFixed(2)}
-            </>
           )}
-        </Button>
+        </Row>
+      </div>
 
-        {/* Footer con información */}
-        <div className="payment-footer">
-          <i className="bi bi-info-circle me-1"></i>
-          Tu pago será procesado de forma segura
+      {/* Logos de tarjetas */}
+      <div className="card-logos-section">
+        <div className={`card-logo visa-logo ${cardBrand === 'visa' ? 'active' : ''}`} title="Visa"></div>
+        <div className={`card-logo mastercard-logo ${cardBrand === 'mastercard' ? 'active' : ''}`} title="MasterCard"></div>
+        <div className={`card-logo amex-logo ${cardBrand === 'amex' ? 'active' : ''}`} title="American Express"></div>
+      </div>
+
+      {/* Campo de tarjeta */}
+      <div className="card-input-section">
+        <div className="card-input-label">
+          <i className="bi bi-credit-card"></i>
+          Información de la Tarjeta
         </div>
-      </Form>
+        
+        <div className={`card-input-container ${cardFocused ? 'focused' : ''}`}>
+          <CardElement 
+            options={cardElementOptions}
+            onFocus={() => setCardFocused(true)}
+            onBlur={() => setCardFocused(false)}
+            onChange={(event) => {
+              if (event.error) {
+                setError(event.error.message);
+              } else {
+                setError(null);
+              }
+              
+              // Detectar tipo de tarjeta
+              if (event.brand) {
+                setCardBrand(event.brand);
+              }
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Badge de seguridad */}
+      <div className="security-badge">
+        <i className="bi bi-shield-lock-fill"></i>
+        Conexión segura SSL • Datos protegidos por Stripe
+      </div>
+
+      {/* Botón de pago */}
+      <Button
+        onClick={handleSubmit}
+        className="payment-button"
+        disabled={!stripe || !clientSecret || isProcessing}
+      >
+        {isProcessing ? (
+          <>
+            <Spinner animation="border" size="sm" className="me-2" />
+            Procesando pago...
+          </>
+        ) : (
+          <>
+            <i className="bi bi-lock-fill me-2"></i>
+            Pagar ${amount.toFixed(2)}
+          </>
+        )}
+      </Button>
+
+      {/* Footer con información */}
+      <div className="payment-footer">
+        <i className="bi bi-info-circle me-1"></i>
+        Tu pago será procesado de forma segura
+      </div>
     </div>
   );
 };
