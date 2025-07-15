@@ -697,3 +697,27 @@
 .pos-bottom-section {
   padding: 10px;
 }
+
+/*
+ * APLICAR GRID A LA LISTA DE PRODUCTOS
+ * Este es el selector correcto que apunta al panel de productos.
+ * Forzamos el .row de Bootstrap a usar CSS Grid y reseteamos las propiedades de flexbox de las columnas.
+ * Usamos !important para asegurar que estos estilos ganen la batalla de especificidad contra Bootstrap.
+*/
+.products-panel-bottom .row {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+  gap: 20px;
+  margin: 0 !important; /* Resetea márgenes de Bootstrap */
+}
+
+/*
+ * Anulamos completamente los estilos de columna de Bootstrap para que se comporten como items de grid puros.
+*/
+.products-panel-bottom .row > [class*='col-'] {
+  width: auto !important;
+  max-width: none !important; /* Permitir que el grid controle el tamaño */
+  padding: 0 !important;
+  flex: none !important; /* Desactivar completamente el comportamiento flex del item */
+  margin: 0 !important;
+}
