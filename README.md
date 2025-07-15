@@ -74,3 +74,18 @@ Fecha: 12/34
 Hoja productos: nombre, cantidad, perecedero, ubicacion, lote, categoria, marca, productId, codigo, precio, id, fechaCaducidad, diasParaCaducar, estadoCaducidad.
 
 Hoja ventas: subtotal, venta_paymentMethod, venta_amountReceived, venta_change, venta_timestamp, venta_createdAt, venta_total, venta_updatedAt, venta_clientName, venta_id, productId (para referencia al producto vendido).
+
+Ejemplo de Flujo (Simplificado):
+
+    Usuario apunta la cámara a una "barrita".
+    Camera.jsx captura la imagen.
+    ObjectDetection.jsx envía la imagen al backend para detección.
+    detectionService.js en el backend procesa la imagen con el modelo TensorFlow.
+    El modelo detecta "barrita" con 95% de confianza.
+    detectionService.js verifica el umbral (95% > 80%).
+    detectionService.js mapea "barrita" al ID del producto "Barra Energética".
+    detectionService.js llama a cartService.js para añadir 1 unidad de "Barra Energética" al carrito del usuario.
+    El backend responde al frontend indicando que se añadió "Barra Energética".
+    El frontend (useCart.js) actualiza el estado del carrito.
+    ShoppingCart.jsx y CartPanel.jsx muestran la "Barra Energética" en el carrito.
+    Un Toast (toastHelper.js) muestra "Barra Energética añadida al carrito".
