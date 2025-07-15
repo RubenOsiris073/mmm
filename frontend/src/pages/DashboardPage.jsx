@@ -443,23 +443,28 @@ const DashboardPage = () => {
 
   return (
     <div className="dashboard-main-container">
-      {/* Header del Dashboard */}
-      <div className="dashboard-header">
-        <div>
-          <h2 className="dashboard-title">Dashboard Analytics</h2>
-          <p className="dashboard-date">Monitoreo en tiempo real</p>
+      {/* Header del Dashboard con fondo azul */}
+      <div className="dashboard-blue-header">
+        <div className="dashboard-header-content">
+          <div className="dashboard-header-left">
+            <FaBoxes className="dashboard-header-icon" />
+            <div>
+              <h2 className="dashboard-header-title">Dashboard Analytics</h2>
+              <p className="dashboard-header-subtitle">Visualice, analice y administre las métricas de su negocio</p>
+            </div>
+          </div>
+          <Button 
+            variant="light" 
+            size="sm"
+            onClick={loadDashboardData} 
+            disabled={loading}
+            className="dashboard-refresh-btn"
+            title="Actualizar datos"
+          >
+            <FaSyncAlt className={loading ? 'fa-spin' : ''} size="14" />
+            <span className="ms-2">Actualizar</span>
+          </Button>
         </div>
-        <Button 
-          variant="primary" 
-          size="sm"
-          onClick={loadDashboardData} 
-          disabled={loading}
-          className="px-3 py-2"
-          title="Actualizar datos"
-          style={{ minWidth: 'auto', width: 'auto' }}
-        >
-          <FaSyncAlt className={loading ? 'fa-spin' : ''} size="14" />
-        </Button>
       </div>
 
       {error && (
