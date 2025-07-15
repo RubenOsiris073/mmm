@@ -20,7 +20,7 @@ const ProductGrid = ({ products = [], loading, onProductDeleted }) => {
   const [showManagementModal, setShowManagementModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  // Hook para sincronización de productos
+  // Hook para sincronización de productos con cache optimizado
   const {
     products: syncedProducts,
     loading: syncLoading,

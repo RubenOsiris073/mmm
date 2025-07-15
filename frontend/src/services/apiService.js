@@ -498,6 +498,93 @@ const apiService = {
       console.error('Error creando producto:', error.message);
       throw error;
     }
+  },
+
+  // Función para obtener productos con paginación
+  getProductsPaginated: async ({ page = 1, limit = 50, category, search, useCache = true } = {}) => {
+    try {
+      const cacheKey = `products-paginated-${page}-${limit}-${category || 'all'}-${search || 'none'}`;
+      
+      if (useCache) {
+        const cachedData = getCachedData(cacheKey);
+        if (cachedData) {
+          return cachedData;
+        }
+      }
+      
+      console.log(`Obteniendo productos paginados - Página: ${page}, Límite: ${limit}`);
+      const response = await api.get('/products', {
+        params: { page, limit, category, search }
+      });
+      
+      setCachedData(cacheKey, response);
+      return response;
+      
+    } catch (error) {
+      console.error('Error en getProductsPaginated:', error.message);
+      throw error;
+    }
+  },
+
+  // Función para obtener productos por categoría (optimizada)
+  getProductsByCategory: async (category, useCache = true) => {
+    try {
+      const cacheKey = `products-category-${category}`;
+      
+      if (useCache) {
+        const cachedData = getCachedData(cacheKey);
+        if (cachedData) {
+          return cachedData;
+        }
+      }
+      
+      console.log(`Obteniendo productos de categoría: ${category}`);
+      const response = await api.get('/products', {
+        params: { category, limit: 100 } // Límite alto para categorías
+      });
+      
+      setCachedData(cacheKey, response);
+      return response;
+      
+    } catch (error) {
+      console.error('Error en getProductsByCategory:', error.message);
+      throw error;
+    }
+  },
+
+  // Función para búsqueda optimizada con cache
+  searchProducts: async (searchTerm, useCache = true) => {
+    try {
+      if (!searchTerm || searchTerm.length < 2) {
+        return { data: { data: [], totalCount: 0 } };
+      }
+      
+      const cacheKey = `products-search-${searchTerm.toLowerCase()}`;
+      
+      if (useCache) {
+        const cachedData = getCachedData(cacheKey);
+        if (cachedData) {
+          return cachedData;
+        }
+      }
+      
+      console.log(`Buscando productos: ${searchTerm}`);
+      const response = await api.get('/products', {
+        params: { search: searchTerm, limit: 100 }
+      });
+      
+      // Cache por menos tiempo para búsquedas (15 segundos)
+      cache.set(cacheKey, {
+        data: response,
+        timestamp: Date.now()
+      });
+      
+      return response;
+      
+    } catch (error) {
+      console.error('Error en searchProducts:', error.message);
+      throw error;
+    }
   }
 };
 

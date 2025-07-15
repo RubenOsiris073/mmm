@@ -8,13 +8,40 @@ const Logger = require('../utils/logger.js');
 // GET /api/products - Usar el servicio automatizado
 router.get('/', async (req, res) => {
   try {
-    // Usar el servicio que automáticamente inicializa stock si es necesario
-    const products = await productService.getAllProducts();
+    const { page, limit, category, search } = req.query;
+    
+    // Si no se especifica paginación, obtener todos (para compatibilidad)
+    if (!page && !limit) {
+      const products = await productService.getAllProducts();
+      
+      res.json({
+        data: products,
+        success: true,
+        count: products.length
+      });
+      return;
+    }
+    
+    // Obtener productos con paginación
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 50;
+    
+    const result = await productService.getProductsPaginated({
+      page: pageNum,
+      limit: limitNum,
+      category,
+      search
+    });
     
     res.json({
-      data: products,
+      data: result.products,
       success: true,
-      count: products.length
+      count: result.products.length,
+      totalCount: result.totalCount,
+      totalPages: result.totalPages,
+      currentPage: pageNum,
+      hasNextPage: result.hasNextPage,
+      hasPrevPage: result.hasPrevPage
     });
   } catch (error) {
     Logger.error('Error al obtener productos:', error);

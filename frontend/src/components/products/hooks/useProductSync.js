@@ -9,36 +9,51 @@ const useProductSync = (initialProducts = []) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Función para refrescar productos desde el backend
-  const refreshProducts = useCallback(async () => {
+  // Cache local para evitar múltiples llamadas
+  const [lastRefresh, setLastRefresh] = useState(0);
+  const REFRESH_COOLDOWN = 5000; // 5 segundos de cooldown entre refreshes
+
+  // Función optimizada para refrescar productos desde el backend
+  const refreshProducts = useCallback(async (forceRefresh = false) => {
+    const now = Date.now();
+    
+    // Evitar múltiples refreshes muy seguidos
+    if (!forceRefresh && (now - lastRefresh < REFRESH_COOLDOWN)) {
+      console.log('[useProductSync] Refresh bloqueado por cooldown');
+      return true;
+    }
+    
     try {
       setLoading(true);
       setError(null);
       
-      console.log('[useProductSync] Refrescando productos desde backend...');
-      const response = await apiService.getProducts();
-      
-      console.log('[useProductSync] Respuesta del backend:', response);
+      console.log('[useProductSync] Refrescando productos desde backend (con cache)...');
+      // Usar cache del apiService (useCache = true)
+      const response = await apiService.getProducts(true);
       
       // Extraer productos según la estructura de respuesta
       let freshProducts = [];
       
       if (response?.data?.data && Array.isArray(response.data.data)) {
         freshProducts = response.data.data;
-        console.log(`[useProductSync] Productos obtenidos: ${freshProducts.length}`);
-        setProducts(freshProducts);
       } else if (response?.data && Array.isArray(response.data)) {
         freshProducts = response.data;
-        console.log(`[useProductSync] Productos obtenidos (formato directo): ${freshProducts.length}`);
-        setProducts(freshProducts);
       } else {
         console.warn('[useProductSync] Formato de respuesta inesperado:', response);
         return false;
       }
       
-      // Actualizar estado
-      setProducts(freshProducts);
-      console.log('[useProductSync] Estado actualizado exitosamente');
+      // Actualizar estado solo si hay cambios
+      setProducts(prevProducts => {
+        if (JSON.stringify(prevProducts) !== JSON.stringify(freshProducts)) {
+          console.log(`[useProductSync] Productos actualizados: ${freshProducts.length}`);
+          return freshProducts;
+        }
+        console.log('[useProductSync] No hay cambios en productos');
+        return prevProducts;
+      });
+      
+      setLastRefresh(now);
       return true;
       
     } catch (err) {
@@ -48,10 +63,10 @@ const useProductSync = (initialProducts = []) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [lastRefresh]);
 
   // Función para actualizar un producto específico
-  const updateProduct = useCallback((updatedProduct) => {
+  const updateProduct = useCallback((updatedProduct, skipRefresh = false) => {
     console.log('[useProductSync] Actualizando producto:', updatedProduct);
     
     setProducts(prevProducts => 
@@ -65,10 +80,16 @@ const useProductSync = (initialProducts = []) => {
       )
     );
 
-    // Refrescar desde backend para asegurar sincronización
-    setTimeout(() => {
-      refreshProducts();
-    }, 500);
+    // Solo refrescar si es necesario (no para actualizaciones locales)
+    if (!skipRefresh) {
+      // Invalidar cache del apiService para la próxima llamada
+      apiService.clearCache();
+      
+      // Refrescar después de un delay para permitir que el backend se actualice
+      setTimeout(() => {
+        refreshProducts(true); // forceRefresh = true
+      }, 1000);
+    }
   }, [refreshProducts]);
 
   // Función para eliminar un producto

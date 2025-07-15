@@ -11,7 +11,14 @@ async function getAllProducts() {
     Logger.info("Obteniendo productos directamente desde Firebase PRODUCTS...");
     
     // Obtener productos del catálogo con stock incluido
-    const products = await firestore.getDocs(COLLECTIONS.PRODUCTS);
+    const snapshot = await firestore.collection(COLLECTIONS.PRODUCTS).get();
+    const products = [];
+    snapshot.forEach(doc => {
+      products.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
     
     if (products.length === 0) {
       Logger.info("No hay productos en el catálogo");
@@ -28,7 +35,7 @@ async function getAllProducts() {
         
         // Actualizar en Firebase
         try {
-          await firestore.updateDoc(COLLECTIONS.PRODUCTS, product.id, { 
+          await firestore.collection(COLLECTIONS.PRODUCTS).doc(product.id).update({ 
             cantidad,
             stock: cantidad, // Mantener compatibilidad
             stockInitialized: true
@@ -69,7 +76,7 @@ async function updateProductStock(productId, adjustment, reason = 'Ajuste de sto
   try {
     Logger.info(`Actualizando stock en PRODUCTS - ID: ${productId}, Ajuste: ${adjustment}`);
     
-    const productRef = db.collection(COLLECTIONS.PRODUCTS).doc(productId);
+    const productRef = firestore.collection(COLLECTIONS.PRODUCTS).doc(productId);
     const productDoc = await productRef.get();
     
     if (!productDoc.exists) {
@@ -80,23 +87,20 @@ async function updateProductStock(productId, adjustment, reason = 'Ajuste de sto
     const currentStock = productData.cantidad || 0;
     const newStock = Math.max(0, currentStock + adjustment);
 
-    const batch = db.batch();
-
-    batch.update(productRef, {
+    // Actualizar directamente sin batch para simplificar
+    await productRef.update({
       cantidad: newStock,
       stock: newStock,
-      updatedAt: db.FieldValue.serverTimestamp(),
+      updatedAt: new Date(),
       lastStockUpdate: {
         adjustment,
         reason,
         previousStock: currentStock,
         newStock,
-        timestamp: db.FieldValue.serverTimestamp(),
+        timestamp: new Date(),
         user: userId
       }
     });
-
-    await batch.commit();
 
     Logger.info(`Stock actualizado: ${productData.nombre} - ${currentStock} → ${newStock}`);
 
@@ -118,10 +122,10 @@ async function updateProductStock(productId, adjustment, reason = 'Ajuste de sto
  */
 async function getProductStock(productId) {
   try {
-    const productRef = doc(db, COLLECTIONS.PRODUCTS, productId);
-    const productDoc = await getDoc(productRef);
+    const productRef = firestore.collection(COLLECTIONS.PRODUCTS).doc(productId);
+    const productDoc = await productRef.get();
     
-    if (!productDoc.exists()) {
+    if (!productDoc.exists) {
       return { stock: 0, exists: false };
     }
     
@@ -197,10 +201,76 @@ async function createProduct(productData) {
   }
 }
 
+/**
+ * Obtiene productos con paginación y filtros
+ */
+async function getProductsPaginated({ page = 1, limit = 50, category, search }) {
+  try {
+    Logger.info(`Obteniendo productos paginados - Página: ${page}, Límite: ${limit}`);
+    
+    let query = firestore.collection(COLLECTIONS.PRODUCTS);
+    
+    // Aplicar filtro de categoría si se especifica
+    if (category && category !== 'all') {
+      query = query.where('categoria', '==', category);
+    }
+    
+    // Para búsqueda, necesitamos obtener todos y filtrar en memoria
+    // (Firestore no soporta búsqueda de texto completo nativa)
+    const snapshot = await query.get();
+    
+    let products = [];
+    snapshot.forEach(doc => {
+      const productData = doc.data();
+      products.push({
+        id: doc.id,
+        ...productData,
+        // Asegurar que cantidad esté presente
+        cantidad: productData.cantidad || productData.stock || 0
+      });
+    });
+    
+    // Aplicar filtro de búsqueda si se especifica
+    if (search) {
+      const searchTerm = search.toLowerCase();
+      products = products.filter(product => 
+        product.nombre?.toLowerCase().includes(searchTerm) ||
+        product.codigo?.toLowerCase().includes(searchTerm) ||
+        product.categoria?.toLowerCase().includes(searchTerm) ||
+        product.marca?.toLowerCase().includes(searchTerm)
+      );
+    }
+    
+    // Calcular paginación
+    const totalCount = products.length;
+    const totalPages = Math.ceil(totalCount / limit);
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    
+    // Obtener productos de la página actual
+    const paginatedProducts = products.slice(startIndex, endIndex);
+    
+    Logger.info(`Productos paginados obtenidos: ${paginatedProducts.length} de ${totalCount}`);
+    
+    return {
+      products: paginatedProducts,
+      totalCount,
+      totalPages,
+      currentPage: page,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1
+    };
+  } catch (error) {
+    Logger.error('Error obteniendo productos paginados:', error);
+    throw error;
+  }
+}
+
 module.exports = {
   getAllProducts,
   createProduct,
   searchProducts,
   updateProductStock,
-  getProductStock
+  getProductStock,
+  getProductsPaginated
 };

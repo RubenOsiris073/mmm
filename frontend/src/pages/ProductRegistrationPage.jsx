@@ -25,6 +25,42 @@ const ProductRegistrationPage = () => {
     setLoading(false);
   };
 
+  // Cache para productos - evitar múltiples llamadas
+  const [cachedProducts, setCachedProducts] = useState(null);
+  const [cacheTimestamp, setCacheTimestamp] = useState(null);
+  const CACHE_DURATION = 30000; // 30 segundos
+
+  // Función optimizada para obtener productos con cache local
+  const getCachedProducts = async () => {
+    const now = Date.now();
+    
+    // Si tenemos cache válido, usarlo
+    if (cachedProducts && cacheTimestamp && (now - cacheTimestamp < CACHE_DURATION)) {
+      console.log('Usando productos desde cache local');
+      return cachedProducts;
+    }
+    
+    // Si no, obtener del servidor (que también tiene su propio cache)
+    console.log('Obteniendo productos del servidor...');
+    const products = await apiService.getProducts(true); // useCache = true
+    
+    // Extraer correctamente el array de productos
+    let productsData = [];
+    if (products.data && Array.isArray(products.data.data)) {
+      productsData = products.data.data;
+    } else if (products.data && Array.isArray(products.data)) {
+      productsData = products.data;
+    } else if (Array.isArray(products)) {
+      productsData = products;
+    }
+    
+    // Actualizar cache local
+    setCachedProducts(productsData);
+    setCacheTimestamp(now);
+    
+    return productsData;
+  };
+
   // Handle detection result from camera
   const handleDetectionResult = async (detection) => {
     try {
@@ -44,22 +80,10 @@ const ProductRegistrationPage = () => {
       
       setDetectionResult(enrichedDetection);
 
-      // Search for existing product by class_name/label
-      const products = await apiService.getProducts();
-      console.log('Products response:', products);
+      // Usar productos cacheados para evitar múltiples llamadas
+      const productsData = await getCachedProducts();
       
-      // Extraer correctamente el array de productos
-      let productsData = [];
-      if (products.data && Array.isArray(products.data.data)) {
-        productsData = products.data.data;
-      } else if (products.data && Array.isArray(products.data)) {
-        productsData = products.data;
-      } else if (Array.isArray(products)) {
-        productsData = products;
-      }
-      
-      console.log('Products data array:', productsData);
-      console.log('Is array?', Array.isArray(productsData));
+      console.log(`Buscando en ${productsData.length} productos cacheados`);
       
       // Look for product with matching detection label or similar name
       const foundProduct = productsData.find(product => 
