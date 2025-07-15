@@ -16,17 +16,18 @@ import axios from 'axios';
 export const getProducts = async () => {
   try {
     const response = await axios.get('/api/products');
- return response.data;
+    // Backend returns { success: true, data: [products], count: number }
+    return response.data.data || response.data || [];
   } catch (error) {
     console.error('Error al obtener productos:', error);
- if (axios.isAxiosError(error) && error.response) {
- console.error('Backend response data:', error.response.data);
- console.error('Backend response status:', error.response.status);
- console.error('Backend response headers:', error.response.headers);
- throw new Error(`Error ${error.response.status}: ${error.response.data.message || error.message}`);
- } else {
- throw error;
- }
+    if (axios.isAxiosError(error) && error.response) {
+      console.error('Backend response data:', error.response.data);
+      console.error('Backend response status:', error.response.status);
+      console.error('Backend response headers:', error.response.headers);
+      throw new Error(`Error ${error.response.status}: ${error.response.data.message || error.message}`);
+    } else {
+      throw error;
+    }
   }
 };
 
