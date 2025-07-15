@@ -3,6 +3,7 @@ const firestoreAdmin = require('../utils/firestoreAdmin');
 const productService = require('./productService');
 const { processTimestamp } = require('../utils/helpers');
 const Logger = require('../utils/logger');
+const { firebaseManager } = require('../config/firebaseManager');
 
 /**
  * Obtiene todas las ventas
@@ -58,12 +59,12 @@ async function createSale(saleData) {
       amountReceived,
       change,
       clientName: clientName || "Cliente General",
-      timestamp: serverTimestamp()
+      timestamp: new Date().toISOString()
     };
     
-    // Guardar en Firestore
-    const salesRef = collection(db, COLLECTIONS.SALES);
-    const docRef = await addDoc(salesRef, saleRecord);
+    // Guardar en Firestore usando firestoreAdmin
+    const docRef = await firestoreAdmin.addDoc(COLLECTIONS.SALES, saleRecord);
+    const saleId = docRef.id;
     
     Logger.info("Venta creada correctamente, actualizando stock en PRODUCTS...");
     
@@ -84,7 +85,7 @@ async function createSale(saleData) {
           const updateResult = await productService.updateProductStock(
             productId, 
             -quantitySold, // Ajuste negativo para venta
-            `Venta #${docRef.id}`
+            `Venta #${saleId}`
           );
           
           stockUpdates.push({
@@ -122,12 +123,11 @@ async function createSale(saleData) {
     }
     
     const newSale = {
-      id: docRef.id,
-      ...saleRecord,
-      timestamp: new Date().toISOString()
+      id: saleId,
+      ...saleRecord
     };
     
-    Logger.info(`Venta procesada exitosamente: ${docRef.id}`);
+    Logger.info(`Venta procesada exitosamente: ${saleId}`);
     return newSale;
     
   } catch (error) {
