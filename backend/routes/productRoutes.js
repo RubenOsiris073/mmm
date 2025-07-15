@@ -26,6 +26,53 @@ router.get('/', async (req, res) => {
   }
 });
 
+// POST /api/products - Crear nuevo producto
+router.post('/', async (req, res) => {
+  try {
+    const productData = req.body;
+    
+    Logger.info('Creando nuevo producto:', productData.nombre);
+    
+    // Validar datos requeridos
+    if (!productData.nombre || !productData.categoria || !productData.precio) {
+      return res.status(400).json({
+        success: false,
+        error: 'Faltan campos requeridos: nombre, categoria, precio'
+      });
+    }
+
+    // Preparar datos del producto
+    const newProduct = {
+      ...productData,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      activo: true,
+      stockInitialized: true,
+      // Si viene con initialQuantity, usar esa cantidad como stock inicial
+      cantidad: productData.initialQuantity || productData.cantidad || 0
+    };
+
+    // Crear producto usando el servicio
+    const result = await productService.createProduct(newProduct);
+    
+    Logger.info(`Producto creado exitosamente: ${result.id}`);
+    
+    res.status(201).json({
+      success: true,
+      message: 'Producto creado exitosamente',
+      id: result.id,
+      product: result
+    });
+  } catch (error) {
+    Logger.error('Error creando producto:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Error al crear producto',
+      message: error.message
+    });
+  }
+});
+
 // Nuevo endpoint para inicializar stock automáticamente
 router.post('/initialize-stock', async (req, res) => {
   try {

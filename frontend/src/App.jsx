@@ -23,6 +23,7 @@ import useRouteLoading from './hooks/useRouteLoading';
 const Navigation = lazy(() => import('./components/layout/Navigation'));
 const ProductsPage = lazy(() => import('./pages/ProductsPage'));
 const ProductFormPage = lazy(() => import('./pages/ProductFormPage'));
+const ProductRegistrationPage = lazy(() => import('./pages/ProductRegistrationPage'));
 const ProveedorView = lazy(() => import('./components/proveedor/ProveedorView'));
 const SalesPage = lazy(() => import('./pages/SalesPage'));
 const CameraPage = lazy(() => import('./pages/CameraPage'));
@@ -102,6 +103,14 @@ const AppRoutes = () => {
         <ProtectedRoute requireAuth={true}>
           <MainLayout>
             <ProductFormPage />
+          </MainLayout>
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/products/register" element={
+        <ProtectedRoute requireAuth={true}>
+          <MainLayout>
+            <ProductRegistrationPage />
           </MainLayout>
         </ProtectedRoute>
       } />

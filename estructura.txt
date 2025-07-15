@@ -1,394 +1,286 @@
-ESTRUCTURA DE LA APLICACIÓN
-==========================
+ESTRUCTURA DEL PROYECTO FISGO-MONKEY-TECH
+==========================================
 
-1. ARQUITECTURA GENERAL
-   - Aplicación dockerizada (Docker + Docker Compose)
-   - Estructura de microservicios (Backend y Frontend separados)
-   - Configuración de entorno (.env)
-   - Sistema de integración continua (reset.sh)
-
-2. BACKEND (Node.js)
-   2.1. CONFIGURACIÓN
-       - Dockerfile para contenedorización
-       - Configuración de servidor (config/config.js)
-       - Integración con Firebase (config/firebase.js)
-   
-   2.2. API REST
-       - Servidor principal (server.js)
-       - Rutas:
-           * detectionRoutes.js - Manejo de detección de objetos
-           * inventoryRoutes.js - Gestión de inventario
-           * productRoutes.js - CRUD de productos
-           * salesRoutes.js - Gestión de ventas
-           * transactionsRoutes.js - Transacciones financieras
-   
-   2.3. CONTROLADORES
-       - detectionControllers.js - Lógica de detección de objetos
-   
-   2.4. SERVICIOS
-       - detectionService.js - Servicio de detección de objetos con TensorFlow
-       - inventoryService.js - Lógica de negocio para inventario
-       - productService.js - Gestión de productos
-       - salesService.js - Procesamiento de ventas
-       - storageService.js - Almacenamiento de datos
-       - transactionsService.js - Gestión de transacciones
-       - webcamService.js - Interacción con cámara
-   
-   2.5. MODELO DE IA
-       - models/metadata.json - Metadatos del modelo tensor
-       - models/model.json - Definición del modelo
-       - models/weights.bin - Pesos del modelo entrenado
-   
-   2.6. UTILIDADES
-       - utils/firebaseUtils.js - Funciones de ayuda para Firebase
-       - utils/helpers.js - Funciones de utilidad general
-
-3. FRONTEND (React.js)
-   3.1. CONFIGURACIÓN
-       - Dockerfile para contenedorización
-       - nginx.conf - Configuración del servidor web
-       - Punto de entrada (src/index.js, App.js)
-   
-   3.2. PÁGINAS PRINCIPALES
-       - CameraPage.jsx - Página de captura y detección
-       - POSPage.jsx - Punto de venta (POS)
-       - ProductFormPage.jsx - Formulario de productos
-       - ProductsPage.jsx - Listado de productos
-       - SalesPage.jsx - Historial de ventas
-       - WalletPage.jsx - Gestión de pagos
-   
-   3.3. COMPONENTES
-       3.3.1. DETECCIÓN DE OBJETOS
-           - ObjectDetection.jsx - Componente principal de detección
-           - camera/Camera.jsx - Control de cámara
-           - camera/CameraView.jsx - Vista de cámara
-           - camera/PredictionDisplay.jsx - Visualización de predicciones
-       
-       3.3.2. INVENTARIO
-           - inventory/AutomaticRegistration.jsx - Registro automático
-           - inventory/BarcodeScanner.jsx - Escaneo de códigos de barras
-           - inventory/BatchProductForm.jsx - Formulario de productos por lote
-           - inventory/BatchProductList.jsx - Lista de productos por lote
-           - inventory/CamaraDetector.jsx - Detector con cámara
-           - inventory/InventoryView.jsx - Vista de inventario
-           - inventory/RegisteredProducts.jsx - Productos registrados
-           - inventory/UpdateModal.jsx - Modal de actualización
-       
-       3.3.3. PUNTO DE VENTA (POS)
-           - pos/DebugPanel.jsx - Panel de depuración
-           - pos/LastAddedProductAlert.jsx - Alerta de últimos productos
-           - pos/ObjectDetection.jsx - Detección de objetos en POS
-           - pos/POSView.jsx - Vista principal del POS
-           - pos/PaymentModal.jsx - Modal de pago
-           - pos/ProductDetectionPanel.jsx - Panel de detección
-           - pos/ProductList.jsx - Lista de productos
-           - pos/ShoppingCart.jsx - Carrito de compras
-       
-       3.3.4. GESTIÓN DE PRODUCTOS
-           - products/ProductDetailForm.jsx - Formulario de detalles
-           - products/ProductGrid.jsx - Cuadrícula de productos
-           - products/ProductItem.jsx - Elemento de producto
-           - products/ProductList.jsx - Lista de productos
-       
-       3.3.5. VENTAS
-           - sales/SalesHistory.jsx - Historial de ventas
-       
-       3.3.6. LAYOUT
-           - layout/Navigation.jsx - Navegación
-           - layout/Footer.jsx - Pie de página
-   
-   3.4. HOOKS PERSONALIZADOS
-       - hooks/useInventory.js - Lógica de inventario
-       - pos/hooks/useCart.js - Lógica de carrito
-       - pos/hooks/useDetection.js - Lógica de detección
-       - pos/hooks/usePayment.js - Lógica de pagos
-       - pos/hooks/useProductData.js - Datos de productos
-   
-   3.5. SERVICIOS
-       - services/apiService.js - Cliente API para backend
-       - services/bodegaService.js - Servicio de bodega
-       - services/detectionService.js - Servicio de detección
-       - services/firebase.js - Configuración de Firebase
-       - services/storageService.js - Almacenamiento
-   
-   3.6. UTILIDADES
-       - utils/helpers.js - Funciones de utilidad
-
-4. INTEGRACIÓN Y DESPLIEGUE
-   - docker-compose.yml - Orquestación de servicios
-   - .dockerignore - Exclusiones para Docker
-   - estructura.txt - Documentación de estructura
-
- ---------------------------------------------------------------------------
-
-ANÁLISIS ARQUITECTÓNICO DEL PROYECTO PRODUCTOS-REACT
 VISIÓN GENERAL
-Este proyecto implementa una aplicación completa para gestión de inventario y punto de venta (POS) con capacidades de detección de objetos mediante inteligencia artificial. La arquitectura sigue un patrón cliente-servidor con un enfoque moderno de desarrollo web.
+==============
+Sistema integral de gestión de productos y punto de venta (POS) con capacidades de detección mediante inteligencia artificial. Implementa una arquitectura cliente-servidor moderna con refactorización completa hacia un modelo de datos consolidado centrado en productos.
+
+ARQUITECTURA REFACTORIZADA (2025)
+=================================
+✅ CONSOLIDACIÓN COMPLETADA:
+- Eliminación de inventoryService.js y inventoryRoutes.js
+- Integración completa de stock en productService.js
+- Modelo de datos unificado: productos con campo 'cantidad' integrado
+- Eliminación de colección separada de inventario en Firebase
+- API centralizada para gestión de productos y stock
 
 1. ARQUITECTURA GENERAL
-Patrón de Diseño Principal
-Arquitectura Cliente-Servidor: Separación clara entre frontend (React) y backend (Node.js)
-Microservicios Ligeros: Servicios separados con responsabilidades específicas
-Despliegue Containerizado: Uso de Docker para encapsular servicios
-Aplicación dockerizada (Docker + Docker Compose)
-Estructura de microservicios (Backend y Frontend separados)
-Configuración de entorno (.env)
-Sistema de integración continua (reset.sh)
+=======================
+- Aplicación dockerizada (Docker + Docker Compose)
+- Arquitectura Cliente-Servidor con separación clara
+- Microservicios ligeros con responsabilidades específicas
+- Base de datos Firebase Firestore con modelo consolidado
+- Sistema de autenticación Firebase Auth
+- Despliegue containerizado con Nginx
 
-2. BACKEND (Node.js)
-Estructura por Capas
-backend/
-├── config/          # Configuraciones (Firebase, variables de entorno)
-├── controllers/     # Controladores (lógica de manejo de peticiones)
-├── models/          # Modelos de IA para detección 
-├── routes/          # Enrutadores API REST
-├── services/        # Servicios de negocio
-└── utils/           # Utilidades compartidas
+2. BACKEND (Node.js + Express)
+==============================
 
 2.1. CONFIGURACIÓN
-Dockerfile para contenedorización
-Configuración de servidor (config/config.js)
-Integración con Firebase (config/firebase.js)
-Autenticación
-Base de datos Firestore
+------------------
+backend/config/
+├── firebaseManager.js      # Configuración centralizada de Firebase Admin
+├── config.js              # Variables de entorno y configuración
+└── credentials/            # Credenciales encriptadas
 
-2.2. API REST
-Servidor principal (server.js)
-Rutas:
-detectionRoutes.js - Endpoints para detección de objetos
-inventoryRoutes.js - Gestión de operaciones de inventario
-productRoutes.js - CRUD completo de productos
-salesRoutes.js - Gestión de ventas y facturación
-transactionsRoutes.js - Operaciones financieras
+2.2. ESTRUCTURA DE DATOS CONSOLIDADA
+------------------------------------
+COLECCIONES FIREBASE:
+- products/                 # Colección principal (incluye stock integrado)
+  ├── id                   # ID único del producto
+  ├── nombre               # Nombre del producto
+  ├── precio               # Precio unitario
+  ├── categoria            # Categoría del producto
+  ├── cantidad             # ✅ STOCK INTEGRADO (antes separado)
+  ├── stockMinimo          # Stock mínimo para alertas
+  ├── detectionId          # ID para mapeo con detección IA
+  ├── precisionDeteccion   # Confianza de la detección
+  ├── fechaCaducidad       # Fecha de vencimiento
+  ├── perecedero           # Booleano si es perecedero
+  ├── ubicacion            # Ubicación física
+  └── ...                  # Otros campos del producto
 
-2.3. CONTROLADORES
-detectionControllers.js - Lógica de detección de objetos
-Procesamiento de imágenes
-Integración con modelos de IA
-Respuesta de detecciones
+- sales/                    # Ventas realizadas
+- inventory_movements/      # Movimientos de stock (auditoría)
 
-2.4. SERVICIOS
-detectionService.js - Servicio de detección de objetos con TensorFlow
-Carga y ejecución de modelos de ML
-Preprocesamiento y postprocesamiento de imágenes
-Identificación de productos basada en imágenes
-inventoryService.js - Lógica de negocio para inventario
-Actualización de existencias
-Registro de movimientos
-productService.js - Gestión de productos
-CRUD completo de catálogo
-Categorización y búsqueda
-salesService.js - Procesamiento de ventas
-Creación de transacciones
-Cálculo de totales e impuestos
-storageService.js - Almacenamiento de datos
-Persistencia en Firebase
-Sincronización de datos
-transactionsService.js - Gestión de transacciones
-Registro financiero
-Auditoría de operaciones
-webcamService.js - Interacción con cámara
-Captura de imágenes
-Configuración de dispositivos
+2.3. API REST CONSOLIDADA
+-------------------------
+backend/routes/
+├── productRoutes.js        # ✅ CRUD completo + gestión de stock
+│   ├── GET /api/products                    # Listar productos
+│   ├── GET /api/products/:id               # Obtener producto específico
+│   ├── POST /api/products                  # Crear producto
+│   ├── PUT /api/products/:id               # Actualizar producto
+│   ├── PUT /api/products/:id/stock         # ✅ Actualizar stock
+│   └── DELETE /api/products/:id            # Eliminar producto
+├── detectionRoutes.js      # Detección de productos con IA
+│   ├── POST /api/detection/detect          # Detectar producto en imagen
+│   ├── GET /api/detection/recent           # Obtener detecciones recientes
+│   └── GET /api/detection/status           # Estado del servicio
+├── salesRoutes.js          # Gestión de ventas
+└── transactionsRoutes.js   # Transacciones financieras
 
-2.5. MODELO DE IA
-models/metadata.json - Metadatos del modelo tensor
-Configuración de clases y etiquetas
-Parámetros del modelo
-models/model.json - Definición del modelo
-Arquitectura de la red neuronal
-models/weights.bin - Pesos del modelo entrenado
-Parámetros aprendidos
-2.6. UTILIDADES
-utils/firebaseUtils.js - Funciones de ayuda para Firebase
-Inicialización
-Consultas reutilizables
-utils/helpers.js - Funciones de utilidad general
-Transformación de datos
-Validaciones
+❌ ELIMINADOS EN REFACTORIZACIÓN:
+- inventoryRoutes.js        # Funcionalidad movida a productRoutes.js
+- inventoryService.js       # Lógica integrada en productService.js
+
+2.4. SERVICIOS REFACTORIZADOS
+-----------------------------
+backend/services/
+├── productService.js       # ✅ SERVICIO PRINCIPAL CONSOLIDADO
+│   ├── getAllProducts()                    # Obtener todos los productos
+│   ├── createProduct()                     # Crear producto con stock inicial
+│   ├── updateProductStock()                # ✅ Actualizar stock integrado
+│   ├── getProductById()                    # Obtener producto específico
+│   └── searchProducts()                    # Búsqueda de productos
+├── detectionService.js     # Detección con TensorFlow.js
+│   ├── performDetection()                  # Procesar imagen
+│   ├── getRecentDetections()               # Historial de detecciones
+│   └── findProductByLabel()                # Mapear detección a producto
+├── salesService.js         # Procesamiento de ventas
+│   └── updateProductStock()                # ✅ Usa productService
+└── storageService.js       # Almacenamiento Firebase
+
+2.5. SCRIPTS REFACTORIZADOS
+---------------------------
+backend/scripts/
+├── initializeProducts.js   # ✅ Usa firebaseManager centralizado
+├── cleanFakeSales.js      # ✅ Usa firestore admin
+└── generateSales.js       # ✅ Usa firestore admin
+
+2.6. MODELO DE IA
+-----------------
+backend/models/
+├── metadata.json          # Metadatos del modelo TensorFlow
+├── model.json            # Arquitectura de la red neuronal
+└── weights.bin           # Pesos entrenados
 
 3. FRONTEND (React.js)
-Arquitectura de Componentes
+======================
 
-frontend/src/
-├── components/      # Componentes React reutilizables
-│   ├── camera/      # Componentes de cámara y detección
-│   ├── inventory/   # UI para gestión de inventario
-│   ├── layout/      # Elementos de interfaz compartidos
-│   ├── pos/         # Sistema de punto de venta
-│   └── products/    # UI para gestión de productos
-├── pages/           # Contenedores de página
-├── services/        # Servicios de datos y API
-├── hooks/           # Custom hooks de React
-└── utils/           # Utilidades generales
+3.1. PÁGINAS PRINCIPALES
+------------------------
+frontend/src/pages/
+├── ProductsPage.jsx                # Gestión de productos
+├── ProductRegistrationPage.jsx    # ✅ NUEVA: Registro con detección IA
+├── POSMainPage.jsx                # Punto de venta
+├── SalesPage.jsx                  # Historial de ventas
+├── DashboardPage.jsx              # Dashboard principal
+└── AuthenticationPage.jsx         # Autenticación
 
-3.1. CONFIGURACIÓN
-Dockerfile para contenedorización
-nginx.conf - Configuración del servidor web
-Servidor de archivos estáticos
-Proxy reverso para API
-Punto de entrada (src/index.js, App.js)
-Inicialización de la aplicación
-Configuración de rutas
-Proveedores de contexto
-3.2. PÁGINAS PRINCIPALES
-CameraPage.jsx - Página de captura y detección
-Interfaz de cámara para escaneo
-POSPage.jsx - Punto de venta (POS)
-Terminal completa de ventas
-ProductFormPage.jsx - Formulario de productos
-Creación y edición de productos
-ProductsPage.jsx - Listado de productos
-Visualización del catálogo
-SalesPage.jsx - Historial de ventas
-Registro y consulta de transacciones
-WalletPage.jsx - Gestión de pagos
-Información financiera
+3.2. COMPONENTES DE PRODUCTOS CON IA
+-----------------------------------
+frontend/src/components/products/
+├── CameraDetectionComponent.jsx    # ✅ NUEVO: Cámara para detección
+├── ProductRegistrationForm.jsx    # ✅ NUEVO: Formulario completo
+├── ProductUpdateForm.jsx          # ✅ NUEVO: Actualización de stock
+├── ProductGrid.jsx               # Cuadrícula de productos
+├── ProductList.jsx               # Lista de productos
+└── [otros componentes existentes]
 
-3.3. COMPONENTES
-3.3.1. DETECCIÓN DE OBJETOS
-ObjectDetection.jsx - Componente principal de detección
-Integración completa del flujo de detección
-camera/Camera.jsx - Control de cámara
-Acceso y configuración del hardware
-camera/CameraView.jsx - Vista de cámara
-Interfaz de usuario para captura
-camera/PredictionDisplay.jsx - Visualización de predicciones
-Muestra resultados de la IA
+3.3. SISTEMA POS REFACTORIZADO
+------------------------------
+frontend/src/components/pos/
+├── POSView.jsx                    # ✅ Vista principal (sin webcam temporal)
+├── ProductList.jsx               # Lista de productos
+├── CartPanel.jsx                 # Panel del carrito
+├── PaymentModal.jsx              # Modal de pago
+└── hooks/
+    ├── useCart.js                # Lógica del carrito
+    ├── usePayment.js             # Procesamiento de pagos
+    └── useProductData.js         # ✅ Datos de productos consolidados
 
-3.3.2. INVENTARIO
-inventory/AIDetectionRegistration.jsx - Registro con IA
-Detección automática para inventario
-inventory/AutomaticRegistration.jsx - Registro automático
-Flujo para agregar productos detectados
-inventory/BarcodeScanner.jsx - Escaneo de códigos de barras
-Lectura de códigos para identificación rápida
-inventory/BatchProductForm.jsx - Formulario de productos por lote
-Registro masivo de productos
-inventory/BatchProductList.jsx - Lista de productos por lote
-Visualización de lotes para agregar
-inventory/CamaraDetector.jsx - Detector con cámara
-Integración de cámara específica para inventario
-inventory/Inventory.jsx - Componente principal de inventario
-Coordinación de subcomponentes
-inventory/InventoryView.jsx - Vista de inventario
-Interfaz principal del módulo
-inventory/RegisteredProducts.jsx - Productos registrados
-Listado de productos en inventario
-inventory/UpdateModal.jsx - Modal de actualización
-Edición rápida de datos
+3.4. SERVICIOS FRONTEND REFACTORIZADOS
+--------------------------------------
+frontend/src/services/
+├── apiService.js                 # ✅ Cliente API consolidado
+│   ├── getProducts()                      # Obtener productos
+│   ├── createProduct()                    # ✅ NUEVO: Crear producto
+│   ├── updateProductStock()               # ✅ Actualizar stock
+│   ├── triggerDetection()                 # ✅ NUEVO: Detección IA
+│   ├── getDetections()                    # ✅ NUEVO: Historial detecciones
+│   └── getDetectionStatus()               # ✅ NUEVO: Estado detección
+├── storageService.js             # ✅ Refactorizado para usar backend API
+│   ├── getProducts()                      # ✅ Usa response.data.data
+│   ├── getProductsWithSafeDates()         # ✅ Manejo de fechas
+│   └── getDetections()                    # ✅ Usa apiService
+└── firebase.js                  # Configuración Firebase Client
 
-3.3.3. PUNTO DE VENTA (POS)
-pos/DebugPanel.jsx - Panel de depuración
-Herramientas para desarrollo
-pos/LastAddedProductAlert.jsx - Alerta de últimos productos
-Notificación de productos agregados
-pos/POSView.jsx - Vista principal del POS
-Terminal de ventas completa
-pos/PaymentModal.jsx - Modal de pago
-Proceso de cobro y cierre de venta
-pos/ProductDetectionPanel.jsx - Panel de detección
-Integración de IA en el POS
-pos/ProductList.jsx - Lista de productos
-Catálogo para selección
-pos/ShoppingCart.jsx - Carrito de compras
-Gestión de productos seleccionados
+4. FLUJO DE DETECCIÓN DE PRODUCTOS IMPLEMENTADO
+==============================================
 
-3.3.4. GESTIÓN DE PRODUCTOS
-products/ProductDetailForm.jsx - Formulario de detalles
-Edición completa de información
-products/ProductGrid.jsx - Cuadrícula de productos
-Visualización en formato grid
-products/ProductItem.jsx - Elemento de producto
-Tarjeta individual de producto
-products/ProductList.jsx - Lista de productos
-Visualización en formato lista
+4.1. FLUJO COMPLETO DE REGISTRO CON CÁMARA
+------------------------------------------
+```
+[Inicio] → [Seleccionar Método] → [Activar Cámara] → [Capturar Imagen]
+    ↓
+[Enviar a Backend] → [Procesar con TensorFlow] → [¿Detección Exitosa?]
+    ↓                                                      ↓
+[Buscar Producto] → [¿Existe?] → [Formulario Simplificado] → [Actualizar Stock]
+    ↓                    ↓
+[Formulario Completo] → [Crear Producto] → [Establecer Stock Inicial]
+```
 
-3.3.5. VENTAS
-SalesHistory/SalesHistory.jsx - Historial de ventas
-Registro de transacciones pasadas
-SalesHistory/InvoiceModal.jsx - Generación de facturas
-Creación de documentos PDF
+4.2. COMPONENTES DEL FLUJO
+--------------------------
+- ProductRegistrationPage.jsx: Coordinador principal
+- CameraDetectionComponent.jsx: Captura y detección
+- ProductUpdateForm.jsx: Para actualizar stock de productos existentes
+- ProductRegistrationForm.jsx: Para productos nuevos
 
-3.3.6. LAYOUT
-layout/Navigation.jsx - Navegación
-Menú principal y estructura de la interfaz
-layout/Footer.jsx - Pie de página
-Información de contacto y copyright
+4.3. ENDPOINTS DE DETECCIÓN
+---------------------------
+- POST /api/detection/detect: Procesar imagen
+- GET /api/detection/recent: Historial de detecciones
+- GET /api/detection/status: Estado del servicio
 
-3.4. HOOKS PERSONALIZADOS
-hooks/useInventory.js - Lógica de inventario
-Estado y operaciones de inventario
-pos/hooks/useCart.js - Lógica de carrito
-Gestión del estado del carrito
-pos/hooks/useDetection.js - Lógica de detección
-Integración con IA en componentes
-pos/hooks/usePayment.js - Lógica de pagos
-Procesamiento de métodos de pago
-pos/hooks/useProductData.js - Datos de productos
-Acceso y filtrado de catálogo
+5. NAVEGACIÓN Y RUTAS
+====================
+frontend/src/App.jsx - Rutas principales:
+├── /products                     # Gestión de productos
+├── /products/new                 # Nuevo producto manual
+├── /products/register            # ✅ NUEVO: Registro con cámara
+├── /pos                         # Punto de venta
+├── /sales                       # Historial de ventas
+└── /dashboard                   # Dashboard principal
 
-3.5. SERVICIOS
-services/apiService.js - Cliente API para backend
-Centraliza todas las peticiones al backend
-Gestión de errores y respuestas
-services/bodegaService.js - Servicio de bodega
-Gestión especializada de bodegas
-services/detectionService.js - Servicio de detección
-Integración con la API de detección
-services/firebase.js - Configuración de Firebase
-Inicialización y configuración del SDK
-services/storageService.js - Almacenamiento
-Persistencia de datos en navegador
+Navigation.jsx - Menú lateral:
+├── "Productos" → /products
+├── "Nuevo Producto" → /products/new
+├── "Registrar con Cámara" → /products/register  # ✅ NUEVO
+├── "Punto de Venta" → /pos
+└── [otros enlaces]
 
-3.6. UTILIDADES
-utils/helpers.js - Funciones de utilidad
-Transformación de datos y formateo
-utils/pdfGenerator.js - Generación de PDF
-Creación de facturas e informes
-4. INTEGRACIÓN Y DESPLIEGUE
-docker-compose.yml - Orquestación de servicios
-Definición de servicios frontend y backend
-Configuración de redes y volúmenes
-.dockerignore - Exclusiones para Docker
-Optimización de imágenes
-estructura.txt - Documentación de estructura
-Referencia de la arquitectura
+6. TECNOLOGÍAS Y DEPENDENCIAS
+=============================
 
-5. PATRONES ARQUITECTÓNICOS IMPLEMENTADOS
-Patrón MVC (Model-View-Controller):
+6.1. BACKEND
+------------
+- Node.js + Express.js
+- Firebase Admin SDK
+- TensorFlow.js (Node)
+- Multer para archivos
+- CORS, Helmet (seguridad)
 
-Modelo: Servicios y acceso a datos
-Vista: Componentes React
-Controlador: Rutas API y controladores
-Patrón de Repositorio:
+6.2. FRONTEND
+-------------
+- React.js 18+
+- React Router DOM
+- React Bootstrap
+- React Icons
+- Axios (HTTP client)
+- React Webcam (para cámara)  # ✅ NUEVO
 
-Abstracción del acceso a datos con Firebase
-Arquitectura de Microservicios Ligeros:
+6.3. BASE DE DATOS
+------------------
+- Firebase Firestore (NoSQL)
+- Firebase Authentication
+- Firebase Storage (imágenes)
 
-Servicios backend separados por dominio
-Composición de Componentes React:
+6.4. DEVOPS
+-----------
+- Docker + Docker Compose
+- Nginx (proxy reverso)
+- Variables de entorno (.env)
 
-Reutilización mediante componentes y custom hooks
-Inyección de Dependencias:
+7. ESTADO ACTUAL DEL PROYECTO
+=============================
 
-Servicios que reciben dependencias configurables
+✅ COMPLETADO:
+- Refactorización completa del modelo de datos
+- Eliminación de inventoryService e inventoryRoutes
+- Consolidación de stock en productService
+- Sistema de detección con cámara implementado
+- Flujo completo de registro de inventario
+- API endpoints para detección
+- Componentes frontend para registro con IA
+- Navegación actualizada
+- Scripts de backend refactorizados
 
-6. TECNOLOGÍAS CLAVE
-Frontend:
+🔄 EN PROGRESO:
+- Testing del flujo completo de detección
+- Optimización de la precisión del modelo IA
+- Mejoras en la interfaz de usuario
 
-React.js para UI
-Bootstrap/React-Bootstrap para estilos
-Custom hooks para lógica reutilizable
-TensorFlow.js para ML en navegador
-Backend:
+📋 PENDIENTE:
+- Documentación de API completa
+- Tests unitarios y de integración
+- Optimización de rendimiento
+- Deployment en producción
 
-Node.js con Express
-Firebase como base de datos y almacenamiento
-TensorFlow.js para procesamiento de imágenes
-DevOps:
+8. PATRONES ARQUITECTÓNICOS
+==========================
+- Single Source of Truth: Productos con stock integrado
+- Repository Pattern: Abstracción de acceso a datos
+- Service Layer: Lógica de negocio centralizada
+- Component Composition: Reutilización de componentes React
+- Custom Hooks: Lógica reutilizable en frontend
+- API Gateway Pattern: Centralización de endpoints
 
-Docker para containerización
-Nginx como proxy inverso y servidor web
+9. SEGURIDAD
+============
+- Autenticación Firebase Auth
+- Autorización por rutas protegidas
+- Validación de datos en backend
+- Sanitización de inputs
+- CORS configurado
+- Headers de seguridad (Helmet)
+
+10. MONITOREO Y LOGS
+===================
+- Sistema de logging centralizado
+- Métricas de detección IA
+- Auditoría de movimientos de stock
+- Logs de errores y excepciones
 
 

@@ -42,9 +42,9 @@ const POSView = () => {
     });
 
     if (!searchTerm) return productsWithStock;
-    
+
     const term = searchTerm.toLowerCase();
-    return productsWithStock.filter(product => 
+    return productsWithStock.filter(product =>
       (product.nombre && product.nombre.toLowerCase().includes(term)) ||
       (product.name && product.name.toLowerCase().includes(term)) ||
       (product.codigo && product.codigo.toLowerCase().includes(term))
@@ -78,7 +78,7 @@ const POSView = () => {
   useEffect(() => {
     loadProducts();
   }, []);
-  
+
   // Escuchar evento para limpiar carrito después de venta exitosa
   useEffect(() => {
     const handleSaleCompleted = () => {

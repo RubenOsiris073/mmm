@@ -482,6 +482,22 @@ const apiService = {
       console.error('Error obteniendo estado de detección:', error.message);
       throw error;
     }
+  },
+
+  // Función para crear producto
+  createProduct: async (productData) => {
+    try {
+      console.log('Creando producto:', productData);
+      const response = await api.post('/products', productData);
+      
+      // Invalidar caché de productos
+      cache.delete('products');
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error creando producto:', error.message);
+      throw error;
+    }
   }
 };
 

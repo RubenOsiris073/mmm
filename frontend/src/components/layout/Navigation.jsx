@@ -15,7 +15,8 @@ import {
   FaMoon,
   FaArrowRight,
   FaArrowLeft,
-  FaBell
+  FaBell,
+  FaCamera
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -211,6 +212,15 @@ const Navigation = ({ onSidebarToggle }) => {
           >
             <FaReceipt className="sidebar-icon" />
             {!collapsed && <span>Nuevo Producto</span>}
+          </Nav.Link>
+          
+          <Nav.Link 
+            as={Link} 
+            to="/products/register" 
+            className={`sidebar-menu-item ${isActive('/products/register') ? 'active' : ''}`}
+          >
+            <FaCamera className="sidebar-icon" />
+            {!collapsed && <span>Registrar con Cámara</span>}
           </Nav.Link>
         </div>
       </Nav>
