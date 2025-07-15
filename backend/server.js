@@ -17,7 +17,6 @@ const authController = require('./controllers/authController');
 
 // Importar rutas
 const productRoutes = require('./routes/productRoutes');
-const inventoryRoutes = require('./routes/inventoryRoutes');
 const detectionRoutes = require('./routes/detectionRoutes');
 const salesRoutes = require('./routes/salesRoutes');
 const transactionsRoutes = require('./routes/transactionsRoutes');
@@ -27,7 +26,6 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const logsRoutes = require('./routes/logsRoutes');
 
 // Importar servicios
-const inventoryService = require('./services/inventoryService');
 const googleSheetsService = require('./services/googleSheetsService');
 
 // Importar logger mejorado
@@ -73,7 +71,6 @@ apiRouter.post('/auth/logout', (req, res, next) => {
 
 // Registrar sub-rutas en el router principal
 apiRouter.use('/products', productRoutes);
-apiRouter.use('/inventory', inventoryRoutes);
 apiRouter.use('/detection', detectionRoutes);
 apiRouter.use('/sales', salesRoutes);
 apiRouter.use('/transactions', transactionsRoutes);
@@ -117,8 +114,7 @@ app.use(errorHandler);
     const { firebaseManager } = require('./config/firebaseManager');
     await firebaseManager.initialize();
     
-    Logger.info("Inicializando inventario...");
-    await inventoryService.initializeInventory();
+    Logger.info("Inventario integrado en productos - no requiere inicialización separada");
     
     Logger.info("Inicializando servicio de Google Sheets...");
     await googleSheetsService.initialize();
@@ -161,11 +157,9 @@ app.listen(PORT, HOST, () => {
   Logger.info('  - PUT /api/products/:id - Actualizar producto');
   Logger.info('  - DELETE /api/products/:id - Eliminar producto');
   
-  Logger.info('Inventario:');
-  Logger.info('  - GET /api/inventory - Listar inventario');
-  Logger.info('  - POST /api/inventory/update - Actualizar inventario');
-  Logger.info('  - GET /api/inventory/movements - Movimientos de inventario');
-  Logger.info('  - GET /api/inventory/summary - Resumen de inventario');
+  Logger.info('Stock (integrado en productos):');
+  Logger.info('  - PUT /api/products/:id/stock - Actualizar stock de producto');
+  Logger.info('  - GET /api/products/:id - Ver stock en datos del producto');
   
   Logger.info('Ventas:');
   Logger.info('  - GET /api/sales - Listar ventas');

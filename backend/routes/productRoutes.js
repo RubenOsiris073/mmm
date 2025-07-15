@@ -3,7 +3,6 @@ const router = express.Router();
 const { COLLECTIONS } = require('../config/firebaseManager');
 const firestore = require('../utils/firestoreAdmin');
 const productService = require('../services/productService');
-const inventoryService = require('../services/inventoryService');
 const Logger = require('../utils/logger.js');
 
 // GET /api/products - Usar el servicio automatizado
@@ -87,10 +86,9 @@ router.get('/stock-summary', async (req, res) => {
 // GET /api/products/:id - DESPUÉS de las rutas específicas
 router.get('/:id', async (req, res) => {
   try {
-    const productRef = doc(db, COLLECTIONS.PRODUCTS, req.params.id);
-    const productDoc = await getDoc(productRef);
+    const productDoc = await firestore.collection(COLLECTIONS.PRODUCTS).doc(req.params.id).get();
 
-    if (!productDoc.exists()) {
+    if (!productDoc.exists) {
       return res.status(404).json({ 
         error: 'Producto no encontrado' 
       });
@@ -157,18 +155,10 @@ router.delete('/:id', async (req, res) => {
     
     Logger.info(`Eliminando producto completo: ${id}`);
     
-    // Primero eliminar del inventario si existe
-    try {
-      await inventoryService.updateStock(id, -999999, 'warehouse', 'Eliminación de producto');
-    } catch (inventoryError) {
-      Logger.info(`Producto ${id} no encontrado en inventario o ya sin stock`);
-    }
+    // Obtener el producto antes de eliminarlo
+    const productDoc = await firestore.collection(COLLECTIONS.PRODUCTS).doc(id).get();
     
-    // Luego eliminar del catálogo de productos
-    const productRef = doc(db, COLLECTIONS.PRODUCTS, id);
-    const productDoc = await getDoc(productRef);
-    
-    if (!productDoc.exists()) {
+    if (!productDoc.exists) {
       return res.status(404).json({
         success: false,
         error: 'Producto no encontrado'
@@ -176,7 +166,9 @@ router.delete('/:id', async (req, res) => {
     }
     
     const productData = productDoc.data();
-    await deleteDoc(productRef);
+    
+    // Eliminar el producto (el stock está integrado en el mismo documento)
+    await productDoc.ref.delete();
     
     Logger.info(`Producto eliminado: ${productData.nombre || id}`);
     
