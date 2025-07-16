@@ -188,8 +188,8 @@ const MobileWalletPayment = ({ amount, items, onPaymentConfirmed }) => {
     );
   }
 
-  // Renderizar botón de testing en el título usando portal
-  const testButtonContainer = document.getElementById('test-button-container');
+  // Renderizar botón de testing en el header usando portal
+  const testButtonContainer = document.getElementById('test-button-container-header');
   const testButton = testButtonContainer && createPortal(
     <Button
       variant="warning"

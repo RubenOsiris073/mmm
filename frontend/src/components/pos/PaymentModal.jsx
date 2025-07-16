@@ -63,19 +63,14 @@ const PaymentModal = ({
       className="payment-modal-custom"
     >
       <Modal.Header closeButton className="payment-modal-header">
-        <Modal.Title className="payment-modal-title">Procesar Pago</Modal.Title>
+        <Modal.Title className="payment-modal-title">App Móvil Wallet</Modal.Title>
+        <div id="test-button-container-header" className="ms-auto me-3">
+          {/* El botón de testing se renderizará aquí */}
+        </div>
       </Modal.Header>
       <Modal.Body className="payment-modal-body">
         <Form>
-          <div className="mb-4 d-flex justify-content-between align-items-center">
-            <div>
-              <div className="payment-form-label mb-1">Método de Pago</div>
-              <div className="payment-method-title">App Móvil Wallet</div>
-            </div>
-            <div id="test-button-container">
-              {/* El botón de testing se renderizará aquí */}
-            </div>
-          </div>
+
 
           {/* {paymentMethod === 'efectivo' && (
             <>
