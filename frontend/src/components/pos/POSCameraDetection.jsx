@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Card, Button, Alert, Spinner, Row, Col, Badge } from 'react-bootstrap';
-import { FaCamera, FaStop, FaSync, FaShoppingCart } from 'react-icons/fa';
+import { FaCamera, FaStop, FaSync } from 'react-icons/fa';
 import Webcam from 'react-webcam';
 import { toast } from 'react-toastify';
 import './styles/POSCameraDetection.css';
@@ -55,85 +55,7 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
     toast.info('Cámara desactivada');
   }, []);
 
-  // Toggle continuous detection mode
-  const toggleContinuousMode = useCallback(() => {
-    if (!isWebcamActive) {
-      toast.warning('Primero activa la cámara');
-      return;
-    }
-
-    const newContinuousMode = !isContinuousMode;
-    setIsContinuousMode(newContinuousMode);
-
-    if (newContinuousMode) {
-      // Start continuous detection
-      toast.info('Modo continuo activado - Detección automática cada 1.5s');
-      detectionIntervalRef.current = setInterval(async () => {
-        await performFastDetection(true);
-      }, 1500); // Every 1.5 seconds
-    } else {
-      // Stop continuous detection
-      if (detectionIntervalRef.current) {
-        clearInterval(detectionIntervalRef.current);
-        detectionIntervalRef.current = null;
-      }
-      toast.info('Modo continuo desactivado');
-    }
-  }, [isWebcamActive, isContinuousMode, performFastDetection]);
-
-  // Cleanup on unmount
-  React.useEffect(() => {
-    return () => {
-      if (detectionIntervalRef.current) {
-        clearInterval(detectionIntervalRef.current);
-      }
-    };
-  }, []);
-
-  // Handle webcam error
-  const handleWebcamError = useCallback((error) => {
-    console.error('Webcam error:', error);
-    setWebcamError('Error de cámara: ' + error.message);
-    setIsWebcamActive(false);
-    toast.error('Error de cámara');
-  }, []);
-
-  // Find product by detection class
-  const findProductByDetection = useCallback((detectionLabel) => {
-    const productCode = classToProductMapping[detectionLabel];
-    if (!productCode) return null;
-
-    // Buscar producto que contenga el código en el nombre o código
-    return products.find(product => 
-      product.codigo?.toLowerCase().includes(productCode) ||
-      product.nombre?.toLowerCase().includes(productCode) ||
-      product.name?.toLowerCase().includes(productCode)
-    );
-  }, [products]);
-
-  // Optimized image processing
-  const optimizeImage = useCallback((imageData) => {
-    return new Promise((resolve) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      
-      img.onload = () => {
-        // Resize to optimal size for model (224x224)
-        canvas.width = 224;
-        canvas.height = 224;
-        ctx.drawImage(img, 0, 0, 224, 224);
-        
-        // Convert to optimized format with lower quality for speed
-        const optimizedData = canvas.toDataURL('image/jpeg', 0.7);
-        resolve(optimizedData);
-      };
-      
-      img.src = imageData;
-    });
-  }, []);
-
-  // Fast detection with cache and throttling
+  // Declare performFastDetection first
   const performFastDetection = useCallback(async (isContinuous = false) => {
     if (!webcamRef.current || !isWebcamActive) {
       return null;
@@ -273,6 +195,84 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
       if (!isContinuous) setIsDetecting(false);
     }
   }, [isWebcamActive, onProductDetected, findProductByDetection, optimizeImage]);
+
+  // Toggle continuous detection mode
+  const toggleContinuousMode = useCallback(() => {
+    if (!isWebcamActive) {
+      toast.warning('Primero activa la cámara');
+      return;
+    }
+
+    const newContinuousMode = !isContinuousMode;
+    setIsContinuousMode(newContinuousMode);
+
+    if (newContinuousMode) {
+      // Start continuous detection
+      toast.info('Modo continuo activado - Detección automática cada 1.5s');
+      detectionIntervalRef.current = setInterval(async () => {
+        await performFastDetection(true);
+      }, 1500); // Every 1.5 seconds
+    } else {
+      // Stop continuous detection
+      if (detectionIntervalRef.current) {
+        clearInterval(detectionIntervalRef.current);
+        detectionIntervalRef.current = null;
+      }
+      toast.info('Modo continuo desactivado');
+    }
+  }, [isWebcamActive, isContinuousMode, performFastDetection]);
+
+  // Cleanup on unmount
+  React.useEffect(() => {
+    return () => {
+      if (detectionIntervalRef.current) {
+        clearInterval(detectionIntervalRef.current);
+      }
+    };
+  }, []);
+
+  // Handle webcam error
+  const handleWebcamError = useCallback((error) => {
+    console.error('Webcam error:', error);
+    setWebcamError('Error de cámara: ' + error.message);
+    setIsWebcamActive(false);
+    toast.error('Error de cámara');
+  }, []);
+
+  // Find product by detection class
+  const findProductByDetection = useCallback((detectionLabel) => {
+    const productCode = classToProductMapping[detectionLabel];
+    if (!productCode) return null;
+
+    // Buscar producto que contenga el código en el nombre o código
+    return products.find(product => 
+      product.codigo?.toLowerCase().includes(productCode) ||
+      product.nombre?.toLowerCase().includes(productCode) ||
+      product.name?.toLowerCase().includes(productCode)
+    );
+  }, [products, classToProductMapping]);
+
+  // Optimized image processing
+  const optimizeImage = useCallback((imageData) => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Resize to optimal size for model (224x224)
+        canvas.width = 224;
+        canvas.height = 224;
+        ctx.drawImage(img, 0, 0, 224, 224);
+        
+        // Convert to optimized format with lower quality for speed
+        const optimizedData = canvas.toDataURL('image/jpeg', 0.7);
+        resolve(optimizedData);
+      };
+      
+      img.src = imageData;
+    });
+  }, []);
 
   // Manual detection (single shot)
   const captureAndDetect = useCallback(async () => {
