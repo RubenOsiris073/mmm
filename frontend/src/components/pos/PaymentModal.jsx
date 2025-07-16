@@ -59,12 +59,12 @@ const PaymentModal = ({
       onHide={safeOnHide} 
       centered 
       backdrop="static" 
-      size={paymentMethod === 'qr-spei' || paymentMethod === 'mobile-wallet' ? 'xl' : 'lg'}
+      size="md"
       className="payment-modal-custom"
     >
-      <Modal.Header closeButton className="payment-modal-header">
+      <Modal.Header closeButton className="payment-modal-header d-flex justify-content-between align-items-center">
         <Modal.Title className="payment-modal-title">App Móvil Wallet</Modal.Title>
-        <div id="test-button-container-header" className="ms-auto me-3">
+        <div id="test-button-container-header" style={{ marginRight: '40px' }}>
           {/* El botón de testing se renderizará aquí */}
         </div>
       </Modal.Header>
@@ -112,17 +112,14 @@ const PaymentModal = ({
           />
         </Form>
       </Modal.Body>
-      <Modal.Footer className="payment-modal-footer">
-        <Button variant="outline-secondary" onClick={safeOnHide} disabled={loading} className="payment-btn-cancel">
-          Cancelar
-        </Button>
-        {walletPaymentData && (
+      {walletPaymentData && (
+        <Modal.Footer className="payment-modal-footer">
           <div className="payment-success-message">
             <i className="fas fa-check-circle me-2"></i>
             Pago procesado exitosamente
           </div>
-        )}
-      </Modal.Footer>
+        </Modal.Footer>
+      )}
     </Modal>
   );
 };
