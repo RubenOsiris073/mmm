@@ -24,8 +24,8 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
     'Chicle': 'chicle'
   };
 
-  // Find product by detection class - DECLARED FIRST
-  const findProductByDetection = useCallback((detectionLabel) => {
+  // Helper functions defined as regular functions to avoid hoisting issues
+  const findProductByDetection = (detectionLabel) => {
     const productCode = classToProductMapping[detectionLabel];
     if (!productCode) return null;
 
@@ -34,10 +34,9 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
       product.nombre?.toLowerCase().includes(productCode) ||
       product.name?.toLowerCase().includes(productCode)
     );
-  }, [products]);
+  };
 
-  // Optimized image processing - DECLARED SECOND
-  const optimizeImage = useCallback((imageData) => {
+  const optimizeImage = (imageData) => {
     return new Promise((resolve) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
@@ -53,9 +52,9 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
       
       img.src = imageData;
     });
-  }, []);
+  };
 
-  // Fast detection with cache and throttling - DECLARED THIRD
+  // Fast detection with cache and throttling
   const performFastDetection = useCallback(async (isContinuous = false) => {
     if (!webcamRef.current || !isWebcamActive) {
       return null;
@@ -187,7 +186,7 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
     } finally {
       if (!isContinuous) setIsDetecting(false);
     }
-  }, [isWebcamActive, onProductDetected, findProductByDetection, optimizeImage]);
+  }, [isWebcamActive, onProductDetected, products]);
 
   // Start webcam
   const startWebcam = useCallback(() => {
