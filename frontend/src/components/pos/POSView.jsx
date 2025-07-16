@@ -269,7 +269,7 @@ const POSView = () => {
           gap: 20px;
           max-width: 1400px;
           margin: 0 auto;
-          ${!showProductList ? 'height: calc(100vh - 40px);' : ''}
+          ${!showProductList ? 'min-height: calc(100vh - 40px);' : ''}
         }
 
         .cart-main-area {
