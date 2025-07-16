@@ -227,11 +227,6 @@ const MobileWalletPayment = ({ amount, items, onPaymentConfirmed }) => {
             </p>
           </div>
 
-          <div className="pricing-section">
-            <div className="price-label">Total a pagar</div>
-            <div className="price-amount">${amount.toFixed(2)}<span className="currency">MXN</span></div>
-          </div>
-
           <div className="features-list">
             <div className="feature-item">
               <div className="feature-icon">✓</div>
@@ -259,8 +254,13 @@ const MobileWalletPayment = ({ amount, items, onPaymentConfirmed }) => {
           </div>
         </div>
 
-        {/* Columna Derecha: Código y formulario */}
+        {/* Columna Derecha: Total y Código */}
         <div className="payment-right-section">
+          <div className="pricing-section">
+            <div className="price-label">Total a pagar</div>
+            <div className="price-amount">${amount.toFixed(2)}<span className="currency">MXN</span></div>
+          </div>
+
           <div className="sync-code-container">
             <h5 className="sync-title">Código de Sincronización</h5>
             <div className="sync-code-display">
