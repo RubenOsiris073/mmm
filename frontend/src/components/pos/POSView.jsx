@@ -231,6 +231,19 @@ const POSView = () => {
         </div>
       </div>
 
+      {/* Bottom Section: Product List */}
+      {showProductList && (
+        <div className="product-list-section">
+          <ProductList
+            products={filteredProducts}
+            loading={loading}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            addToCart={addToCart}
+          />
+        </div>
+      )}
+
       <PaymentModal
         show={showPaymentModal}
         onHide={() => setShowPaymentModal(false)}
@@ -515,6 +528,15 @@ const POSView = () => {
           margin-right: 8px;
         }
 
+        .product-list-section {
+          max-width: 1400px;
+          margin: 30px auto 0;
+          background: white;
+          border-radius: 8px;
+          padding: 20px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
         @media (max-width: 768px) {
           .pos-layout {
             flex-direction: column;
@@ -528,6 +550,11 @@ const POSView = () => {
           
           .panel {
             min-width: 280px;
+          }
+
+          .product-list-section {
+            margin: 20px 0 0;
+            padding: 15px;
           }
         }
       `}</style>
