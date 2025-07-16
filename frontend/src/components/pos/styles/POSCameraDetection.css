@@ -1,0 +1,204 @@
+/* ============================================
+   POS CAMERA DETECTION - ESTILOS
+   ============================================ */
+
+.detection-card {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: white;
+}
+
+.detection-card .card-header {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  padding: 12px 20px;
+}
+
+.detection-card .card-body {
+  padding: 20px;
+}
+
+/* Camera Container */
+.camera-container {
+  background: #f8f9fa;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e9ecef;
+}
+
+.camera-container .bg-light {
+  background-color: #f8f9fa !important;
+  border: 2px dashed #dee2e6;
+  margin: 10px;
+  border-radius: 6px;
+}
+
+/* Webcam Styles */
+.camera-container video {
+  border-radius: 8px;
+}
+
+/* Controls Panel */
+.controls-panel {
+  padding-left: 15px;
+}
+
+.controls-panel h6 {
+  color: #495057;
+  font-weight: 600;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+}
+
+.controls-panel .btn {
+  font-size: 0.9rem;
+  padding: 8px 16px;
+}
+
+.controls-panel .btn-success {
+  background: #28a745;
+  border-color: #28a745;
+}
+
+.controls-panel .btn-success:hover {
+  background: #218838;
+  border-color: #1e7e34;
+}
+
+.controls-panel .btn-outline-danger {
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+.controls-panel .btn-outline-danger:hover {
+  background: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+/* Detection Result Card */
+.controls-panel .card {
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.controls-panel .card-header {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  padding: 8px 12px;
+}
+
+.controls-panel .card-body {
+  padding: 12px;
+}
+
+/* Instructions */
+.instructions {
+  background: #e3f2fd;
+  border-radius: 6px;
+  padding: 12px;
+  border: 1px solid #bbdefb;
+}
+
+.instructions h6 {
+  color: #1976d2;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.instructions ul {
+  margin-bottom: 0;
+  padding-left: 16px;
+}
+
+.instructions li {
+  color: #1976d2;
+  margin-bottom: 2px;
+}
+
+/* Badge Styles */
+.badge {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+}
+
+/* Alert Styles */
+.alert-warning {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  color: #856404;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.alert-warning small {
+  font-size: 0.85rem;
+}
+
+/* Overlay Styles */
+.position-absolute {
+  z-index: 10;
+}
+
+.bg-dark.bg-opacity-75 {
+  background-color: rgba(0, 0, 0, 0.75) !important;
+}
+
+.bg-success.bg-opacity-90 {
+  background-color: rgba(40, 167, 69, 0.9) !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .detection-card .card-body {
+    padding: 15px;
+  }
+  
+  .controls-panel {
+    padding-left: 0;
+    margin-top: 15px;
+  }
+  
+  .camera-container video {
+    max-height: 250px;
+  }
+}
+
+@media (max-width: 576px) {
+  .detection-card .card-header {
+    padding: 10px 15px;
+  }
+  
+  .detection-card .card-body {
+    padding: 12px;
+  }
+  
+  .controls-panel .btn {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+  }
+  
+  .camera-container video {
+    max-height: 200px;
+  }
+}
+
+/* Animation for detection */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+  }
+}
+
+.btn-success:not(:disabled):active,
+.btn-success:not(:disabled).active {
+  animation: pulse 1s;
+}

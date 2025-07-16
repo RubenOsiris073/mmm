@@ -5,6 +5,7 @@ import { Alert, Row, Col, Button, Card } from 'react-bootstrap';
 import ProductList from './ProductList';
 import PaymentModal from './PaymentModal';
 import CartPanel from './components/CartPanel';
+import POSCameraDetection from './POSCameraDetection';
 
 // Importaciones de hooks
 import useCart from './hooks/useCart';
@@ -73,6 +74,22 @@ const POSView = () => {
 
   // Estado de carga combinado
   const combinedLoading = loading || paymentLoading;
+
+  // Handle product detection from camera
+  const handleProductDetected = (product, detection) => {
+    try {
+      // Add detected product to cart with quantity 1
+      addToCart(product);
+      console.log('Producto detectado y agregado al carrito:', {
+        product: product.nombre || product.name,
+        detection: detection.label,
+        confidence: detection.similarity
+      });
+    } catch (error) {
+      console.error('Error agregando producto detectado al carrito:', error);
+      setError('Error al agregar el producto detectado al carrito');
+    }
+  };
 
   // Load products on mount
   useEffect(() => {
@@ -143,21 +160,15 @@ const POSView = () => {
           </Col>
         </Row>
 
-        {/* Middle Section: Detection Controls (Temporarily Disabled) */}
+        {/* Middle Section: Product Detection */}
         <div className={styles['pos-middle-section']}>
           <Row>
             <Col md={12}>
-              <Card className="mb-3">
-                <Card.Header>
-                  <h6 className="mb-0">Product Detection</h6>
-                </Card.Header>
-                <Card.Body>
-                  <div className="text-center text-muted">
-                    <p>Camera detection feature will be available soon.</p>
-                    <small>For now, you can add products manually from the list below.</small>
-                  </div>
-                </Card.Body>
-              </Card>
+              <POSCameraDetection
+                onProductDetected={handleProductDetected}
+                products={filteredProducts}
+                loading={loading}
+              />
             </Col>
           </Row>
         </div>
