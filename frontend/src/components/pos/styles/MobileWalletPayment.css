@@ -1,51 +1,356 @@
 /* ============================================
-   MOBILE WALLET PAYMENT - ESTILO CONSISTENTE
+   WALLET PAYMENT - ESTILO PLANTILLA MODERNA
    ============================================ */
 
-.mobile-wallet-payment {
+.wallet-payment-container {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.wallet-payment-content {
+  display: flex;
+  min-height: 500px;
+}
+
+/* ============================================
+   SECCIÓN IZQUIERDA - INFORMACIÓN DEL SERVICIO
+   ============================================ */
+
+.payment-left-section {
+  flex: 1;
+  background: #f8f9fa;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.service-info {
+  margin-bottom: 30px;
+}
+
+.service-icon {
+  width: 60px;
+  height: 60px;
+  background: #007bff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  color: white;
+  font-size: 24px;
+}
+
+.service-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 12px;
+  line-height: 1.3;
+}
+
+.service-description {
+  color: #6c757d;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+/* Lista de características */
+.features-list {
+  margin-bottom: 30px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.feature-icon {
+  width: 20px;
+  height: 20px;
+  background: #28a745;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  margin-right: 15px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.feature-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.feature-text strong {
+  color: #212529;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.feature-text span {
+  color: #6c757d;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* Sección de precio */
+.pricing-section {
   background: white;
   border-radius: 8px;
   padding: 20px;
+  text-align: center;
+  border: 1px solid #e9ecef;
+}
+
+.price-label {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.price-amount {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #212529;
+  line-height: 1;
+}
+
+.currency {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #6c757d;
+  margin-left: 4px;
 }
 
 /* Loading State */
 .mobile-wallet-loading {
   text-align: center;
-  padding: 40px 20px;
+  padding: 60px 20px;
   color: #6c757d;
 }
 
 .mobile-wallet-loading .spinner-border {
-  width: 2rem;
-  height: 2rem;
-  margin-bottom: 12px;
-  color: #495057;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-bottom: 16px;
+  color: #007bff;
 }
 
 /* Error State */
 .mobile-wallet-error {
-  border-radius: 6px;
+  border-radius: 12px;
   border: 1px solid #f5c6cb;
   background: #f8d7da;
   color: #721c24;
-  border-left: 4px solid #dc3545;
+  padding: 30px;
+  text-align: center;
+}
+
+.mobile-wallet-error .btn {
+  margin-top: 15px;
+}
+
+/* ============================================
+   SECCIÓN DERECHA - CÓDIGO Y FORMULARIO
+   ============================================ */
+
+.payment-right-section {
+  flex: 1;
+  background: white;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+/* Contenedor del código de sincronización */
+.sync-code-container {
+  margin-bottom: 30px;
+  width: 100%;
+}
+
+.sync-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 20px;
+}
+
+.sync-code-display {
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: 0.3rem;
+  color: #007bff;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  margin-bottom: 15px;
+  line-height: 1.2;
+}
+
+.sync-instruction {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin-bottom: 0;
+  line-height: 1.4;
+}
+
+/* Estados del pago */
+.payment-status-display {
+  display: flex;
+  align-items: center;
+  background: #f8f9fa;
+  border-radius: 8px;
   padding: 20px;
+  margin-bottom: 20px;
+  width: 100%;
+  border-left: 4px solid #007bff;
 }
 
-.retry-btn {
-  background: #dc3545;
-  border: 1px solid #dc3545;
-  color: white;
-  padding: 8px 16px;
+.payment-status-display.success {
+  background: #d1edcc;
+  border-left-color: #28a745;
+}
+
+.payment-status-display.error {
+  background: #f8d7da;
+  border-left-color: #dc3545;
+}
+
+.status-indicator {
+  margin-right: 15px;
+  font-size: 1.2rem;
+  color: #007bff;
+  flex-shrink: 0;
+}
+
+.payment-status-display.success .status-indicator {
+  color: #28a745;
+}
+
+.payment-status-display.error .status-indicator {
+  color: #dc3545;
+}
+
+.status-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  flex: 1;
+}
+
+.status-text strong {
+  color: #212529;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.status-text span {
+  color: #6c757d;
+  font-size: 0.85rem;
+  line-height: 1.3;
+}
+
+.status-text small {
+  color: #6c757d;
+  font-size: 0.75rem;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Información del pago */
+.payment-info {
+  background: #e3f2fd;
   border-radius: 6px;
-  font-weight: 500;
-  transition: all 0.3s ease;
+  padding: 15px;
+  width: 100%;
+  border: 1px solid #bbdefb;
 }
 
-.retry-btn:hover {
-  background: #c82333;
-  border-color: #c82333;
-  transform: translateY(-1px);
+.payment-info small {
+  color: #1976d2;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.payment-info strong {
+  font-weight: 600;
+}
+
+/* Responsive para el nuevo diseño */
+@media (max-width: 768px) {
+  .wallet-payment-content {
+    flex-direction: column;
+    min-height: auto;
+  }
+  
+  .payment-left-section,
+  .payment-right-section {
+    padding: 30px;
+  }
+  
+  .sync-code-display {
+    font-size: 2.5rem;
+    letter-spacing: 0.2rem;
+  }
+  
+  .service-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+  
+  .service-title {
+    font-size: 1.3rem;
+  }
+  
+  .price-amount {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .payment-left-section,
+  .payment-right-section {
+    padding: 20px;
+  }
+  
+  .sync-code-display {
+    font-size: 2rem;
+    letter-spacing: 0.1rem;
+  }
+  
+  .service-title {
+    font-size: 1.2rem;
+  }
+  
+  .price-amount {
+    font-size: 1.5rem;
+  }
+  
+  .payment-status-display {
+    padding: 15px;
+  }
+  
+  .status-indicator {
+    margin-right: 12px;
+    font-size: 1rem;
+  }
 }
 
 /* Sync Code Card */

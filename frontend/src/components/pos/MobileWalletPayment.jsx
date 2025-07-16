@@ -210,80 +210,113 @@ const MobileWalletPayment = ({ amount, items, onPaymentConfirmed }) => {
   );
 
   return (
-    <div className="mobile-wallet-payment">
+    <div className="wallet-payment-container">
       {testButton}
       
-      <Row>
-        {/* Columna Izquierda: Información y Total */}
-        <Col md={8}>
-          <div className="payment-info-section">
-            <h5 className="mb-3">
-              <FaMobile className="me-2" />
-              Pago con App Móvil
-            </h5>
+      <div className="wallet-payment-content">
+        {/* Columna Izquierda: Información del servicio */}
+        <div className="payment-left-section">
+          <div className="service-info">
+            <div className="service-icon">
+              <FaMobile />
+            </div>
+            <h4 className="service-title">App Móvil Wallet</h4>
+            <p className="service-description">
+              Paga de forma segura usando tu aplicación móvil. 
+              Escanea el código y confirma el pago desde tu dispositivo.
+            </p>
+          </div>
+
+          <div className="features-list">
+            <div className="feature-item">
+              <div className="feature-icon">✓</div>
+              <div className="feature-text">
+                <strong>Pago Seguro</strong>
+                <span>Protección avanzada con encriptación de extremo a extremo</span>
+              </div>
+            </div>
             
-            <div className="payment-details mb-4">
-              <h6>Instrucciones:</h6>
-              <ol className="instruction-list">
-                <li>Abrir la aplicación móvil de la wallet</li>
-                <li>Tocar "Sincronizar Ahora" en la pantalla principal</li>
-                <li>Ingresar el código de sincronización</li>
-                <li>Revisar los productos y el total</li>
-                <li>Confirmar el pago desde la app</li>
-              </ol>
+            <div className="feature-item">
+              <div className="feature-icon">✓</div>
+              <div className="feature-text">
+                <strong>Sincronización Rápida</strong>
+                <span>Conecta tu dispositivo en segundos con el código único</span>
+              </div>
             </div>
-
-            {/* Estado del pago */}
-            {paymentStatus === 'pending' && (
-              <div className="payment-status mb-3">
-                <Spinner animation="border" size="sm" className="me-2" />
-                <span>Esperando confirmación desde la app móvil...</span>
-                {checkingPayment && (
-                  <div><small className="text-muted">Verificando estado...</small></div>
-                )}
+            
+            <div className="feature-item">
+              <div className="feature-icon">✓</div>
+              <div className="feature-text">
+                <strong>Confirmación Instantánea</strong>
+                <span>Recibe confirmación inmediata una vez completado el pago</span>
               </div>
-            )}
-
-            {paymentStatus === 'confirmed' && (
-              <Alert variant="success" className="mb-3">
-                <FaCheckCircle className="me-2" />
-                ¡Pago confirmado exitosamente!
-              </Alert>
-            )}
-
-            {paymentStatus === 'failed' && (
-              <Alert variant="danger" className="mb-3">
-                <FaTimesCircle className="me-2" />
-                Error en el pago
-              </Alert>
-            )}
-
-            {/* Total del pago */}
-            <div className="payment-total-section">
-              <div className="total-line">
-                <span>Total a pagar:</span>
-                <span className="total-amount">${amount.toFixed(2)} MXN</span>
-              </div>
-              <small className="text-muted">El código expira en 30 minutos</small>
             </div>
           </div>
-        </Col>
 
-        {/* Columna Derecha: Código de Sincronización */}
-        <Col md={4}>
-          <div className="sync-code-section text-center">
-            <h6 className="mb-3">Código de Sincronización</h6>
-            <div className="sync-code-display-clean">
-              <div className="sync-code-number-large">
-                {syncCode || '------'}
+          <div className="pricing-section">
+            <div className="price-label">Total a pagar</div>
+            <div className="price-amount">${amount.toFixed(2)}<span className="currency">MXN</span></div>
+          </div>
+        </div>
+
+        {/* Columna Derecha: Código y formulario */}
+        <div className="payment-right-section">
+          <div className="sync-code-container">
+            <h5 className="sync-title">Código de Sincronización</h5>
+            <div className="sync-code-display">
+              {syncCode || '------'}
+            </div>
+            <p className="sync-instruction">
+              Ingresa este código en tu aplicación móvil
+            </p>
+          </div>
+
+          {/* Estado del pago */}
+          {paymentStatus === 'pending' && (
+            <div className="payment-status-display">
+              <div className="status-indicator">
+                <Spinner animation="border" size="sm" />
+              </div>
+              <div className="status-text">
+                <strong>Esperando confirmación</strong>
+                <span>Completa el pago desde tu aplicación móvil</span>
+                {checkingPayment && <small>Verificando estado...</small>}
               </div>
             </div>
-            <Badge bg="primary" className="mt-2">
-              {items.length} {items.length === 1 ? 'producto' : 'productos'}
-            </Badge>
+          )}
+
+          {paymentStatus === 'confirmed' && (
+            <div className="payment-status-display success">
+              <div className="status-indicator">
+                <FaCheckCircle />
+              </div>
+              <div className="status-text">
+                <strong>¡Pago Confirmado!</strong>
+                <span>Tu transacción se ha procesado exitosamente</span>
+              </div>
+            </div>
+          )}
+
+          {paymentStatus === 'failed' && (
+            <div className="payment-status-display error">
+              <div className="status-indicator">
+                <FaTimesCircle />
+              </div>
+              <div className="status-text">
+                <strong>Error en el Pago</strong>
+                <span>Por favor, intenta nuevamente</span>
+              </div>
+            </div>
+          )}
+
+          <div className="payment-info">
+            <small>
+              <strong>Nota:</strong> El código expira en 30 minutos. 
+              Asegúrate de completar el pago antes de que expire.
+            </small>
           </div>
-        </Col>
-      </Row>
+        </div>
+      </div>
     </div>
   );
 };
