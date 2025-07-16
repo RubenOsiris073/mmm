@@ -1,0 +1,155 @@
+/* POS Layout Styles */
+.posContainer {
+  min-height: 100vh;
+  background: #f8f9fa;
+  padding: 20px;
+}
+
+.posLayout {
+  display: flex;
+  gap: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.posLayoutFixed {
+  min-height: calc(100vh - 40px);
+}
+
+/* Cart Main Area */
+.cartMainArea {
+  flex: 1;
+  background: white;
+  border-radius: 8px;
+  padding: 40px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.cartEmptyState {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.cartIcon {
+  font-size: 4rem;
+  color: #6c757d;
+  margin-bottom: 20px;
+}
+
+.cartTitle {
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.cartSubtitle {
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+/* Instructions */
+.instructions {
+  text-align: left;
+  max-width: 500px;
+  margin: 30px auto 0;
+}
+
+.instructionsTitle {
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.instructionItem {
+  color: #666;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 12px;
+  padding-left: 10px;
+}
+
+/* Cart Items */
+.cartItemsList {
+  margin-bottom: 40px;
+  text-align: left;
+}
+
+.cartItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.itemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.itemName {
+  font-weight: 500;
+  color: #333;
+}
+
+.itemPrice {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.itemControls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.qtyBtn, .removeBtn {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.qtyBtn:hover, .removeBtn:hover {
+  background: #e9ecef;
+}
+
+.qty {
+  min-width: 30px;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Product List Section */
+.productListSection {
+  max-width: 1400px;
+  margin: 30px auto 0;
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .posLayout {
+    flex-direction: column;
+  }
+  
+  .productListSection {
+    margin: 20px 0 0;
+    padding: 15px;
+  }
+}

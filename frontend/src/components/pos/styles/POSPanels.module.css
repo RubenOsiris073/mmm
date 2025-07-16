@@ -1,0 +1,137 @@
+/* POS Side Panels Styles */
+.rightPanels {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.panel {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.panelTitle {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panelIcon {
+  font-size: 1rem;
+}
+
+/* Cart Total Panel */
+.cartTotalPanel {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.totalLines {
+  margin-bottom: 20px;
+}
+
+.totalLine {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  color: #666;
+}
+
+.finalTotal {
+  border-top: 1px solid #eee;
+  margin-top: 10px;
+  padding-top: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.checkoutBtn {
+  width: 100%;
+  background: #333;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.checkoutBtn:hover:not(:disabled) {
+  background: #555;
+}
+
+.checkoutBtn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Camera Panel */
+.cameraPanel {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  text-align: center;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Stats Panel */
+.statsPanel {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.statsContent {
+  font-size: 0.9rem;
+}
+
+.statItem {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.statLabel {
+  color: #666;
+}
+
+.statValue {
+  font-weight: 500;
+  color: #333;
+}
+
+.detectableProducts {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0 0;
+}
+
+.detectableProducts li {
+  padding: 4px 0;
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.detectableProducts li:before {
+  content: "• ";
+  color: #999;
+  margin-right: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .rightPanels {
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+  }
+  
+  .panel {
+    min-width: 280px;
+  }
+}
