@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Alert, Row, Col, Button, Card } from 'react-bootstrap';
+import { Alert } from 'react-bootstrap';
+import { FaCamera, FaShoppingCart, FaChartBar } from 'react-icons/fa';
 
 // Importaciones de componentes refactorizados
 import ProductList from './ProductList';
 import PaymentModal from './PaymentModal';
-import CartPanel from './components/CartPanel';
 import POSCameraDetection from './POSCameraDetection';
 
 // Importaciones de hooks
@@ -12,7 +12,6 @@ import useCart from './hooks/useCart';
 import usePayment from './hooks/usePayment';
 import { useProductVisibility } from '../../contexts/ProductVisibilityContext';
 import apiService from '../../services/apiService';
-import styles from './styles/styles.module.css';
 
 const POSView = () => {
   const [error, setError] = useState(null);
@@ -107,98 +106,416 @@ const POSView = () => {
   }, [setCartItems, loadProducts]);
 
   return (
-    <div className={styles['pos-view-container']}>
-      <div className={styles['pos-container-fluid']}>
-        {error && (
-          <Alert variant="danger" className="mb-3" onClose={() => setError(null)} dismissible>
-            {error}
-          </Alert>
-        )}
+    <div className="pos-minimal-container">
+      {error && (
+        <Alert variant="danger" className="mb-3" onClose={() => setError(null)} dismissible>
+          {error}
+        </Alert>
+      )}
 
-        {/* Top Section: Shopping Bag and Cart Total */}
-        <Row className={styles['pos-top-section']}>
-          <Col md={9} className={styles['shopping-bag-col']}>
-            <CartPanel
-              cartItems={cartItems}
-              onRemove={removeFromCart}
-              onUpdateQuantity={updateQuantity}
-              calculateTotal={calculateTotal}
-              onOpenPayment={() => setShowPaymentModal(true)}
-              loading={loading}
-              isMainView={false}
-            />
-          </Col>
-          <Col md={3} className={styles['cart-total-col']}>
-            <div className={styles['cart-total-section-top']}>
-              <h5 className={styles['section-title']}>Cart Total</h5>
-              <div className={styles['total-breakdown']}>
-                <div className={styles['total-line']}>
-                  <span>Cart Subtotal</span>
-                  <span>${calculateTotal().toFixed(2)}</span>
-                </div>
-                <div className={styles['total-line']}>
-                  <span>Shipping</span>
-                  <span>Free</span>
-                </div>
-                <div className={styles['total-line']}>
-                  <span>Discount</span>
-                  <span>--</span>
-                </div>
-                <div className={styles['total-line'] + ' ' + styles['final-total']}>
-                  <span>Cart Total</span>
-                  <span>${calculateTotal().toFixed(2)}</span>
-                </div>
+      <div className="pos-layout">
+        {/* Left Side - Main Cart Area */}
+        <div className="cart-main-area">
+          <div className="cart-empty-state">
+            <FaShoppingCart className="cart-icon" />
+            <h2 className="cart-title">Todo el espacio del carrito</h2>
+            <p className="cart-subtitle">Tu carrito está vacío</p>
+            <p className="cart-description">Agrega productos para comenzar</p>
+
+            {/* Cart Items */}
+            {cartItems.length > 0 && (
+              <div className="cart-items-list">
+                {cartItems.map((item) => (
+                  <div key={item.id} className="cart-item">
+                    <div className="item-info">
+                      <span className="item-name">{item.nombre || item.name}</span>
+                      <span className="item-price">${item.precio?.toFixed(2)}</span>
+                    </div>
+                    <div className="item-controls">
+                      <button
+                        className="qty-btn"
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      >
+                        -
+                      </button>
+                      <span className="qty">{item.quantity}</span>
+                      <button
+                        className="qty-btn"
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      >
+                        +
+                      </button>
+                      <button
+                        className="remove-btn"
+                        onClick={() => removeFromCart(item.id)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <button
-                className={styles['checkout-btn']}
-                onClick={() => setShowPaymentModal(true)}
-                disabled={cartItems.length === 0 || loading}
-              >
-                {loading ? 'Processing...' : 'Proceed to Checkout'}
-              </button>
-            </div>
-          </Col>
-        </Row>
+            )}
 
-        {/* Middle Section: Product Detection */}
-        <div className={styles['pos-middle-section']}>
-          <Row>
-            <Col md={12}>
+            {/* Camera Detection Section */}
+            <div className="detection-section">
+              <FaCamera className="detection-icon" />
+              <p className="detection-text">Detección de Productos</p>
               <POSCameraDetection
                 onProductDetected={handleProductDetected}
                 products={filteredProducts}
                 loading={loading}
+                minimal={true}
               />
-            </Col>
-          </Row>
+            </div>
+          </div>
         </div>
 
-        {/* Bottom Section: Product List */}
-        {showProductList && (
-          <div className={styles['pos-bottom-section']}>
-            <ProductList
-              products={filteredProducts}
-              loading={loading}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              addToCart={addToCart}
-            />
+        {/* Right Side - Panels */}
+        <div className="right-panels">
+          {/* Cart Total Panel */}
+          <div className="panel cart-total-panel">
+            <h3 className="panel-title">Cart Total</h3>
+            <div className="total-lines">
+              <div className="total-line">
+                <span>Cart Subtotal</span>
+                <span>${calculateTotal().toFixed(2)}</span>
+              </div>
+              <div className="total-line">
+                <span>Shipping</span>
+                <span>Free</span>
+              </div>
+              <div className="total-line final-total">
+                <span>Cart Total</span>
+                <span>${calculateTotal().toFixed(2)}</span>
+              </div>
+            </div>
+            <button
+              className="checkout-btn"
+              onClick={() => setShowPaymentModal(true)}
+              disabled={cartItems.length === 0 || loading}
+            >
+              {loading ? 'Processing...' : 'Proceed to Checkout'}
+            </button>
           </div>
-        )}
 
-        <PaymentModal
-          show={showPaymentModal}
-          onHide={() => setShowPaymentModal(false)}
-          paymentMethod={paymentMethod}
-          setPaymentMethod={setPaymentMethod}
-          amountReceived={amountReceived}
-          setAmountReceived={setAmountReceived}
-          total={calculateTotal()}
-          handleProcessSale={processSale}
-          loading={paymentLoading}
-          cartItems={cartItems}
-        />
+          {/* Camera Button Panel */}
+          <div className="panel camera-panel">
+            <div className="camera-button-container">
+              <span className="camera-label">Botón de Cámara</span>
+            </div>
+          </div>
+
+          {/* Statistics Panel */}
+          <div className="panel stats-panel">
+            <h3 className="panel-title">
+              <FaChartBar className="panel-icon" />
+              Estadísticas
+            </h3>
+            <div className="stats-content">
+              <div className="stat-item">
+                <span className="stat-label">Total:</span>
+                <span className="stat-value">{cartItems.length}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">Productos Detectables:</span>
+              </div>
+              <ul className="detectable-products">
+                <li>Barrita</li>
+                <li>Botella</li>
+                <li>Chicle</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <PaymentModal
+        show={showPaymentModal}
+        onHide={() => setShowPaymentModal(false)}
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
+        amountReceived={amountReceived}
+        setAmountReceived={setAmountReceived}
+        total={calculateTotal()}
+        handleProcessSale={processSale}
+        loading={paymentLoading}
+        cartItems={cartItems}
+      />
+
+      <style jsx>{`
+        .pos-minimal-container {
+          min-height: 100vh;
+          background: #f8f9fa;
+          padding: 20px;
+        }
+
+        .pos-layout {
+          display: flex;
+          gap: 20px;
+          max-width: 1400px;
+          margin: 0 auto;
+        }
+
+        .cart-main-area {
+          flex: 1;
+          background: white;
+          border-radius: 8px;
+          padding: 40px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .cart-empty-state {
+          text-align: center;
+          max-width: 600px;
+          margin: 0 auto;
+        }
+
+        .cart-icon {
+          font-size: 4rem;
+          color: #e9ecef;
+          margin-bottom: 20px;
+        }
+
+        .cart-title {
+          font-size: 2.5rem;
+          font-weight: 300;
+          color: #333;
+          margin-bottom: 10px;
+        }
+
+        .cart-subtitle {
+          font-size: 1.2rem;
+          color: #666;
+          margin-bottom: 5px;
+        }
+
+        .cart-description {
+          color: #999;
+          margin-bottom: 40px;
+        }
+
+        .cart-items-list {
+          margin-bottom: 40px;
+          text-align: left;
+        }
+
+        .cart-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 15px 0;
+          border-bottom: 1px solid #eee;
+        }
+
+        .item-info {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+        }
+
+        .item-name {
+          font-weight: 500;
+          color: #333;
+        }
+
+        .item-price {
+          color: #666;
+          font-size: 0.9rem;
+        }
+
+        .item-controls {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .qty-btn, .remove-btn {
+          background: #f8f9fa;
+          border: 1px solid #dee2e6;
+          border-radius: 4px;
+          width: 30px;
+          height: 30px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          font-size: 14px;
+        }
+
+        .qty-btn:hover, .remove-btn:hover {
+          background: #e9ecef;
+        }
+
+        .qty {
+          min-width: 30px;
+          text-align: center;
+          font-weight: 500;
+        }
+
+        .detection-section {
+          margin-top: 40px;
+          padding-top: 40px;
+          border-top: 1px solid #eee;
+        }
+
+        .detection-icon {
+          font-size: 2rem;
+          color: #666;
+          margin-bottom: 15px;
+        }
+
+        .detection-text {
+          color: #666;
+          margin-bottom: 20px;
+          font-size: 1.1rem;
+        }
+
+        .right-panels {
+          width: 320px;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+
+        .panel {
+          background: white;
+          border-radius: 8px;
+          padding: 20px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .panel-title {
+          font-size: 1.1rem;
+          font-weight: 500;
+          color: #333;
+          margin-bottom: 15px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .panel-icon {
+          font-size: 1rem;
+        }
+
+        .cart-total-panel {
+          border: 2px solid #333;
+        }
+
+        .total-lines {
+          margin-bottom: 20px;
+        }
+
+        .total-line {
+          display: flex;
+          justify-content: space-between;
+          padding: 8px 0;
+          color: #666;
+        }
+
+        .final-total {
+          border-top: 1px solid #eee;
+          margin-top: 10px;
+          padding-top: 15px;
+          font-weight: 600;
+          color: #333;
+        }
+
+        .checkout-btn {
+          width: 100%;
+          background: #333;
+          color: white;
+          border: none;
+          padding: 12px;
+          border-radius: 4px;
+          font-weight: 500;
+          cursor: pointer;
+        }
+
+        .checkout-btn:hover:not(:disabled) {
+          background: #555;
+        }
+
+        .checkout-btn:disabled {
+          background: #ccc;
+          cursor: not-allowed;
+        }
+
+        .camera-panel {
+          border: 2px dashed #ccc;
+          text-align: center;
+          min-height: 80px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .camera-button-container {
+          color: #666;
+        }
+
+        .camera-label {
+          font-size: 0.9rem;
+        }
+
+        .stats-panel {
+          border: 2px solid #333;
+        }
+
+        .stats-content {
+          font-size: 0.9rem;
+        }
+
+        .stat-item {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 8px;
+        }
+
+        .stat-label {
+          color: #666;
+        }
+
+        .stat-value {
+          font-weight: 500;
+          color: #333;
+        }
+
+        .detectable-products {
+          list-style: none;
+          padding: 0;
+          margin: 10px 0 0 0;
+        }
+
+        .detectable-products li {
+          padding: 4px 0;
+          color: #666;
+          font-size: 0.85rem;
+        }
+
+        .detectable-products li:before {
+          content: "• ";
+          color: #999;
+          margin-right: 8px;
+        }
+
+        @media (max-width: 768px) {
+          .pos-layout {
+            flex-direction: column;
+          }
+          
+          .right-panels {
+            width: 100%;
+            flex-direction: row;
+            overflow-x: auto;
+          }
+          
+          .panel {
+            min-width: 280px;
+          }
+        }
+      `}</style>
     </div>
   );
 };

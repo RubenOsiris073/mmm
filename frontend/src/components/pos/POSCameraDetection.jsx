@@ -5,7 +5,7 @@ import Webcam from 'react-webcam';
 import { toast } from 'react-toastify';
 import './styles/POSCameraDetection.css';
 
-const POSCameraDetection = ({ onProductDetected, products, loading }) => {
+const POSCameraDetection = ({ onProductDetected, products, loading, minimal = false }) => {
   const [isWebcamActive, setIsWebcamActive] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
   const [isContinuousMode, setIsContinuousMode] = useState(false);
@@ -262,6 +262,168 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
     };
   }, []);
 
+  // Modo minimalista - solo botón
+  if (minimal) {
+    return (
+      <div className="minimal-camera-detection">
+        {/* Webcam oculta pero funcional */}
+        {isWebcamActive && (
+          <Webcam
+            ref={webcamRef}
+            audio={false}
+            screenshotFormat="image/jpeg"
+            width={320}
+            height={240}
+            onUserMediaError={handleWebcamError}
+            style={{ display: 'none' }}
+            videoConstraints={{
+              width: 320,
+              height: 240,
+              facingMode: 'environment'
+            }}
+          />
+        )}
+        
+        <button
+          className="camera-detection-btn"
+          onClick={!isWebcamActive ? startWebcam : toggleContinuousMode}
+          disabled={loading || isDetecting}
+        >
+          <FaCamera className="camera-icon" />
+          {isDetecting ? (
+            <span>Detectando...</span>
+          ) : !isWebcamActive ? (
+            <span>Activar Cámara</span>
+          ) : isContinuousMode ? (
+            <span>Detección Activa</span>
+          ) : (
+            <span>Iniciar Detección</span>
+          )}
+        </button>
+
+        {isWebcamActive && (
+          <button
+            className="stop-detection-btn"
+            onClick={stopWebcam}
+            disabled={loading}
+          >
+            <FaStop />
+          </button>
+        )}
+
+        {lastDetection && (
+          <div className="last-detection-minimal">
+            <span className="detection-label">{lastDetection.label}</span>
+            <span className="detection-confidence">{lastDetection.similarity}%</span>
+          </div>
+        )}
+
+        {webcamError && (
+          <div className="detection-error">
+            {webcamError}
+          </div>
+        )}
+
+        <style jsx>{`
+          .minimal-camera-detection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+          }
+
+          .camera-detection-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 15px 30px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+            min-width: 200px;
+            justify-content: center;
+          }
+
+          .camera-detection-btn:hover:not(:disabled) {
+            background: #0056b3;
+            transform: translateY(-1px);
+          }
+
+          .camera-detection-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+          }
+
+          .camera-icon {
+            font-size: 1.2rem;
+          }
+
+          .stop-detection-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+          }
+
+          .stop-detection-btn:hover:not(:disabled) {
+            background: #c82333;
+            transform: scale(1.1);
+          }
+
+          .last-detection-minimal {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+          }
+
+          .detection-label {
+            font-weight: 500;
+            color: #333;
+          }
+
+          .detection-confidence {
+            background: #28a745;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+          }
+
+          .detection-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 6px;
+            padding: 8px 15px;
+            font-size: 0.85rem;
+            text-align: center;
+            max-width: 300px;
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  // Modo completo original
   return (
     <Card className="detection-card">
       <Card.Header className="d-flex justify-content-between align-items-center">
