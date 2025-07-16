@@ -157,17 +157,7 @@ const POSView = () => {
               </div>
             )}
 
-            {/* Camera Detection Section */}
-            <div className="detection-section">
-              <FaCamera className="detection-icon" />
-              <p className="detection-text">Detección de Productos</p>
-              <POSCameraDetection
-                onProductDetected={handleProductDetected}
-                products={filteredProducts}
-                loading={loading}
-                minimal={true}
-              />
-            </div>
+
           </div>
         </div>
 
@@ -201,9 +191,12 @@ const POSView = () => {
 
           {/* Camera Button Panel */}
           <div className="panel camera-panel">
-            <div className="camera-button-container">
-              <span className="camera-label">Botón de Cámara</span>
-            </div>
+            <POSCameraDetection
+              onProductDetected={handleProductDetected}
+              products={filteredProducts}
+              loading={loading}
+              panelMode={true}
+            />
           </div>
 
           {/* Statistics Panel */}
@@ -400,7 +393,7 @@ const POSView = () => {
         }
 
         .cart-total-panel {
-          border: 2px solid #333;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .total-lines {
@@ -443,24 +436,16 @@ const POSView = () => {
         }
 
         .camera-panel {
-          border: 2px dashed #ccc;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
           text-align: center;
-          min-height: 80px;
+          min-height: 120px;
           display: flex;
           align-items: center;
           justify-content: center;
         }
 
-        .camera-button-container {
-          color: #666;
-        }
-
-        .camera-label {
-          font-size: 0.9rem;
-        }
-
         .stats-panel {
-          border: 2px solid #333;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .stats-content {

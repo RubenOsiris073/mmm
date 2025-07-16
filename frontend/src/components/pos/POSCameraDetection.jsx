@@ -5,7 +5,7 @@ import Webcam from 'react-webcam';
 import { toast } from 'react-toastify';
 import './styles/POSCameraDetection.css';
 
-const POSCameraDetection = ({ onProductDetected, products, loading, minimal = false }) => {
+const POSCameraDetection = ({ onProductDetected, products, loading, minimal = false, panelMode = false }) => {
   const [isWebcamActive, setIsWebcamActive] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
   const [isContinuousMode, setIsContinuousMode] = useState(false);
@@ -261,6 +261,260 @@ const POSCameraDetection = ({ onProductDetected, products, loading, minimal = fa
       }
     };
   }, []);
+
+  // Función para iniciar/parar detección continua automáticamente
+  const toggleDetection = useCallback(async () => {
+    if (!isWebcamActive && !isContinuousMode) {
+      // Iniciar: activar cámara y modo continuo
+      try {
+        setWebcamError(null);
+        setIsWebcamActive(true);
+        
+        // Esperar un poco para que la cámara se active
+        setTimeout(() => {
+          setIsContinuousMode(true);
+          detectionIntervalRef.current = setInterval(async () => {
+            await performFastDetection(true);
+          }, 1500);
+          toast.success('Detección continua iniciada');
+        }, 1000);
+        
+      } catch (error) {
+        console.error('Error starting detection:', error);
+        setWebcamError('No se pudo iniciar la detección');
+        toast.error('Error al iniciar la detección');
+      }
+    } else {
+      // Parar: desactivar todo
+      setIsWebcamActive(false);
+      setIsContinuousMode(false);
+      setLastDetection(null);
+      
+      if (detectionIntervalRef.current) {
+        clearInterval(detectionIntervalRef.current);
+        detectionIntervalRef.current = null;
+      }
+      
+      detectionCacheRef.current.clear();
+      toast.info('Detección detenida');
+    }
+  }, [isWebcamActive, isContinuousMode, performFastDetection]);
+
+  // Modo panel - para el panel "Botón de Cámara"
+  if (panelMode) {
+    return (
+      <div className="panel-camera-detection">
+        {/* Webcam oculta pero funcional */}
+        {isWebcamActive && (
+          <Webcam
+            ref={webcamRef}
+            audio={false}
+            screenshotFormat="image/jpeg"
+            width={320}
+            height={240}
+            onUserMediaError={handleWebcamError}
+            style={{ display: 'none' }}
+            videoConstraints={{
+              width: 320,
+              height: 240,
+              facingMode: 'environment'
+            }}
+          />
+        )}
+        
+        <div className="panel-header">
+          <FaCamera className="panel-camera-icon" />
+          <span className="panel-title">Detección de Productos</span>
+        </div>
+        
+        <button
+          className={`detection-toggle-btn ${isContinuousMode ? 'active' : ''}`}
+          onClick={toggleDetection}
+          disabled={loading}
+        >
+          {isContinuousMode ? (
+            <>
+              <FaStop className="btn-icon" />
+              <span>Parar Detección</span>
+            </>
+          ) : (
+            <>
+              <FaCamera className="btn-icon" />
+              <span>Iniciar Detección</span>
+            </>
+          )}
+        </button>
+
+        {isContinuousMode && (
+          <div className="detection-status">
+            <div className="status-indicator"></div>
+            <span>Detección Activa</span>
+          </div>
+        )}
+
+        {lastDetection && (
+          <div className="last-detection-panel">
+            <div className="detection-info">
+              <span className="product-name">{lastDetection.label}</span>
+              <span className="confidence-badge">{lastDetection.similarity}%</span>
+            </div>
+            <div className="detection-time">
+              {new Date(lastDetection.timestamp).toLocaleTimeString()}
+            </div>
+          </div>
+        )}
+
+        {webcamError && (
+          <div className="panel-error">
+            {webcamError}
+          </div>
+        )}
+
+        <style jsx>{`
+          .panel-camera-detection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+          }
+
+          .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+          }
+
+          .panel-camera-icon {
+            font-size: 1.1rem;
+          }
+
+          .panel-title {
+            font-weight: 500;
+          }
+
+          .detection-toggle-btn {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            min-width: 160px;
+            justify-content: center;
+          }
+
+          .detection-toggle-btn:hover:not(:disabled) {
+            background: #e9ecef;
+            border-color: #adb5bd;
+            transform: translateY(-1px);
+          }
+
+          .detection-toggle-btn.active {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+          }
+
+          .detection-toggle-btn.active:hover:not(:disabled) {
+            background: #c82333;
+            border-color: #c82333;
+          }
+
+          .detection-toggle-btn:disabled {
+            background: #e9ecef;
+            color: #6c757d;
+            border-color: #dee2e6;
+            cursor: not-allowed;
+            transform: none;
+          }
+
+          .btn-icon {
+            font-size: 1rem;
+          }
+
+          .detection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #28a745;
+            font-size: 0.85rem;
+            font-weight: 500;
+          }
+
+          .status-indicator {
+            width: 8px;
+            height: 8px;
+            background: #28a745;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+          }
+
+          @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+          }
+
+          .last-detection-panel {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 10px;
+            width: 100%;
+            font-size: 0.85rem;
+          }
+
+          .detection-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+          }
+
+          .product-name {
+            font-weight: 500;
+            color: #333;
+          }
+
+          .confidence-badge {
+            background: #28a745;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 500;
+          }
+
+          .detection-time {
+            color: #666;
+            font-size: 0.75rem;
+            text-align: center;
+          }
+
+          .panel-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            text-align: center;
+            width: 100%;
+          }
+        `}</style>
+      </div>
+    );
+  }
 
   // Modo minimalista - solo botón
   if (minimal) {
