@@ -227,6 +227,11 @@ const MobileWalletPayment = ({ amount, items, onPaymentConfirmed }) => {
             </p>
           </div>
 
+          <div className="pricing-section">
+            <div className="price-label">Total a pagar</div>
+            <div className="price-amount">${amount.toFixed(2)}<span className="currency">MXN</span></div>
+          </div>
+
           <div className="features-list">
             <div className="feature-item">
               <div className="feature-icon">✓</div>
@@ -251,11 +256,6 @@ const MobileWalletPayment = ({ amount, items, onPaymentConfirmed }) => {
                 <span>Recibe confirmación inmediata una vez completado el pago</span>
               </div>
             </div>
-          </div>
-
-          <div className="pricing-section">
-            <div className="price-label">Total a pagar</div>
-            <div className="price-amount">${amount.toFixed(2)}<span className="currency">MXN</span></div>
           </div>
         </div>
 

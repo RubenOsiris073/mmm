@@ -62,10 +62,12 @@ const PaymentModal = ({
       size="lg"
       className="payment-modal-custom"
     >
-      <Modal.Header closeButton className="payment-modal-header d-flex justify-content-between align-items-center">
-        <Modal.Title className="payment-modal-title">App Móvil Wallet</Modal.Title>
-        <div id="test-button-container-header" style={{ marginRight: '40px' }}>
-          {/* El botón de testing se renderizará aquí */}
+      <Modal.Header closeButton className="payment-modal-header">
+        <div className="d-flex justify-content-between align-items-center w-100">
+          <Modal.Title className="payment-modal-title">App Móvil Wallet</Modal.Title>
+          <div id="test-button-container-header" className="me-4">
+            {/* El botón de testing se renderizará aquí */}
+          </div>
         </div>
       </Modal.Header>
       <Modal.Body className="payment-modal-body">

@@ -24,11 +24,12 @@
   padding: 25px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 20px;
 }
 
 .service-info {
-  margin-bottom: 30px;
+  margin-bottom: 0;
 }
 
 .service-icon {
@@ -61,7 +62,7 @@
 
 /* Lista de características */
 .features-list {
-  margin-bottom: 30px;
+  margin-bottom: 0;
 }
 
 .feature-item {
@@ -292,10 +293,8 @@
 
 /* Estilo para el botón de testing en el header */
 #test-button-container-header {
-  position: absolute;
-  right: 50px;
-  top: 50%;
-  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
 }
 
 /* Responsive para el nuevo diseño */
