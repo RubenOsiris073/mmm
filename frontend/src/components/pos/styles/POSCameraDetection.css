@@ -96,10 +96,10 @@
 
 /* Instructions */
 .instructions {
-  background: #e3f2fd;
+  background: #edf0f1;
   border-radius: 6px;
   padding: 12px;
-  border: 1px solid #bbdefb;
+  border: 1px solid #fbfcfd;
 }
 
 .instructions h6 {
@@ -126,7 +126,7 @@
 
 /* Alert Styles */
 .alert-warning {
-  background: #fff3cd;
+  background: #ffffff;
   border: 1px solid #ffeaa7;
   color: #856404;
   border-radius: 6px;
