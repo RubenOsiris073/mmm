@@ -322,10 +322,7 @@ const POSCameraDetection = ({ onProductDetected, products, loading, minimal = fa
           />
         )}
         
-        <div className="panel-header">
-          <FaCamera className="panel-camera-icon" />
-          <span className="panel-title">Detección de Productos</span>
-        </div>
+
         
         <button
           className={`detection-toggle-btn ${isContinuousMode ? 'active' : ''}`}

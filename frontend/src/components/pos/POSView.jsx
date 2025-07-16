@@ -117,47 +117,53 @@ const POSView = () => {
         {/* Left Side - Main Cart Area */}
         <div className="cart-main-area">
           <div className="cart-empty-state">
-            <FaShoppingCart className="cart-icon" />
-            <h2 className="cart-title">Todo el espacio del carrito</h2>
-            <p className="cart-subtitle">Tu carrito está vacío</p>
-            <p className="cart-description">Agrega productos para comenzar</p>
-
-            {/* Cart Items */}
-            {cartItems.length > 0 && (
-              <div className="cart-items-list">
-                {cartItems.map((item) => (
-                  <div key={item.id} className="cart-item">
-                    <div className="item-info">
-                      <span className="item-name">{item.nombre || item.name}</span>
-                      <span className="item-price">${item.precio?.toFixed(2)}</span>
+            {cartItems.length === 0 ? (
+              <>
+                <FaShoppingCart className="cart-icon" />
+                <h2 className="cart-title">Sistema de Punto de Venta</h2>
+                <div className="instructions">
+                  <p className="instruction-item">• Usa el botón "Iniciar Detección" para activar la cámara</p>
+                  <p className="instruction-item">• Coloca productos frente a la cámara para detectarlos automáticamente</p>
+                  <p className="instruction-item">• Los productos detectados se agregarán al carrito automáticamente</p>
+                  <p className="instruction-item">• Revisa el total en el panel derecho y procede al checkout</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="cart-title">Productos en el Carrito</h2>
+                <div className="cart-items-list">
+                  {cartItems.map((item) => (
+                    <div key={item.id} className="cart-item">
+                      <div className="item-info">
+                        <span className="item-name">{item.nombre || item.name}</span>
+                        <span className="item-price">${item.precio?.toFixed(2)}</span>
+                      </div>
+                      <div className="item-controls">
+                        <button
+                          className="qty-btn"
+                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        >
+                          -
+                        </button>
+                        <span className="qty">{item.quantity}</span>
+                        <button
+                          className="qty-btn"
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        >
+                          +
+                        </button>
+                        <button
+                          className="remove-btn"
+                          onClick={() => removeFromCart(item.id)}
+                        >
+                          ×
+                        </button>
+                      </div>
                     </div>
-                    <div className="item-controls">
-                      <button
-                        className="qty-btn"
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      >
-                        -
-                      </button>
-                      <span className="qty">{item.quantity}</span>
-                      <button
-                        className="qty-btn"
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      >
-                        +
-                      </button>
-                      <button
-                        className="remove-btn"
-                        onClick={() => removeFromCart(item.id)}
-                      >
-                        ×
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </>
             )}
-
-
           </div>
         </div>
 
@@ -286,6 +292,20 @@ const POSView = () => {
         .cart-description {
           color: #999;
           margin-bottom: 40px;
+        }
+
+        .instructions {
+          text-align: left;
+          max-width: 500px;
+          margin: 30px auto 0;
+        }
+
+        .instruction-item {
+          color: #666;
+          font-size: 1rem;
+          line-height: 1.6;
+          margin-bottom: 12px;
+          padding-left: 10px;
         }
 
         .cart-items-list {
