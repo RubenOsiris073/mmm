@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Card, Button, Alert, Spinner, Row, Col, Badge } from 'react-bootstrap';
 import { FaCamera, FaStop, FaSync } from 'react-icons/fa';
 import Webcam from 'react-webcam';
@@ -24,44 +24,43 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
     'Chicle': 'chicle'
   };
 
-  // Start webcam
-  const startWebcam = useCallback(() => {
-    try {
-      setWebcamError(null);
-      setIsWebcamActive(true);
-      toast.info('Cámara activada. Coloca un producto frente a la cámara.');
-    } catch (error) {
-      console.error('Error starting webcam:', error);
-      setWebcamError('No se pudo iniciar la cámara. Verifique los permisos.');
-      toast.error('Error al iniciar la cámara');
-    }
+  // Find product by detection class - DECLARED FIRST
+  const findProductByDetection = useCallback((detectionLabel) => {
+    const productCode = classToProductMapping[detectionLabel];
+    if (!productCode) return null;
+
+    return products.find(product => 
+      product.codigo?.toLowerCase().includes(productCode) ||
+      product.nombre?.toLowerCase().includes(productCode) ||
+      product.name?.toLowerCase().includes(productCode)
+    );
+  }, [products]);
+
+  // Optimized image processing - DECLARED SECOND
+  const optimizeImage = useCallback((imageData) => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        canvas.width = 224;
+        canvas.height = 224;
+        ctx.drawImage(img, 0, 0, 224, 224);
+        const optimizedData = canvas.toDataURL('image/jpeg', 0.7);
+        resolve(optimizedData);
+      };
+      
+      img.src = imageData;
+    });
   }, []);
 
-  // Stop webcam
-  const stopWebcam = useCallback(() => {
-    setIsWebcamActive(false);
-    setIsContinuousMode(false);
-    setLastDetection(null);
-    
-    // Clear continuous detection interval
-    if (detectionIntervalRef.current) {
-      clearInterval(detectionIntervalRef.current);
-      detectionIntervalRef.current = null;
-    }
-    
-    // Clear cache
-    detectionCacheRef.current.clear();
-    
-    toast.info('Cámara desactivada');
-  }, []);
-
-  // Declare performFastDetection first
+  // Fast detection with cache and throttling - DECLARED THIRD
   const performFastDetection = useCallback(async (isContinuous = false) => {
     if (!webcamRef.current || !isWebcamActive) {
       return null;
     }
 
-    // Throttle detections to avoid overwhelming the backend
     const now = Date.now();
     if (isContinuous && now - lastDetectionTimeRef.current < 1500) {
       return null;
@@ -72,28 +71,25 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
       if (!isContinuous) setIsDetecting(true);
       setWebcamError(null);
 
-      // Capture and optimize image
       const rawImageData = webcamRef.current.getScreenshot();
       if (!rawImageData) {
         throw new Error('No se pudo capturar la imagen');
       }
 
-      // Check cache first (for continuous mode)
-      const imageHash = btoa(rawImageData.slice(-100)); // Simple hash
+      // Check cache first
+      const imageHash = btoa(rawImageData.slice(-100));
       if (isContinuous && detectionCacheRef.current.has(imageHash)) {
         const cachedResult = detectionCacheRef.current.get(imageHash);
-        if (now - cachedResult.timestamp < 3000) { // Cache valid for 3 seconds
+        if (now - cachedResult.timestamp < 3000) {
           return cachedResult.detection;
         }
       }
 
-      // Optimize image for faster processing
       const optimizedImage = await optimizeImage(rawImageData);
       
-      // Send to backend with timeout
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
 
       const response = await fetch(`${apiUrl}/detection/detect`, {
         method: 'POST',
@@ -102,7 +98,7 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
         },
         body: JSON.stringify({ 
           image: optimizedImage,
-          fast: true // Signal backend for fast processing
+          fast: true
         }),
         signal: controller.signal
       });
@@ -115,7 +111,6 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
 
       const result = await response.json();
       
-      // Update stats
       setDetectionStats(prev => ({
         total: prev.total + 1,
         successful: result.success ? prev.successful + 1 : prev.successful
@@ -126,17 +121,16 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
           label: result.detection.label,
           similarity: result.detection.similarity,
           confidence: result.detection.confidence || result.detection.similarity,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          processingTime: result.detection.processingTime
         };
 
-        // Cache result for continuous mode
         if (isContinuous) {
           detectionCacheRef.current.set(imageHash, {
             detection,
             timestamp: now
           });
           
-          // Clean old cache entries
           if (detectionCacheRef.current.size > 10) {
             const oldestKey = detectionCacheRef.current.keys().next().value;
             detectionCacheRef.current.delete(oldestKey);
@@ -145,7 +139,6 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
 
         setLastDetection(detection);
 
-        // Process high confidence detections
         if (detection.similarity >= 70) {
           const matchedProduct = findProductByDetection(detection.label);
           
@@ -196,6 +189,42 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
     }
   }, [isWebcamActive, onProductDetected, findProductByDetection, optimizeImage]);
 
+  // Start webcam
+  const startWebcam = useCallback(() => {
+    try {
+      setWebcamError(null);
+      setIsWebcamActive(true);
+      toast.info('Cámara activada. Coloca un producto frente a la cámara.');
+    } catch (error) {
+      console.error('Error starting webcam:', error);
+      setWebcamError('No se pudo iniciar la cámara. Verifique los permisos.');
+      toast.error('Error al iniciar la cámara');
+    }
+  }, []);
+
+  // Stop webcam
+  const stopWebcam = useCallback(() => {
+    setIsWebcamActive(false);
+    setIsContinuousMode(false);
+    setLastDetection(null);
+    
+    if (detectionIntervalRef.current) {
+      clearInterval(detectionIntervalRef.current);
+      detectionIntervalRef.current = null;
+    }
+    
+    detectionCacheRef.current.clear();
+    toast.info('Cámara desactivada');
+  }, []);
+
+  // Handle webcam error
+  const handleWebcamError = useCallback((error) => {
+    console.error('Webcam error:', error);
+    setWebcamError('Error de cámara: ' + error.message);
+    setIsWebcamActive(false);
+    toast.error('Error de cámara');
+  }, []);
+
   // Toggle continuous detection mode
   const toggleContinuousMode = useCallback(() => {
     if (!isWebcamActive) {
@@ -207,13 +236,11 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
     setIsContinuousMode(newContinuousMode);
 
     if (newContinuousMode) {
-      // Start continuous detection
       toast.info('Modo continuo activado - Detección automática cada 1.5s');
       detectionIntervalRef.current = setInterval(async () => {
         await performFastDetection(true);
-      }, 1500); // Every 1.5 seconds
+      }, 1500);
     } else {
-      // Stop continuous detection
       if (detectionIntervalRef.current) {
         clearInterval(detectionIntervalRef.current);
         detectionIntervalRef.current = null;
@@ -222,62 +249,19 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
     }
   }, [isWebcamActive, isContinuousMode, performFastDetection]);
 
+  // Manual detection
+  const captureAndDetect = useCallback(async () => {
+    await performFastDetection(false);
+  }, [performFastDetection]);
+
   // Cleanup on unmount
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       if (detectionIntervalRef.current) {
         clearInterval(detectionIntervalRef.current);
       }
     };
   }, []);
-
-  // Handle webcam error
-  const handleWebcamError = useCallback((error) => {
-    console.error('Webcam error:', error);
-    setWebcamError('Error de cámara: ' + error.message);
-    setIsWebcamActive(false);
-    toast.error('Error de cámara');
-  }, []);
-
-  // Find product by detection class
-  const findProductByDetection = useCallback((detectionLabel) => {
-    const productCode = classToProductMapping[detectionLabel];
-    if (!productCode) return null;
-
-    // Buscar producto que contenga el código en el nombre o código
-    return products.find(product => 
-      product.codigo?.toLowerCase().includes(productCode) ||
-      product.nombre?.toLowerCase().includes(productCode) ||
-      product.name?.toLowerCase().includes(productCode)
-    );
-  }, [products, classToProductMapping]);
-
-  // Optimized image processing
-  const optimizeImage = useCallback((imageData) => {
-    return new Promise((resolve) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      
-      img.onload = () => {
-        // Resize to optimal size for model (224x224)
-        canvas.width = 224;
-        canvas.height = 224;
-        ctx.drawImage(img, 0, 0, 224, 224);
-        
-        // Convert to optimized format with lower quality for speed
-        const optimizedData = canvas.toDataURL('image/jpeg', 0.7);
-        resolve(optimizedData);
-      };
-      
-      img.src = imageData;
-    });
-  }, []);
-
-  // Manual detection (single shot)
-  const captureAndDetect = useCallback(async () => {
-    await performFastDetection(false);
-  }, [performFastDetection]);
 
   return (
     <Card className="detection-card">
@@ -427,7 +411,6 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
                 </Card>
               )}
 
-              {/* Performance Stats */}
               {detectionStats.total > 0 && (
                 <Card className="mb-3" size="sm">
                   <Card.Header className="py-2">
