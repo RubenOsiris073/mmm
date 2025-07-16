@@ -214,102 +214,76 @@ const MobileWalletPayment = ({ amount, items, onPaymentConfirmed }) => {
       {testButton}
       
       <Row>
-        <Col md={6}>
-          <Card className="sync-code-card">
-            <Card.Header className="sync-code-header">
-              <h5 className="sync-code-title">
-                <FaMobile className="me-2" />
-                Código de Sincronización
-              </h5>
-            </Card.Header>
-            <Card.Body className="sync-code-body">
-              <div className="sync-code-display">
-                <div className="sync-code-number">
-                  {syncCode}
-                </div>
+        {/* Columna Izquierda: Información y Total */}
+        <Col md={8}>
+          <div className="payment-info-section">
+            <h5 className="mb-3">
+              <FaMobile className="me-2" />
+              Pago con App Móvil
+            </h5>
+            
+            <div className="payment-details mb-4">
+              <h6>Instrucciones:</h6>
+              <ol className="instruction-list">
+                <li>Abrir la aplicación móvil de la wallet</li>
+                <li>Tocar "Sincronizar Ahora" en la pantalla principal</li>
+                <li>Ingresar el código de sincronización</li>
+                <li>Revisar los productos y el total</li>
+                <li>Confirmar el pago desde la app</li>
+              </ol>
+            </div>
+
+            {/* Estado del pago */}
+            {paymentStatus === 'pending' && (
+              <div className="payment-status mb-3">
+                <Spinner animation="border" size="sm" className="me-2" />
+                <span>Esperando confirmación desde la app móvil...</span>
+                {checkingPayment && (
+                  <div><small className="text-muted">Verificando estado...</small></div>
+                )}
               </div>
-              
-              <Badge className="amount-badge">
-                Monto: ${amount.toFixed(2)} MXN
-              </Badge>
-              
-              <p className="sync-instructions">
-                El cliente debe ingresar este código en su app móvil
-              </p>
+            )}
 
-              {paymentStatus === 'pending' && (
-                <div className="payment-status-pending">
-                  <div className="status-content">
-                    <Spinner animation="border" size="sm" className="me-2" />
-                    <span>Esperando pago desde la app móvil...</span>
-                  </div>
-                  {checkingPayment && (
-                    <small className="checking-text">Verificando estado...</small>
-                  )}
-                </div>
-              )}
+            {paymentStatus === 'confirmed' && (
+              <Alert variant="success" className="mb-3">
+                <FaCheckCircle className="me-2" />
+                ¡Pago confirmado exitosamente!
+              </Alert>
+            )}
 
-              {paymentStatus === 'confirmed' && (
-                <Alert className="payment-success">
-                  <FaCheckCircle className="me-2" />
-                  ¡Pago confirmado exitosamente!
-                </Alert>
-              )}
+            {paymentStatus === 'failed' && (
+              <Alert variant="danger" className="mb-3">
+                <FaTimesCircle className="me-2" />
+                Error en el pago
+              </Alert>
+            )}
 
-              {paymentStatus === 'failed' && (
-                <Alert className="payment-failed">
-                  <FaTimesCircle className="me-2" />
-                  Error en el pago
-                </Alert>
-              )}
-            </Card.Body>
-          </Card>
+            {/* Total del pago */}
+            <div className="payment-total-section">
+              <div className="total-line">
+                <span>Total a pagar:</span>
+                <span className="total-amount">${amount.toFixed(2)} MXN</span>
+              </div>
+              <small className="text-muted">El código expira en 30 minutos</small>
+            </div>
+          </div>
         </Col>
 
-        <Col md={6}>
-          <Card className="instructions-card">
-            <Card.Header className="instructions-header">
-              <h5 className="instructions-title">Instrucciones para el Cliente</h5>
-            </Card.Header>
-            <Card.Body className="instructions-body">
-              <ol className="instruction-list">
-                <li className="instruction-item">
-                  <strong>Abrir la aplicación móvil</strong> de la wallet
-                </li>
-                <li className="instruction-item">
-                  <strong>Tocar "Sincronizar Ahora"</strong> en la pantalla principal
-                </li>
-                <li className="instruction-item">
-                  <strong>Ingresar el código:</strong> <code className="inline-code">{syncCode}</code>
-                </li>
-                <li className="instruction-item">
-                  <strong>Revisar los productos</strong> y el total
-                </li>
-                <li className="instruction-item">
-                  <strong>Confirmar el pago</strong> desde la app
-                </li>
-              </ol>
-
-              <Alert className="expiration-note">
-                <small>
-                  <strong>Nota:</strong> El código expira en 30 minutos. 
-                  Si el cliente no puede pagar, puede usar otro método.
-                </small>
-              </Alert>
-            </Card.Body>
-          </Card>
+        {/* Columna Derecha: Código de Sincronización */}
+        <Col md={4}>
+          <div className="sync-code-section text-center">
+            <h6 className="mb-3">Código de Sincronización</h6>
+            <div className="sync-code-display-clean">
+              <div className="sync-code-number-large">
+                {syncCode || '------'}
+              </div>
+            </div>
+            <Badge bg="primary" className="mt-2">
+              {items.length} {items.length === 1 ? 'producto' : 'productos'}
+            </Badge>
+          </div>
         </Col>
       </Row>
-
-      <Alert className="troubleshooting-section">
-        <h6>¿No funciona?</h6>
-        <p className="mb-2">Si el cliente tiene problemas con la app móvil:</p>
-        <ul className="troubleshooting-list">
-          <li>Verificar que tenga conexión a internet</li>
-          <li>Reintentar con un código nuevo</li>
-          <li>Usar otro método de pago (tarjeta, QR SPEI, etc.)</li>
-        </ul>
-      </Alert>
     </div>
   );
 };
