@@ -8,9 +8,14 @@ import './styles/POSCameraDetection.css';
 const POSCameraDetection = ({ onProductDetected, products, loading }) => {
   const [isWebcamActive, setIsWebcamActive] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
+  const [isContinuousMode, setIsContinuousMode] = useState(false);
   const [lastDetection, setLastDetection] = useState(null);
   const [webcamError, setWebcamError] = useState(null);
+  const [detectionStats, setDetectionStats] = useState({ total: 0, successful: 0 });
   const webcamRef = useRef(null);
+  const detectionIntervalRef = useRef(null);
+  const lastDetectionTimeRef = useRef(0);
+  const detectionCacheRef = useRef(new Map());
 
   // Mapeo de clases detectadas a productos
   const classToProductMapping = {
@@ -35,8 +40,54 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
   // Stop webcam
   const stopWebcam = useCallback(() => {
     setIsWebcamActive(false);
+    setIsContinuousMode(false);
     setLastDetection(null);
+    
+    // Clear continuous detection interval
+    if (detectionIntervalRef.current) {
+      clearInterval(detectionIntervalRef.current);
+      detectionIntervalRef.current = null;
+    }
+    
+    // Clear cache
+    detectionCacheRef.current.clear();
+    
     toast.info('Cámara desactivada');
+  }, []);
+
+  // Toggle continuous detection mode
+  const toggleContinuousMode = useCallback(() => {
+    if (!isWebcamActive) {
+      toast.warning('Primero activa la cámara');
+      return;
+    }
+
+    const newContinuousMode = !isContinuousMode;
+    setIsContinuousMode(newContinuousMode);
+
+    if (newContinuousMode) {
+      // Start continuous detection
+      toast.info('Modo continuo activado - Detección automática cada 1.5s');
+      detectionIntervalRef.current = setInterval(async () => {
+        await performFastDetection(true);
+      }, 1500); // Every 1.5 seconds
+    } else {
+      // Stop continuous detection
+      if (detectionIntervalRef.current) {
+        clearInterval(detectionIntervalRef.current);
+        detectionIntervalRef.current = null;
+      }
+      toast.info('Modo continuo desactivado');
+    }
+  }, [isWebcamActive, isContinuousMode, performFastDetection]);
+
+  // Cleanup on unmount
+  React.useEffect(() => {
+    return () => {
+      if (detectionIntervalRef.current) {
+        clearInterval(detectionIntervalRef.current);
+      }
+    };
   }, []);
 
   // Handle webcam error
@@ -60,42 +111,93 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
     );
   }, [products]);
 
-  // Capture frame and send for detection
-  const captureAndDetect = useCallback(async () => {
+  // Optimized image processing
+  const optimizeImage = useCallback((imageData) => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Resize to optimal size for model (224x224)
+        canvas.width = 224;
+        canvas.height = 224;
+        ctx.drawImage(img, 0, 0, 224, 224);
+        
+        // Convert to optimized format with lower quality for speed
+        const optimizedData = canvas.toDataURL('image/jpeg', 0.7);
+        resolve(optimizedData);
+      };
+      
+      img.src = imageData;
+    });
+  }, []);
+
+  // Fast detection with cache and throttling
+  const performFastDetection = useCallback(async (isContinuous = false) => {
     if (!webcamRef.current || !isWebcamActive) {
-      setWebcamError('Cámara no está lista');
-      return;
+      return null;
     }
 
+    // Throttle detections to avoid overwhelming the backend
+    const now = Date.now();
+    if (isContinuous && now - lastDetectionTimeRef.current < 1500) {
+      return null;
+    }
+    lastDetectionTimeRef.current = now;
+
     try {
-      setIsDetecting(true);
+      if (!isContinuous) setIsDetecting(true);
       setWebcamError(null);
 
-      // Capture screenshot from webcam
-      const imageData = webcamRef.current.getScreenshot();
-      
-      if (!imageData) {
+      // Capture and optimize image
+      const rawImageData = webcamRef.current.getScreenshot();
+      if (!rawImageData) {
         throw new Error('No se pudo capturar la imagen');
       }
+
+      // Check cache first (for continuous mode)
+      const imageHash = btoa(rawImageData.slice(-100)); // Simple hash
+      if (isContinuous && detectionCacheRef.current.has(imageHash)) {
+        const cachedResult = detectionCacheRef.current.get(imageHash);
+        if (now - cachedResult.timestamp < 3000) { // Cache valid for 3 seconds
+          return cachedResult.detection;
+        }
+      }
+
+      // Optimize image for faster processing
+      const optimizedImage = await optimizeImage(rawImageData);
       
-      console.log('Enviando imagen para detección...');
-      
-      // Send to backend for detection
+      // Send to backend with timeout
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
       const response = await fetch(`${apiUrl}/detection/detect`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ image: imageData })
+        body: JSON.stringify({ 
+          image: optimizedImage,
+          fast: true // Signal backend for fast processing
+        }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`Detection failed: ${response.status}`);
       }
 
       const result = await response.json();
-      console.log('Detection result:', result);
+      
+      // Update stats
+      setDetectionStats(prev => ({
+        total: prev.total + 1,
+        successful: result.success ? prev.successful + 1 : prev.successful
+      }));
 
       if (result.success && result.detection) {
         const detection = {
@@ -105,43 +207,77 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
           timestamp: new Date().toISOString()
         };
 
+        // Cache result for continuous mode
+        if (isContinuous) {
+          detectionCacheRef.current.set(imageHash, {
+            detection,
+            timestamp: now
+          });
+          
+          // Clean old cache entries
+          if (detectionCacheRef.current.size > 10) {
+            const oldestKey = detectionCacheRef.current.keys().next().value;
+            detectionCacheRef.current.delete(oldestKey);
+          }
+        }
+
         setLastDetection(detection);
 
-        // Check if detection confidence is high enough
+        // Process high confidence detections
         if (detection.similarity >= 70) {
-          // Find matching product
           const matchedProduct = findProductByDetection(detection.label);
           
           if (matchedProduct) {
-            // Check if product has stock
             const stock = matchedProduct.cantidad || matchedProduct.stock || 0;
             if (stock > 0) {
-              toast.success(`¡${detection.label} detectado! Agregando al carrito...`);
+              if (!isContinuous) {
+                toast.success(`¡${detection.label} detectado! Agregando al carrito...`);
+              }
               onProductDetected?.(matchedProduct, detection);
+              return detection;
             } else {
-              toast.warning(`${detection.label} detectado pero sin stock disponible`);
-              setWebcamError(`Producto detectado: ${detection.label}, pero sin stock disponible`);
+              if (!isContinuous) {
+                toast.warning(`${detection.label} detectado pero sin stock disponible`);
+                setWebcamError(`Producto detectado: ${detection.label}, pero sin stock disponible`);
+              }
             }
           } else {
-            toast.warning(`${detection.label} detectado pero no encontrado en inventario`);
-            setWebcamError(`Producto detectado: ${detection.label}, pero no está registrado en el sistema`);
+            if (!isContinuous) {
+              toast.warning(`${detection.label} detectado pero no encontrado en inventario`);
+              setWebcamError(`Producto detectado: ${detection.label}, pero no está registrado en el sistema`);
+            }
           }
-        } else {
+        } else if (!isContinuous) {
           setWebcamError(`Detección poco confiable (${detection.similarity}%). Intente de nuevo con mejor iluminación.`);
-          toast.warning('Detección poco confiable. Intente de nuevo.');
         }
-      } else {
+        
+        return detection;
+      } else if (!isContinuous) {
         setWebcamError('No se pudo detectar ningún producto. Intente de nuevo.');
-        toast.warning('No se detectó ningún producto');
       }
+      
+      return null;
     } catch (error) {
-      console.error('Detection error:', error);
-      setWebcamError('Error en la detección: ' + error.message);
-      toast.error('Error en la detección');
+      if (error.name === 'AbortError') {
+        console.log('Detection timeout');
+        if (!isContinuous) setWebcamError('Detección cancelada por timeout');
+      } else {
+        console.error('Detection error:', error);
+        if (!isContinuous) {
+          setWebcamError('Error en la detección: ' + error.message);
+          toast.error('Error en la detección');
+        }
+      }
+      return null;
     } finally {
-      setIsDetecting(false);
+      if (!isContinuous) setIsDetecting(false);
     }
-  }, [isWebcamActive, onProductDetected, findProductByDetection]);
+  }, [isWebcamActive, onProductDetected, findProductByDetection, optimizeImage]);
+
+  // Manual detection (single shot)
+  const captureAndDetect = useCallback(async () => {
+    await performFastDetection(false);
+  }, [performFastDetection]);
 
   return (
     <Card className="detection-card">
@@ -190,14 +326,27 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
                     }}
                   />
                   <div className="position-absolute top-0 start-0 p-2">
-                    <div className="bg-dark bg-opacity-75 text-white px-2 py-1 rounded small">
-                      {isDetecting ? 'Detectando...' : 'Listo para detectar'}
+                    <div className={`px-2 py-1 rounded small text-white ${
+                      isContinuousMode ? 'bg-warning bg-opacity-90' : 
+                      isDetecting ? 'bg-primary bg-opacity-90' : 
+                      'bg-dark bg-opacity-75'
+                    }`}>
+                      {isContinuousMode ? '🔄 Continuo' : 
+                       isDetecting ? 'Detectando...' : 
+                       'Listo'}
                     </div>
                   </div>
                   {lastDetection && (
                     <div className="position-absolute top-0 end-0 p-2">
-                      <div className="bg-success bg-opacity-90 text-white px-2 py-1 rounded small">
+                      <div className={`text-white px-2 py-1 rounded small ${
+                        lastDetection.similarity >= 80 ? 'bg-success bg-opacity-90' :
+                        lastDetection.similarity >= 70 ? 'bg-warning bg-opacity-90' :
+                        'bg-danger bg-opacity-90'
+                      }`}>
                         {lastDetection.label} ({lastDetection.similarity}%)
+                        {lastDetection.processingTime && (
+                          <div className="small">{lastDetection.processingTime}ms</div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -211,9 +360,27 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
               {isWebcamActive && (
                 <div className="d-grid gap-2 mb-3">
                   <Button
+                    variant={isContinuousMode ? "warning" : "info"}
+                    onClick={toggleContinuousMode}
+                    disabled={loading}
+                  >
+                    {isContinuousMode ? (
+                      <>
+                        <Spinner size="sm" className="me-2" />
+                        Modo Continuo ON
+                      </>
+                    ) : (
+                      <>
+                        <FaSync className="me-2" />
+                        Modo Continuo
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button
                     variant="success"
                     onClick={captureAndDetect}
-                    disabled={isDetecting || loading}
+                    disabled={isDetecting || loading || isContinuousMode}
                   >
                     {isDetecting ? (
                       <>
@@ -223,7 +390,7 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
                     ) : (
                       <>
                         <FaSync className="me-2" />
-                        Detectar Producto
+                        Detectar Una Vez
                       </>
                     )}
                   </Button>
@@ -260,13 +427,43 @@ const POSCameraDetection = ({ onProductDetected, products, loading }) => {
                 </Card>
               )}
 
+              {/* Performance Stats */}
+              {detectionStats.total > 0 && (
+                <Card className="mb-3" size="sm">
+                  <Card.Header className="py-2">
+                    <small>Estadísticas</small>
+                  </Card.Header>
+                  <Card.Body className="py-2">
+                    <p className="mb-1 small">
+                      <strong>Total:</strong> {detectionStats.total}
+                    </p>
+                    <p className="mb-1 small">
+                      <strong>Exitosas:</strong> {detectionStats.successful}
+                    </p>
+                    <p className="mb-0 small">
+                      <strong>Precisión:</strong> {detectionStats.total > 0 ? Math.round((detectionStats.successful / detectionStats.total) * 100) : 0}%
+                    </p>
+                  </Card.Body>
+                </Card>
+              )}
+
               <div className="instructions">
                 <h6 className="small">Productos Detectables:</h6>
-                <ul className="small text-muted mb-0">
+                <ul className="small text-muted mb-2">
                   <li>Barrita</li>
                   <li>Botella</li>
                   <li>Chicle</li>
                 </ul>
+                
+                <div className="performance-tips">
+                  <h6 className="small">⚡ Modo Rápido:</h6>
+                  <ul className="small text-muted mb-0">
+                    <li>Detección continua cada 1.5s</li>
+                    <li>Cache inteligente</li>
+                    <li>Imágenes optimizadas</li>
+                    <li>Timeout de 5s</li>
+                  </ul>
+                </div>
               </div>
             </div>
           </Col>

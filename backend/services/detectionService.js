@@ -34,22 +34,31 @@ class DetectionService {
     }
   }
 
-  async performDetection(imageData) {
+  async performDetection(imageData, options = {}) {
     try {
       if (!this.model) {
         throw new Error("Modelo no inicializado");
       }
 
+      const startTime = Date.now();
+      const { fast = false } = options;
+
       // Decodificar la imagen base64
       const imageBuffer = Buffer.from(imageData.split(',')[1], 'base64');
       
-      // Convertir a tensor
+      // Convertir a tensor con optimizaciones para modo rápido
       const tensor = tf.tidy(() => {
         const decoded = tf.node.decodeImage(imageBuffer);
-        return decoded
-          .resizeNearestNeighbor([224, 224])
+        
+        // Para modo rápido, usar resize más eficiente
+        const resized = fast 
+          ? decoded.resizeBilinear([224, 224]) // Más rápido que nearestNeighbor
+          : decoded.resizeNearestNeighbor([224, 224]);
+        
+        return resized
           .expandDims()
-          .toFloat();
+          .toFloat()
+          .div(255.0); // Normalizar para mejor rendimiento
       });
 
       // Realizar predicción
@@ -63,17 +72,23 @@ class DetectionService {
       const label = etiquetas[idx] || "Desconocido";
       const similarity = parseFloat((maxProb * 100).toFixed(2));
 
+      const processingTime = Date.now() - startTime;
+
       // Crear objeto de detección
       const detection = {
         label,
         similarity,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        processingTime: processingTime,
+        fast: fast
       };
 
-      // Guardar en base de datos si la confianza es alta
-      if (similarity > 60) {
+      // Guardar en base de datos si la confianza es alta (solo para detecciones no rápidas para evitar spam)
+      if (similarity > 60 && !fast) {
         await addDetection(detection);
       }
+
+      Logger.info(`Detección ${fast ? 'rápida' : 'normal'} completada en ${processingTime}ms: ${label} (${similarity}%)`);
 
       return detection;
     } catch (error) {

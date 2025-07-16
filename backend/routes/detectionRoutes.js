@@ -6,7 +6,7 @@ const Logger = require('../utils/logger.js');
 // Realizar una detección
 router.post('/detect', async (req, res) => {
   try {
-    const { image } = req.body;
+    const { image, fast = false } = req.body;
     
     if (!image) {
       return res.status(400).json({ 
@@ -14,7 +14,7 @@ router.post('/detect', async (req, res) => {
       });
     }
 
-    const detection = await detectionService.performDetection(image);
+    const detection = await detectionService.performDetection(image, { fast });
     res.json({
       success: true,
       detection
