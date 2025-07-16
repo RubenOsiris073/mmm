@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Alert, Button, Row, Col, Badge, Spinner } from 'react-bootstrap';
 import { FaMobile, FaCheckCircle, FaTimesCircle, FaFlask } from 'react-icons/fa';
+import { createPortal } from 'react-dom';
 import { toast } from 'react-toastify';
 import './styles/MobileWalletPayment.css';
 
@@ -187,8 +188,31 @@ const MobileWalletPayment = ({ amount, items, onPaymentConfirmed }) => {
     );
   }
 
+  // Renderizar botón de testing en el título usando portal
+  const testButtonContainer = document.getElementById('test-button-container');
+  const testButton = testButtonContainer && createPortal(
+    <Button
+      variant="warning"
+      size="sm"
+      onClick={handleTestPayment}
+      disabled={loading || paymentStatus === 'confirmed'}
+      style={{ width: '50px', height: '35px' }}
+    >
+      {loading ? (
+        <Spinner animation="border" size="sm" />
+      ) : paymentStatus === 'confirmed' ? (
+        <FaCheckCircle />
+      ) : (
+        <FaFlask />
+      )}
+    </Button>,
+    testButtonContainer
+  );
+
   return (
     <div className="mobile-wallet-payment">
+      {testButton}
+      
       <Row>
         <Col md={6}>
           <Card className="sync-code-card">
@@ -274,27 +298,6 @@ const MobileWalletPayment = ({ amount, items, onPaymentConfirmed }) => {
               </Alert>
             </Card.Body>
           </Card>
-        </Col>
-      </Row>
-
-      {/* Botón minimalista de testing */}
-      <Row className="mt-3">
-        <Col md={12} className="text-center">
-          <Button
-            variant="warning"
-            size="sm"
-            onClick={handleTestPayment}
-            disabled={loading || paymentStatus === 'confirmed'}
-            style={{ width: '60px', height: '40px' }}
-          >
-            {loading ? (
-              <Spinner animation="border" size="sm" />
-            ) : paymentStatus === 'confirmed' ? (
-              <FaCheckCircle />
-            ) : (
-              <FaFlask />
-            )}
-          </Button>
         </Col>
       </Row>
 

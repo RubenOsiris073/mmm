@@ -67,17 +67,15 @@ const PaymentModal = ({
       </Modal.Header>
       <Modal.Body className="payment-modal-body">
         <Form>
-          <Form.Group className="mb-4">
-            <Form.Label className="payment-form-label">Método de Pago</Form.Label>
-            <Form.Select
-              value={paymentMethod}
-              onChange={(e) => safeSetPaymentMethod(e.target.value)}
-              disabled={loading}
-              className="payment-form-select"
-            >
-              <option value="mobile-wallet">App Móvil Wallet</option>
-            </Form.Select>
-          </Form.Group>
+          <div className="mb-4 d-flex justify-content-between align-items-center">
+            <div>
+              <div className="payment-form-label mb-1">Método de Pago</div>
+              <div className="payment-method-title">App Móvil Wallet</div>
+            </div>
+            <div id="test-button-container">
+              {/* El botón de testing se renderizará aquí */}
+            </div>
+          </div>
 
           {/* {paymentMethod === 'efectivo' && (
             <>
