@@ -59,7 +59,7 @@ const PaymentModal = ({
       onHide={safeOnHide} 
       centered 
       backdrop="static" 
-      size="md"
+      size="lg"
       className="payment-modal-custom"
     >
       <Modal.Header closeButton className="payment-modal-header d-flex justify-content-between align-items-center">
