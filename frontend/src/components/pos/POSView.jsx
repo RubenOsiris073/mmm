@@ -120,8 +120,10 @@ const POSView = () => {
             {cartItems.length === 0 ? (
               <>
                 <FaShoppingCart className="cart-icon" />
-                <h2 className="cart-title">Sistema de Punto de Venta</h2>
+                <h2 className="cart-title">Tu carrito está vacío</h2>
+                <p className="cart-subtitle">Agrega productos para comenzar</p>
                 <div className="instructions">
+                  <h3 className="instructions-title">Cómo usar el sistema:</h3>
                   <p className="instruction-item">• Usa el botón "Iniciar Detección" para activar la cámara</p>
                   <p className="instruction-item">• Coloca productos frente a la cámara para detectarlos automáticamente</p>
                   <p className="instruction-item">• Los productos detectados se agregarán al carrito automáticamente</p>
@@ -272,7 +274,7 @@ const POSView = () => {
 
         .cart-icon {
           font-size: 4rem;
-          color: #e9ecef;
+          color: #6c757d;
           margin-bottom: 20px;
         }
 
@@ -298,6 +300,14 @@ const POSView = () => {
           text-align: left;
           max-width: 500px;
           margin: 30px auto 0;
+        }
+
+        .instructions-title {
+          font-size: 1.3rem;
+          font-weight: 500;
+          color: #333;
+          margin-bottom: 20px;
+          text-align: center;
         }
 
         .instruction-item {
