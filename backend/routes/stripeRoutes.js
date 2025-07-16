@@ -86,6 +86,42 @@ router.get('/payment/:paymentIntentId', async (req, res) => {
   }
 });
 
+// Endpoint para pago de prueba
+router.post('/test-payment', async (req, res) => {
+  try {
+    const { amount, currency = 'mxn', metadata = {} } = req.body;
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Monto inválido'
+      });
+    }
+
+    Logger.info(`Procesando pago de prueba - Monto: $${amount}`);
+
+    // Crear y confirmar Payment Intent automáticamente con tarjeta de prueba
+    const paymentIntent = await stripeService.createAndConfirmTestPayment(amount, currency, metadata);
+
+    res.json({
+      success: true,
+      data: {
+        paymentIntentId: paymentIntent.id,
+        amount: paymentIntent.amount / 100,
+        currency: paymentIntent.currency,
+        status: paymentIntent.status
+      }
+    });
+
+  } catch (error) {
+    Logger.error('Error procesando pago de prueba:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Webhook de Stripe
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   try {

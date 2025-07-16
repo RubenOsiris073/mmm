@@ -18,7 +18,7 @@ const MobileWalletPayment = ({ amount, items, onPaymentConfirmed }) => {
     cvc: '123'
   };
 
-  // Función para procesar pago de prueba con Stripe
+  // Función para procesar pago de prueba usando el backend
   const handleTestPayment = async () => {
     setLoading(true);
     setError('');
@@ -26,9 +26,9 @@ const MobileWalletPayment = ({ amount, items, onPaymentConfirmed }) => {
     try {
       toast.info('Iniciando pago de prueba...', { autoClose: 2000 });
       
-      // 1. Crear Payment Intent
+      // Llamar al backend para procesar el pago de prueba directamente
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      const paymentIntentResponse = await fetch(`${apiUrl}/stripe/create-payment-intent`, {
+      const response = await fetch(`${apiUrl}/stripe/test-payment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,65 +43,30 @@ const MobileWalletPayment = ({ amount, items, onPaymentConfirmed }) => {
         }),
       });
 
-      const paymentIntentData = await paymentIntentResponse.json();
+      const data = await response.json();
       
-      if (!paymentIntentData.success) {
-        throw new Error(paymentIntentData.error || 'Error creando Payment Intent');
+      if (!data.success) {
+        throw new Error(data.error || 'Error procesando pago de prueba');
       }
 
-      const { clientSecret, paymentIntentId } = paymentIntentData.data;
+      const paymentData = data.data;
       
-      // 2. Inicializar Stripe
-      const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-      if (!stripeKey) {
-        throw new Error('Clave de Stripe no configurada');
-      }
-      
-      const stripe = await loadStripe(stripeKey);
-      if (!stripe) {
-        throw new Error('Error inicializando Stripe');
-      }
-
-      toast.info('Procesando pago con tarjeta de prueba...', { autoClose: 2000 });
-
-      // 3. Confirmar pago con datos de prueba
-      const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
-        clientSecret,
-        {
-          payment_method: {
-            card: {
-              number: TEST_CARD_DATA.number,
-              exp_month: TEST_CARD_DATA.exp_month,
-              exp_year: TEST_CARD_DATA.exp_year,
-              cvc: TEST_CARD_DATA.cvc,
-            },
-            billing_details: {
-              name: 'Cliente Test POS',
-            },
-          },
-        }
-      );
-
-      if (confirmError) {
-        throw new Error(confirmError.message);
-      }
-
-      if (paymentIntent.status === 'succeeded') {
+      if (paymentData.status === 'succeeded') {
         setPaymentStatus('confirmed');
         toast.success('¡Pago de prueba exitoso!');
         
         // Llamar callback de éxito
         if (onPaymentConfirmed) {
           onPaymentConfirmed({
-            paymentIntentId: paymentIntent.id,
-            amount: paymentIntent.amount / 100,
-            currency: paymentIntent.currency,
-            status: paymentIntent.status,
+            paymentIntentId: paymentData.paymentIntentId,
+            amount: paymentData.amount,
+            currency: paymentData.currency,
+            status: paymentData.status,
             method: 'mobile-wallet-test'
           });
         }
       } else {
-        throw new Error(`Pago no completado: ${paymentIntent.status}`);
+        throw new Error(`Pago no completado: ${paymentData.status}`);
       }
       
     } catch (err) {

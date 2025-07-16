@@ -124,6 +124,42 @@ class StripeService {
       throw new Error(`Error creando cliente: ${error.message}`);
     }
   }
+
+  // Crear y confirmar pago de prueba automáticamente
+  async createAndConfirmTestPayment(amount, currency = 'mxn', metadata = {}) {
+    try {
+      Logger.info(`Creando pago de prueba por ${amount} ${currency.toUpperCase()}`);
+      
+      // Crear Payment Intent
+      const paymentIntent = await this.stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Stripe espera centavos
+        currency: currency,
+        automatic_payment_methods: {
+          enabled: true,
+        },
+        metadata: {
+          ...metadata,
+          test_payment: 'true'
+        }
+      });
+
+      Logger.info(`Payment Intent de prueba creado: ${paymentIntent.id}`);
+
+      // Confirmar automáticamente con tarjeta de prueba
+      const confirmedPayment = await this.stripe.paymentIntents.confirm(paymentIntent.id, {
+        payment_method: 'pm_card_visa', // Método de pago de prueba de Stripe
+        return_url: 'https://example.com/return' // URL requerida pero no usada en este contexto
+      });
+
+      Logger.info(`Pago de prueba confirmado: ${confirmedPayment.id} - Estado: ${confirmedPayment.status}`);
+      
+      return confirmedPayment;
+
+    } catch (error) {
+      Logger.error('Error en pago de prueba:', error);
+      throw new Error(`Error en pago de prueba: ${error.message}`);
+    }
+  }
 }
 
 module.exports = new StripeService();
