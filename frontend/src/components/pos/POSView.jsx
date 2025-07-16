@@ -260,8 +260,6 @@ const POSView = () => {
       <style jsx>{`
         .pos-minimal-container {
           min-height: 100vh;
-          max-height: ${showProductList ? 'none' : '100vh'};
-          overflow-y: ${showProductList ? 'auto' : 'hidden'};
           background: #f8f9fa;
           padding: 20px;
         }
@@ -271,6 +269,7 @@ const POSView = () => {
           gap: 20px;
           max-width: 1400px;
           margin: 0 auto;
+          ${!showProductList ? 'height: calc(100vh - 40px);' : ''}
         }
 
         .cart-main-area {
