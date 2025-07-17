@@ -262,37 +262,81 @@ const POSCameraDetection = ({ onProductDetected, products, loading, minimal = fa
     };
   }, []);
 
+  // Función para verificar permisos de cámara
+  const checkCameraPermissions = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          width: { ideal: 320 },
+          height: { ideal: 240 },
+          facingMode: 'environment'
+        } 
+      });
+      
+      // Si llegamos aquí, tenemos permisos
+      stream.getTracks().forEach(track => track.stop()); // Liberar la cámara
+      return true;
+    } catch (error) {
+      console.error('Camera permission error:', error);
+      
+      if (error.name === 'NotAllowedError') {
+        setWebcamError('Permisos de cámara denegados. Por favor, permite el acceso a la cámara.');
+        toast.error('Permisos de cámara denegados');
+      } else if (error.name === 'NotFoundError') {
+        setWebcamError('No se encontró ninguna cámara en el dispositivo.');
+        toast.error('Cámara no encontrada');
+      } else if (error.name === 'NotReadableError') {
+        setWebcamError('La cámara está siendo usada por otra aplicación.');
+        toast.error('Cámara en uso');
+      } else {
+        setWebcamError(`Error de cámara: ${error.message}`);
+        toast.error('Error de cámara');
+      }
+      
+      return false;
+    }
+  };
+
   // Función para iniciar/parar detección continua automáticamente
   const toggleDetection = useCallback(async () => {
-    console.log('🎯 toggleDetection called', { isWebcamActive, isContinuousMode });
+    console.log('toggleDetection called', { isWebcamActive, isContinuousMode });
     
     if (!isWebcamActive && !isContinuousMode) {
-      // Iniciar: activar cámara y modo continuo
+      // Iniciar: verificar permisos y activar cámara
+      console.log('Starting detection...');
+      setWebcamError(null);
+      toast.info('Verificando permisos de cámara...');
+      
+      const hasPermissions = await checkCameraPermissions();
+      if (!hasPermissions) {
+        return; // No continuar si no hay permisos
+      }
+      
       try {
-        console.log('🚀 Starting detection...');
-        setWebcamError(null);
+        console.log('Permissions OK, activating webcam...');
         setIsWebcamActive(true);
-        toast.info('Activando cámara...');
+        toast.info('Cámara activada, iniciando detección...');
         
-        // Esperar un poco para que la cámara se active
+        // Esperar un poco más para que la cámara se active completamente
         setTimeout(() => {
-          console.log('⏰ Timeout reached, starting continuous mode');
+          console.log('Starting continuous detection mode');
           setIsContinuousMode(true);
           detectionIntervalRef.current = setInterval(async () => {
-            console.log('🔄 Running detection cycle...');
+            console.log('Running detection cycle...');
             await performFastDetection(true);
           }, 1500);
           toast.success('Detección continua iniciada');
-        }, 1000);
+        }, 2000); // Aumentado a 2 segundos
         
       } catch (error) {
-        console.error('❌ Error starting detection:', error);
+        console.error('Error starting detection:', error);
         setWebcamError('No se pudo iniciar la detección');
         toast.error('Error al iniciar la detección');
+        setIsWebcamActive(false);
       }
     } else {
       // Parar: desactivar todo
-      console.log('🛑 Stopping detection...');
+      console.log('Stopping detection...');
       setIsWebcamActive(false);
       setIsContinuousMode(false);
       setLastDetection(null);
