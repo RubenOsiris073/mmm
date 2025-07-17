@@ -1,7 +1,8 @@
 // frontend/src/components/layout/POSLayout.jsx
-import React from 'react';
-import { Container } from 'react-bootstrap';
-import FloatingActionButton from '../pos/components/FloatingActionButton';
+import React, { Suspense } from 'react';
+
+// Lazy load del FloatingActionButton para evitar problemas de dependencias
+const FloatingActionButton = React.lazy(() => import('../pos/components/FloatingActionButton'));
 
 const POSLayout = ({ children }) => {
   return (
@@ -25,8 +26,10 @@ const POSLayout = ({ children }) => {
         {children}
       </div>
 
-      {/* Botón flotante para opciones de usuario y tema */}
-      <FloatingActionButton />
+      {/* Botón flotante con lazy loading para evitar problemas de dependencias */}
+      <Suspense fallback={null}>
+        <FloatingActionButton />
+      </Suspense>
     </div>
   );
 };

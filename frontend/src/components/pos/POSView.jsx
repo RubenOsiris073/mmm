@@ -1,10 +1,8 @@
-import React, { useEffect, lazy, Suspense } from 'react';
+import React, { useEffect, useCallback, Suspense } from 'react';
 import { Alert, Spinner } from 'react-bootstrap';
-import { FaShoppingCart, FaChartBar } from 'react-icons/fa';
-import POSCameraDetection from './POSCameraDetection';
 
-// Importaciones de componentes
-const ProductList = lazy(() => import('./ProductList'));
+// Importaciones de componentes básicos
+import ProductList from './ProductList';
 import PaymentModal from './PaymentModal';
 import POSCartArea from './components/POSCartArea';
 import POSSidePanels from './components/POSSidePanels';
@@ -19,7 +17,6 @@ import { useProductVisibility } from '../../contexts/ProductVisibilityContext';
 
 // Importaciones de estilos
 import styles from './styles/POSLayout.module.css';
-import panelStyles from './styles/POSPanels.module.css';
 
 const POSView = () => {
   const { showProductList } = useProductVisibility();
