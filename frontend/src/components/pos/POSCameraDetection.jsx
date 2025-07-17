@@ -367,7 +367,7 @@ const POSCameraDetection = ({ onProductDetected, products, loading, minimal = fa
           </div>
         )}
 
-        <style jsx>{`
+        <style>{`
           .panel-camera-detection {
             display: flex;
             flex-direction: column;
@@ -575,7 +575,7 @@ const POSCameraDetection = ({ onProductDetected, products, loading, minimal = fa
           </div>
         )}
 
-        <style jsx>{`
+        <style>{`
           .minimal-camera-detection {
             display: flex;
             flex-direction: column;
