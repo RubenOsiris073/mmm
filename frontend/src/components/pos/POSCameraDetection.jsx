@@ -264,28 +264,35 @@ const POSCameraDetection = ({ onProductDetected, products, loading, minimal = fa
 
   // Función para iniciar/parar detección continua automáticamente
   const toggleDetection = useCallback(async () => {
+    console.log('🎯 toggleDetection called', { isWebcamActive, isContinuousMode });
+    
     if (!isWebcamActive && !isContinuousMode) {
       // Iniciar: activar cámara y modo continuo
       try {
+        console.log('🚀 Starting detection...');
         setWebcamError(null);
         setIsWebcamActive(true);
+        toast.info('Activando cámara...');
         
         // Esperar un poco para que la cámara se active
         setTimeout(() => {
+          console.log('⏰ Timeout reached, starting continuous mode');
           setIsContinuousMode(true);
           detectionIntervalRef.current = setInterval(async () => {
+            console.log('🔄 Running detection cycle...');
             await performFastDetection(true);
           }, 1500);
           toast.success('Detección continua iniciada');
         }, 1000);
         
       } catch (error) {
-        console.error('Error starting detection:', error);
+        console.error('❌ Error starting detection:', error);
         setWebcamError('No se pudo iniciar la detección');
         toast.error('Error al iniciar la detección');
       }
     } else {
       // Parar: desactivar todo
+      console.log('🛑 Stopping detection...');
       setIsWebcamActive(false);
       setIsContinuousMode(false);
       setLastDetection(null);
