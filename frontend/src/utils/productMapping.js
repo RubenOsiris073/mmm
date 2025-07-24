@@ -1,17 +1,17 @@
 // Mapeo de labels de detección a información de productos
 export const DETECTION_PRODUCT_MAPPING = {
   // Labels principales que mencionaste
-  'barrita': {
-    nombre: 'Barrita Energética',
+  'Cacahuates_Kiyakis': {
+    nombre: 'Cacahuates',
     categoria: 'Snacks y Botanas',
-    subcategoria: 'Barritas',
+    subcategoria: 'Snacks',
     precio: 15.00,
     unidadMedida: 'pieza',
     perecedero: true,
     stockMinimo: 10,
-    descripcion: 'Barrita energética detectada automáticamente'
+    descripcion: 'Snack detectado automáticamente'
   },
-  'botella': {
+  'Botella_Ciel': {
     nombre: 'Botella de Agua',
     categoria: 'Bebidas',
     subcategoria: 'Agua embotellada',
@@ -21,7 +21,7 @@ export const DETECTION_PRODUCT_MAPPING = {
     stockMinimo: 20,
     descripcion: 'Botella de agua detectada automáticamente'
   },
-  'chicle': {
+  'Trident': {
     nombre: 'Chicle',
     categoria: 'Dulces y Chocolates',
     subcategoria: 'Chicles',
@@ -33,7 +33,7 @@ export const DETECTION_PRODUCT_MAPPING = {
   },
   
   // Labels adicionales comunes
-  'refresco': {
+  'Dr.Peppe': {
     nombre: 'Refresco',
     categoria: 'Bebidas',
     subcategoria: 'Refrescos',
@@ -43,35 +43,35 @@ export const DETECTION_PRODUCT_MAPPING = {
     stockMinimo: 15,
     descripcion: 'Refresco detectado automáticamente'
   },
-  'galleta': {
-    nombre: 'Galletas',
-    categoria: 'Panadería y Galletas',
-    subcategoria: 'Galletas dulces',
-    precio: 20.00,
-    unidadMedida: 'paquete',
-    perecedero: true,
-    stockMinimo: 12,
-    descripcion: 'Galletas detectadas automáticamente'
-  },
-  'chocolate': {
-    nombre: 'Chocolate',
-    categoria: 'Dulces y Chocolates',
-    subcategoria: 'Chocolates',
-    precio: 25.00,
+  'Takis': {
+    nombre: 'Takis',
+    categoria: 'Snacks y Botanas',
+    subcategoria: 'Snacks',
+    precio: 15.00,
     unidadMedida: 'pieza',
     perecedero: true,
-    stockMinimo: 15,
-    descripcion: 'Chocolate detectado automáticamente'
+    stockMinimo: 10,
+    descripcion: 'Snack detectado automáticamente'
   },
-  'leche': {
-    nombre: 'Leche',
-    categoria: 'Lácteos',
-    subcategoria: 'Leche líquida',
-    precio: 24.00,
-    unidadMedida: 'litro',
+  'Pop': {
+    nombre: 'Cacahuates',
+    categoria: 'Snacks y Botanas',
+    subcategoria: 'Snacks',
+    precio: 15.00,
+    unidadMedida: 'pieza',
     perecedero: true,
     stockMinimo: 10,
-    descripcion: 'Leche detectada automáticamente'
+    descripcion: 'Snack detectado automáticamente'
+  },
+  'Sabritas': {
+    nombre: 'Sabritas',
+    categoria: 'Snacks y Botanas',
+    subcategoria: 'Snacks',
+    precio: 15.00,
+    unidadMedida: 'pieza',
+    perecedero: true,
+    stockMinimo: 10,
+    descripcion: 'Snack detectado automáticamente'
   },
   'pan': {
     nombre: 'Pan',
@@ -93,7 +93,7 @@ export const DETECTION_PRODUCT_MAPPING = {
     stockMinimo: 12,
     descripcion: 'Yogurt detectado automáticamente'
   },
-  'jugo': {
+  'Del Valle': {
     nombre: 'Jugo',
     categoria: 'Bebidas',
     subcategoria: 'Jugos',

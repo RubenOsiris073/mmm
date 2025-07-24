@@ -41,7 +41,8 @@ async function processImage(imageBuffer) {
     // Obtener el resultado
     const maxProb = Math.max(...predictions);
     const idx = predictions.indexOf(maxProb);
-    const etiquetas = ["barrita", "botella", "chicle"];
+    const etiquetas = ['Botella_Ciel_100ML', 'Cacahuates_Kiyakis_120G', 'Trident_13G', 'Del Valle_413ML', 'Pop_45G',
+      'Dr.Peppe_335ML', 'Sabritas_150G', 'Takis_70G'];
     
     return {
       label: etiquetas[idx] || "Desconocido",

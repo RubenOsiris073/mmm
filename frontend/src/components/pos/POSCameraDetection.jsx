@@ -19,9 +19,14 @@ const POSCameraDetection = ({ onProductDetected, products, loading, minimal = fa
 
   // Mapeo de clases detectadas a productos
   const classToProductMapping = {
-    'Barrita': 'barrita',
-    'Botella': 'botella', 
-    'Chicle': 'chicle'
+    'Botella_Ciel_100ML': 'Botella',
+    'Cacahuates_Kiyakis_120G': 'Cacahuates', 
+    'Trident_13G': 'Trident',
+    'Del Valle_413ML': 'Del Valle',
+    'Pop_45G': 'Pop',
+    'Dr.Peppe_335ML': 'Dr.Peppe',
+    'Sabritas_150G': 'Sabritas',
+    'Takis_70G': 'Takis'
   };
 
   // Helper functions defined as regular functions to avoid hoisting issues
@@ -896,9 +901,16 @@ const POSCameraDetection = ({ onProductDetected, products, loading, minimal = fa
               <div className="instructions">
                 <h6 className="small">Productos Detectables:</h6>
                 <ul className="small text-muted mb-2">
-                  <li>Barrita</li>
-                  <li>Botella</li>
-                  <li>Chicle</li>
+                  <li>Cacahuates_Kiyakis</li>
+                  <li>Botella_Ciel</li>
+                  <li>Trident</li>
+                  <li>Dr.Peppe</li>
+                  <li>Takis</li>
+                  <li>Pop</li>
+                  <li>Sabritas</li>
+                  <li>pan</li>
+                  <li>yogurt</li>
+                  <li>Del Valle</li>
                 </ul>
                 
                 <div className="performance-tips">

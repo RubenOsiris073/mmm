@@ -34,7 +34,8 @@ const config = {
   
   // Configuración de detección
   detection: {
-    validLabels: ['Chicle', 'Barrita', 'Botella'],
+    validLabels: ['Botella_Ciel_100ML', 'Cacahuates_Kiyakis_120G', 'Trident_13G', 'Del Valle_413ML', 'Pop_45G',
+      'Dr.Peppe_335ML', 'Sabritas_150G', 'Takis_70G'],
     minConfidence: 70,
     defaultStock: 10
   },

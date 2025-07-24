@@ -25,7 +25,7 @@ const CameraView = () => {
         await tf.setBackend('cpu');
         await tf.ready();
         console.log("Cargando modelo...");
-        
+
         // Intenta cargar el modelo desde la carpeta public
         let loadedModel;
         try {
@@ -34,7 +34,7 @@ const CameraView = () => {
           console.log("Intentando ruta alternativa...");
           loadedModel = await tf.loadLayersModel('./models/model.json');
         }
-        
+
         console.log("Modelo cargado exitosamente");
         setModel(loadedModel);
         setLoading(false);
@@ -43,9 +43,9 @@ const CameraView = () => {
         setLoading(false);
       }
     }
-    
+
     loadModel();
-    
+
     return () => {
       isRunning.current = false;
       if (rafRef.current) {
@@ -62,7 +62,7 @@ const CameraView = () => {
     }
 
     detectionCount.current++;
-    
+
     if (videoRef.current && videoRef.current.readyState >= 2 && model) {
       tf.tidy(() => {
         try {
@@ -70,18 +70,19 @@ const CameraView = () => {
             .resizeNearestNeighbor([224, 224])
             .expandDims()
             .toFloat();
-          
+
           const predictions = model.predict(tensor).dataSync();
           const maxProb = Math.max(...predictions);
           const idx = predictions.indexOf(maxProb);
 
-          const etiquetas = ["Barrita", "Botella", "Chicle"];
+          const etiquetas = ['Botella_Ciel_100ML', 'Cacahuates_Kiyakis_120G', 'Trident_13G', 'Del Valle_413ML', 'Pop_45G',
+            'Dr.Peppe_335ML', 'Sabritas_150G', 'Takis_70G'];
           const label = etiquetas[idx] || "Desconocido";
           const similarity = (maxProb * 100).toFixed(2);
-          
+
           // Actualizar estado solo si hay cambio significativo
-          if (prediction.label !== label || 
-              Math.abs(prediction.similarity - parseFloat(similarity)) > 5) {
+          if (prediction.label !== label ||
+            Math.abs(prediction.similarity - parseFloat(similarity)) > 5) {
             console.log(`Detectado: ${label} con precisión ${similarity}%`);
             setPrediction({ label, similarity: parseFloat(similarity) });
           }
@@ -90,7 +91,7 @@ const CameraView = () => {
         }
       });
     }
-    
+
     rafRef.current = requestAnimationFrame(detectFrame);
   }, [model, isDetecting, prediction.label, prediction.similarity]);
 
@@ -103,7 +104,7 @@ const CameraView = () => {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     }
-    
+
     return () => {
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
@@ -120,17 +121,17 @@ const CameraView = () => {
           similarity: prediction.similarity,
           timestamp: new Date().toISOString()
         });
-        
+
         // Incluir el ID en el state para el enlace
         const detectionWithId = {
           ...prediction,
           id: detectionId
         };
-        
+
         // Mostrar mensaje de éxito
         setSaveSuccess(true);
         setSavedDetection(detectionWithId);
-        
+
         setTimeout(() => {
           setSaveSuccess(false);
           setSavedDetection(null);
@@ -144,30 +145,30 @@ const CameraView = () => {
   return (
     <>
       <Camera videoRef={videoRef} />
-      
-      <PredictionDisplay 
-        loading={loading} 
-        label={prediction.label} 
-        similarity={prediction.similarity} 
+
+      <PredictionDisplay
+        loading={loading}
+        label={prediction.label}
+        similarity={prediction.similarity}
       />
-      
+
       <div className="d-flex justify-content-between mt-4">
-        <Button 
-          variant={isDetecting ? "danger" : "success"} 
+        <Button
+          variant={isDetecting ? "danger" : "success"}
           onClick={() => setIsDetecting(prev => !prev)}
         >
           {isDetecting ? "Pausar Detección" : "Reanudar Detección"}
         </Button>
-        
-        <Button 
-          variant="primary" 
+
+        <Button
+          variant="primary"
           onClick={handleSaveDetection}
           disabled={!prediction.label || prediction.similarity < 50}
         >
           Guardar Producto Detectado
         </Button>
       </div>
-      
+
       {saveSuccess && (
         <Alert variant="success" className="mt-3">
           Producto guardado exitosamente en la lista
@@ -176,8 +177,8 @@ const CameraView = () => {
 
       {saveSuccess && savedDetection && (
         <div className="d-flex justify-content-center mt-3">
-          <Link 
-            to="/product-form" 
+          <Link
+            to="/product-form"
             state={{ product: savedDetection }}
           >
             <Button variant="outline-success">

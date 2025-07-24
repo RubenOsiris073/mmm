@@ -45,16 +45,16 @@ class DetectionService {
 
       // Decodificar la imagen base64
       const imageBuffer = Buffer.from(imageData.split(',')[1], 'base64');
-      
+
       // Convertir a tensor con optimizaciones para modo rápido
       const tensor = tf.tidy(() => {
         const decoded = tf.node.decodeImage(imageBuffer);
-        
+
         // Para modo rápido, usar resize más eficiente
-        const resized = fast 
+        const resized = fast
           ? decoded.resizeBilinear([224, 224]) // Más rápido que nearestNeighbor
           : decoded.resizeNearestNeighbor([224, 224]);
-        
+
         return resized
           .expandDims()
           .toFloat()
@@ -68,7 +68,8 @@ class DetectionService {
       // Procesar resultados
       const maxProb = Math.max(...predictions);
       const idx = predictions.indexOf(maxProb);
-      const etiquetas = ["Barrita", "Botella", "Chicle"];
+      const etiquetas = ['Botella_Ciel_100ML', 'Cacahuates_Kiyakis_120G', 'Trident_13G', 'Del Valle_413ML', 'Pop_45G',
+        'Dr.Peppe_335ML', 'Sabritas_150G', 'Takis_70G'];
       const label = etiquetas[idx] || "Desconocido";
       const similarity = parseFloat((maxProb * 100).toFixed(2));
 

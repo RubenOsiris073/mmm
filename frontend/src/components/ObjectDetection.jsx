@@ -24,9 +24,9 @@ const ObjectDetection = () => {
         // Forzar uso del backend CPU
         await tf.setBackend('cpu');
         await tf.ready();
-        
+
         console.log("Cargando modelo...");
-        
+
         // Intenta cargar el modelo desde la carpeta public
         let loadedModel;
         try {
@@ -35,7 +35,7 @@ const ObjectDetection = () => {
           console.log("Intentando ruta alternativa...");
           loadedModel = await tf.loadLayersModel('./models/model.json');
         }
-        
+
         console.log("Modelo cargado exitosamente");
         setModel(loadedModel);
         setLoading(false);
@@ -44,9 +44,9 @@ const ObjectDetection = () => {
         setLoading(false);
       }
     }
-    
+
     loadModel();
-    
+
     // Asegurarse de que el detector se detenga cuando el componente se desmonte
     return () => {
       console.log("Desmontando componente - limpiando recursos");
@@ -67,12 +67,12 @@ const ObjectDetection = () => {
     }
 
     detectionCount.current++;
-    
+
     // Solo para depuración - mostrar heartbeat de detección cada 30 frames
     if (detectionCount.current % 30 === 0) {
       console.log(`Detección en curso... (${detectionCount.current} frames procesados)`);
     }
-    
+
     if (videoRef.current && videoRef.current.readyState >= 2 && model) {
       // Procesamos cada frame dentro de tf.tidy para limpiar tensores innecesarios
       tf.tidy(() => {
@@ -81,26 +81,27 @@ const ObjectDetection = () => {
             .resizeNearestNeighbor([224, 224]) // Ajusta el tamaño según tu modelo
             .expandDims()
             .toFloat();
-          
+
           // Normalizar si es necesario (ajustar según el modelo)
           // const normalizedTensor = tensor.div(255.0);  // Normalizar a [0,1]
-          
+
           // Realizar la predicción
           const predictions = model.predict(tensor).dataSync();
-          
+
           const maxProb = Math.max(...predictions);
           const idx = predictions.indexOf(maxProb);
 
           // Mapea el índice a la etiqueta correspondiente
-          const etiquetas = ["Barrita", "Botella", "Chicle"];
+          const etiquetas = ['Botella_Ciel_100ML', 'Cacahuates_Kiyakis_120G', 'Trident_13G', 'Del Valle_413ML', 'Pop_45G',
+            'Dr.Peppe_335ML', 'Sabritas_150G', 'Takis_70G'];
           const label = etiquetas[idx] || "Desconocido";
           const similarity = (maxProb * 100).toFixed(2);
-          
+
           // Sólo actualizar el estado si hay un cambio significativo para evitar re-renders innecesarios
           if (prediction.label !== label || Math.abs(prediction.similarity - parseFloat(similarity)) > 5) {
             console.log(`Detectado: ${label} con precisión ${similarity}%`);
             setPrediction({ label, similarity: parseFloat(similarity) });
-            
+
             // Registrar en Firebase (solo para cambios significativos)
             if (parseFloat(similarity) > 60) {
               logPrediction(label, similarity);
@@ -111,7 +112,7 @@ const ObjectDetection = () => {
         }
       });
     }
-    
+
     // Programar el siguiente frame usando requestAnimationFrame
     rafRef.current = requestAnimationFrame(detectFrame);
   }, [isDetecting, model, prediction.label, prediction.similarity]);
@@ -150,11 +151,11 @@ const ObjectDetection = () => {
           <ModelDiagnostic />
         </Col>
       </Row>
-      
+
       <Row className="mb-3">
         <Col>
-          <Button 
-            variant={isDetecting ? "danger" : "success"} 
+          <Button
+            variant={isDetecting ? "danger" : "success"}
             onClick={toggleDetection}
             className="w-100 mb-3"
           >
@@ -162,16 +163,16 @@ const ObjectDetection = () => {
           </Button>
         </Col>
       </Row>
-      
+
       <Row>
         <Col md={6}>
           <Card className="mb-4">
             <Card.Body>
               <Camera videoRef={videoRef} />
-              <PredictionDisplay 
-                loading={loading} 
-                label={prediction.label} 
-                similarity={prediction.similarity} 
+              <PredictionDisplay
+                loading={loading}
+                label={prediction.label}
+                similarity={prediction.similarity}
               />
             </Card.Body>
           </Card>

@@ -8,7 +8,8 @@ export const POS_CONFIG = {
     DETECTION_INTERVAL: 1500, // ms
     CACHE_SIZE: 10,
     TIMEOUT: 5000, // ms
-    DETECTABLE_PRODUCTS: ['Barrita', 'Botella', 'Chicle']
+    DETECTABLE_PRODUCTS: ['Botella_Ciel_100ML', 'Cacahuates_Kiyakis_120G', 'Trident_13G', 'Del Valle_413ML', 'Pop_45G',
+      'Dr.Peppe_335ML', 'Sabritas_150G', 'Takis_70G']
   },
 
   // Configuración de UI

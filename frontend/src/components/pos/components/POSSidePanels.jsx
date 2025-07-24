@@ -64,9 +64,16 @@ const POSSidePanels = memo(({
             <span className={panelStyles.statLabel}>Productos Detectables:</span>
           </div>
           <ul className={panelStyles.detectableProducts}>
-            <li>Barrita</li>
-            <li>Botella</li>
-            <li>Chicle</li>
+            <li>Cacahuates_Kiyakis</li>
+            <li>Botella_Ciel</li>
+            <li>Trident</li>
+            <li>Dr.Peppe</li>
+            <li>Takis</li>
+            <li>Pop</li>
+            <li>Sabritas</li>
+            <li>pan</li>
+            <li>yogurt</li>
+            <li>Del Valle</li>
           </ul>
         </div>
       </div>
