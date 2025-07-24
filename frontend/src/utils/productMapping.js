@@ -157,29 +157,9 @@ export const getSuggestedExpirationDate = (categoria, perecedero) => {
     case 'Bebidas':
       daysToAdd = 90; // 3 meses
       break;
-    case 'Panadería y Galletas':
-      daysToAdd = 15; // 15 días
-      break;
-    case 'Lácteos':
-      daysToAdd = 7; // 1 semana
-      break;
-    case 'Carnes y Embutidos':
-      daysToAdd = 14; // 2 semanas
-      break;
-    case 'Frutas y Verduras':
-      daysToAdd = 5; // 5 días
-      break;
-    case 'Snacks y Botanas':
-      daysToAdd = 60; // 2 meses
-      break;
-    case 'Dulces y Chocolates':
-      daysToAdd = 180; // 6 meses
-      break;
-    default:
-      daysToAdd = 30; // 1 mes por defecto
+    // ...otros casos si existen...
   }
-  
-  const expirationDate = new Date(today);
-  expirationDate.setDate(today.getDate() + daysToAdd);
-  return expirationDate.toISOString().split('T')[0];
-};
+  const date = new Date();
+  date.setDate(date.getDate() + daysToAdd);
+  return date.toISOString().split('T')[0];
+}
