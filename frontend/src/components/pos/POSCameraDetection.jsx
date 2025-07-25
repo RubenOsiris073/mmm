@@ -31,13 +31,24 @@ const POSCameraDetection = ({ onProductDetected, products, loading, minimal = fa
 
   // Helper functions defined as regular functions to avoid hoisting issues
   const findProductByDetection = (detectionLabel) => {
+    // Buscar por label exacto, código, nombre y label en productos
+    const normalizedLabel = detectionLabel.toLowerCase();
+    const product = products.find(
+      p => p.label?.toLowerCase() === normalizedLabel ||
+           p.codigo?.toLowerCase() === normalizedLabel ||
+           p.nombre?.toLowerCase() === normalizedLabel ||
+           p.name?.toLowerCase() === normalizedLabel
+    );
+    if (product) return product;
+
+    // Si no encuentra, usar el mapeo secundario
     const productCode = classToProductMapping[detectionLabel];
     if (!productCode) return null;
 
-    return products.find(product => 
-      product.codigo?.toLowerCase().includes(productCode) ||
-      product.nombre?.toLowerCase().includes(productCode) ||
-      product.name?.toLowerCase().includes(productCode)
+    return products.find(product =>
+      product.codigo?.toLowerCase().includes(productCode.toLowerCase()) ||
+      product.nombre?.toLowerCase().includes(productCode.toLowerCase()) ||
+      product.name?.toLowerCase().includes(productCode.toLowerCase())
     );
   };
 

@@ -1,6 +1,6 @@
 // Mapeo de labels de detección a información de productos
 export const DETECTION_PRODUCT_MAPPING = {
-  // Labels principales que mencionaste
+  // Labels principales
   'Cacahuates_Kiyakis': {
     nombre: 'Cacahuates',
     categoria: 'Snacks y Botanas',
